@@ -1,0 +1,16 @@
+{
+  "name": "@livtorgex/klinecharts",
+  "version": "0.1.0",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist","src"],
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "scripts": {
+    "build": "echo \"build placeholder (install tsup or vite)\"",
+    "test": "echo \"no tests\" && exit 0"
+  },
+  "license": "MIT"
+}

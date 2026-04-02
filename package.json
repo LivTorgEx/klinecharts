@@ -10,7 +10,15 @@
   },
   "scripts": {
     "build": "echo \"build placeholder (install tsup or vite)\"",
-    "test": "echo \"no tests\" && exit 0"
+    "test": "echo \"no tests\" && exit 0",
+    "lint": "eslint \"src/**/*.{ts,tsx,js,jsx}\" --max-warnings=0",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "eslint": "^8.45.0",
+    "typescript": "^5.3.0",
+    "@typescript-eslint/parser": "^6.3.0",
+    "@typescript-eslint/eslint-plugin": "^6.3.0"
   },
   "license": "MIT"
 }

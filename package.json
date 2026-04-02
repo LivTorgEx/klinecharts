@@ -12,7 +12,8 @@
     "constants",
     "context",
     "types",
-    "hooks"
+    "hooks",
+    "utils"
   ],
   "exports": {
     ".": {

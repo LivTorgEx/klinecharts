@@ -10,7 +10,9 @@
     "api",
     "components",
     "constants",
-    "context"
+    "context",
+    "types",
+    "hooks"
   ],
   "exports": {
     ".": {

@@ -8,6 +8,14 @@
     "dist",
     "src"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
+      "default": "./dist/index.cjs.js"
+    }
+  },
+  "private": false,
   "peerDependencies": {
     "react": ">=18"
   },

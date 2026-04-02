@@ -13,7 +13,8 @@
     "context",
     "types",
     "hooks",
-    "utils"
+    "utils",
+    "assets"
   ],
   "exports": {
     ".": {

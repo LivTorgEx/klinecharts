@@ -1,11 +1,10 @@
 {
   "name": "@livtorgex/klinecharts",
   "version": "0.1.0",
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.esm.js",
-  "types": "dist/index.d.ts",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
   "files": [
-    "dist",
     "src",
     "api",
     "components",
@@ -17,11 +16,7 @@
     "assets"
   ],
   "exports": {
-    ".": {
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.cjs.js",
-      "default": "./dist/index.cjs.js"
-    }
+    ".": "./src/index.ts"
   },
   "private": false,
   "peerDependencies": {

@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { KLineData, NeighborData, OverlayCreate } from "klinecharts";
 
-import { useBacktestRunDebug } from "../../hooks/api/backtest/backtestRunHooks";
+import { useBacktestRunDebug } from "../hooks/api/backtest/backtestRunHooks";
 import { useChart } from "../context/chart";
 import { Box, Typography } from "@mui/material";
-import { DATETIME_UI } from "../../constants/date";
+import { DATETIME_UI } from "../constants/date";
 import { format } from "date-fns";
 
 type Props = {

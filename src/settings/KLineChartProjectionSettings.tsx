@@ -13,9 +13,9 @@ import { useState } from "react";
 import { Close } from "@mui/icons-material";
 import { TradeSettingProIndicatorType } from "@livtorgex/strategy-types";
 
-import { ChartSettingsProjection } from "../../types/client/chart";
-import { TRADING_INDICATOR_PROPERTIES } from "../../constants/trading";
-import { FieldSwitch } from "../../components/form/FieldSwitch";
+import { ChartSettingsProjection } from "../types/client/chart";
+import { TRADING_INDICATOR_PROPERTIES } from "../constants/trading";
+import { FieldSwitch } from "../components/form/FieldSwitch";
 
 export type Props = {
   control: Control<ChartSettingsProjection>;

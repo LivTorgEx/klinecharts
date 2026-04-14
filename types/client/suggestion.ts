@@ -1,1 +1,2 @@
-export * from '../src/types/client/suggestion';
+export * from '../../src/types/client/suggestion';
+

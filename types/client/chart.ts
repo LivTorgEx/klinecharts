@@ -1,1 +1,2 @@
-export * from '../src/types/client/chart';
+export * from '../../src/types/client/chart';
+

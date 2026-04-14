@@ -2,18 +2,18 @@ import { KLineData, DataLoaderGetBarsParams } from "klinecharts";
 import {
   getTradeGroupLines,
   TradeGroupLinesParams,
-} from "../../api/tradeGroupLine";
-import { roundToNearestDate } from "../../utils/date";
+} from "../api/tradeGroupLine";
+import { roundToNearestDate } from "../utils/date";
 import { useContext, useEffect } from "react";
 import { useChart } from "../context/chart";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
-import { parseInputFloat } from "../../utils/number";
-import { ButtonDateTimePicker } from "../../components/elements/ButtonDateTimePicker";
+import { parseInputFloat } from "../utils/number";
+import { ButtonDateTimePicker } from "../components/elements/ButtonDateTimePicker";
 import {
   WebsocketEventName,
   WebsocketTradeEvent,
-} from "../../types/client/websocket";
-import { ClientWebSocketContext } from "../../context/clientWebSocketContext";
+} from "../types/client/websocket";
+import { ClientWebSocketContext } from "../context/clientWebSocketContext";
 
 const KLINE_SIZE = 500;
 

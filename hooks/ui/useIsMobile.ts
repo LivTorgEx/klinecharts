@@ -1,1 +1,2 @@
-export * from '../src/hooks/ui/useIsMobile';
+export * from '../../src/hooks/ui/useIsMobile';
+

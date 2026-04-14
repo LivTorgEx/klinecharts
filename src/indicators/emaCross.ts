@@ -1,6 +1,6 @@
 import { KLineData, registerIndicator } from "klinecharts";
 import { ExponentialMovingAverage } from "./exponentialMovingAverage";
-import { OrderDirection } from "../../types/client/order";
+import { OrderDirection } from "../types/client/order";
 
 type EmaCrossOutput = {
   emaSlow: number;

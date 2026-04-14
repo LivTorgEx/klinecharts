@@ -1,1 +1,2 @@
-export * from '../src/hooks/api/tradeIndicator';
+export * from '../../src/hooks/api/tradeIndicator';
+

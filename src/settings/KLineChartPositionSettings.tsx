@@ -1,5 +1,5 @@
 import { Control, Controller } from "react-hook-form";
-import { ChartSettingsPosition } from "../../types/client/chart";
+import { ChartSettingsPosition } from "../types/client/chart";
 import { Checkbox, FormControlLabel, Stack } from "@mui/material";
 
 export type Props = {

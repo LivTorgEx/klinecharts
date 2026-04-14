@@ -17,10 +17,10 @@ import { Control, useForm } from "react-hook-form";
 import {
   loadChartSettings,
   partialUpdateChartSettings,
-} from "../../utils/chart";
+} from "../utils/chart";
 import { KLineChartProjectionSettings } from "./KLineChartProjectionSettings";
 import { KLineChartPositionSettings } from "./KLineChartPositionSettings";
-import { ChartSettings } from "../../types/client/chart";
+import { ChartSettings } from "../types/client/chart";
 
 export type ChartSettingVariant = "projection" | "position";
 export type Props<V extends ChartSettingVariant> = {

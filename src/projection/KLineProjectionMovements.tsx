@@ -1,13 +1,13 @@
 import { useCallback, useContext, useEffect, useRef } from "react";
 
 import { useChart } from "../context/chart";
-import { ClientWebSocketContext } from "../../context/clientWebSocketContext";
+import { ClientWebSocketContext } from "../context/clientWebSocketContext";
 import {
   WebsocketEventName,
   WebsocketProjectionEvent,
-} from "../../types/client/websocket";
-import { SuggestionLineConsolidationMove } from "../../types/client/suggestion";
-import { toMeasurePrice } from "../../utils/number";
+} from "../types/client/websocket";
+import { SuggestionLineConsolidationMove } from "../types/client/suggestion";
+import { toMeasurePrice } from "../utils/number";
 import { useChartSettings } from "../context/chartSettings";
 
 type Props = {

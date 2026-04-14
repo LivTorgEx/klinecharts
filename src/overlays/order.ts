@@ -1,6 +1,6 @@
 import { registerOverlay } from "klinecharts";
-import { formatBigNumber } from "../../utils/number";
-import { PositionOrder } from "../../types/client/order";
+import { formatBigNumber } from "../utils/number";
+import { PositionOrder } from "../types/client/order";
 
 type ExtendData = Pick<
   PositionOrder,

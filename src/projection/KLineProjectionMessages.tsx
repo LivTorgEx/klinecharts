@@ -1,12 +1,12 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Stack, Typography } from "@mui/material";
 
-import { ClientWebSocketContext } from "../../context/clientWebSocketContext";
+import { ClientWebSocketContext } from "../context/clientWebSocketContext";
 import {
   WebsocketEventName,
   WebsocketProjectionEvent,
-} from "../../types/client/websocket";
-import { formatBigNumber, toMeasurePrice } from "../../utils/number";
+} from "../types/client/websocket";
+import { formatBigNumber, toMeasurePrice } from "../utils/number";
 import { useChartSettings } from "../context/chartSettings";
 
 type Props = {

@@ -1,1 +1,2 @@
-export * from '../src/types/client/websocket';
+export * from '../../src/types/client/websocket';
+

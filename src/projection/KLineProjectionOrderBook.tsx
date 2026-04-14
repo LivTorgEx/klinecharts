@@ -2,11 +2,11 @@ import { useCallback, useContext, useEffect, useRef } from "react";
 import { OverlayCreate } from "klinecharts";
 
 import { useChart } from "../context/chart";
-import { ClientWebSocketContext } from "../../context/clientWebSocketContext";
+import { ClientWebSocketContext } from "../context/clientWebSocketContext";
 import {
   WebsocketEventName,
   WebsocketProjectionEvent,
-} from "../../types/client/websocket";
+} from "../types/client/websocket";
 
 type Props = {
   tokenName: string;

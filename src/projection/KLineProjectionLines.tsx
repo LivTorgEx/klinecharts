@@ -3,7 +3,7 @@ import { OverlayCreate } from "klinecharts";
 
 import { useChart } from "../context/chart";
 import { SRLineParams } from "../overlays/srLine";
-import { useTradeIndicator } from "../../hooks/api/tradeIndicator";
+import { useTradeIndicator } from "../hooks/api/tradeIndicator";
 
 type Props = {
   symbolId: number;

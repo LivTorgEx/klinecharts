@@ -1,5 +1,5 @@
 import { registerOverlay } from "klinecharts";
-import { formatBigNumber } from "../../utils/number";
+import { formatBigNumber } from "../utils/number";
 
 export type KLineChartPositionData = {
   qty: number;

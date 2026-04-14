@@ -1,1 +1,2 @@
-export * from '../src/types/client/order';
+export * from '../../src/types/client/order';
+

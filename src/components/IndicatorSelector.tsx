@@ -13,9 +13,9 @@ import { InfoOutlined } from "@mui/icons-material";
 import { useToggle } from "usehooks-ts";
 
 import { createTooltipDataSource } from "../constants/style";
-import { ChartSettingsIndicator } from "../../types/client/chart";
-import { partialUpdateChartSettings } from "../../utils/chart";
-import { SearchField } from "../../components/elements/SearchField";
+import { ChartSettingsIndicator } from "../types/client/chart";
+import { partialUpdateChartSettings } from "../utils/chart";
+import { SearchField } from "../components/elements/SearchField";
 
 type Props = {
   name: string;

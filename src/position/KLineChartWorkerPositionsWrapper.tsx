@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 
-import { useAccountStrategyNFTPositions } from "../../hooks/api/account/strategyNFTWorkerPositionHooks";
-import { useSymbols } from "../../hooks/api/symbolHooks";
+import { useAccountStrategyNFTPositions } from "../hooks/api/account/strategyNFTWorkerPositionHooks";
+import { useSymbols } from "../hooks/api/symbolHooks";
 import { KLineChartProgressPositions } from "./KLineChartProgressPositions";
-import { SymbolType } from "../../types/client/symbol";
+import { SymbolType } from "../types/client/symbol";
 
 type Props = {
   workerIds: number[];

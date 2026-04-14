@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useAccountStrategyNFTWorkerBots } from "../../hooks/api/account/strategyNFTWorkerHooks";
+import { useAccountStrategyNFTWorkerBots } from "../hooks/api/account/strategyNFTWorkerHooks";
 import { useChartSettings } from "../context/chartSettings";
 import { KLineChartWorkerPositionsWrapper } from "./KLineChartWorkerPositionsWrapper";
 import { KLineChartFinishedPositions } from "./KLineChartFinishedPositions";

@@ -1,6 +1,6 @@
 import { KLineData, registerIndicator } from "klinecharts";
 import { AverageTrueRange } from "./averageTrueRange";
-import { OrderDirection } from "../../types/client/order";
+import { OrderDirection } from "../types/client/order";
 
 type SuperTrendValue = {
   buy?: number;

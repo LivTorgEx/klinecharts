@@ -6,13 +6,6 @@
   "types": "src/index.ts",
   "files": [
     "src",
-    "api",
-    "components",
-    "constants",
-    "context",
-    "types",
-    "hooks",
-    "utils",
     "assets"
   ],
   "exports": {

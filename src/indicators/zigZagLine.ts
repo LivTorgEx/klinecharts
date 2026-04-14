@@ -5,7 +5,7 @@ import {
   registerIndicator,
 } from "klinecharts";
 import { ZigZag, Point } from "./zigZag";
-import { OrderDirection } from "../../types/client/order";
+import { OrderDirection } from "../types/client/order";
 import { getRayLine } from "../helper/getRayLine";
 
 type ZigZagLineValue = {

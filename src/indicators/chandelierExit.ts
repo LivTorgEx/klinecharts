@@ -3,7 +3,7 @@ import { KLineData, registerIndicator } from "klinecharts";
 import { AverageTrueRange } from "./averageTrueRange";
 import { Maximum } from "./maximum";
 import { Minimum } from "./minimum";
-import { OrderDirection } from "../../types/client/order";
+import { OrderDirection } from "../types/client/order";
 
 type ChandelierExitOutput = {
   long: number;

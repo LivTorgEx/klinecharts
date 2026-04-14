@@ -3,9 +3,9 @@ import { format } from "date-fns";
 import { IconButton, Stack, Typography } from "@mui/material";
 import { TradeSettingProIndicatorType } from "@livtorgex/strategy-types";
 
-import { useTradeIndicator } from "../../hooks/api/tradeIndicator";
+import { useTradeIndicator } from "../hooks/api/tradeIndicator";
 import { useChartSettings } from "../context/chartSettings";
-import { DATETIME_UI } from "../../constants/date";
+import { DATETIME_UI } from "../constants/date";
 
 type Props = {
   symbolId: number;

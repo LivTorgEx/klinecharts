@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useIsMobile } from "../../hooks/ui/useIsMobile";
+import { useIsMobile } from "../hooks/ui/useIsMobile";
 import { useChart } from "../context/chart";
 
 export function KLineMobile() {

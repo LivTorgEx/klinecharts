@@ -1,17 +1,17 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Overlay, OverlayCreate } from "klinecharts";
 
-import { useBotPositions } from "../../hooks/api/botPositionHooks";
+import { useBotPositions } from "../hooks/api/botPositionHooks";
 import { useChart } from "../context/chart";
-import { parseServerDate } from "../../utils/date";
-import { ClientWebSocketContext } from "../../context/clientWebSocketContext";
+import { parseServerDate } from "../utils/date";
+import { ClientWebSocketContext } from "../context/clientWebSocketContext";
 import {
   WebsocketEventName,
   WebsocketTradeEvent,
-} from "../../types/client/websocket";
-import { toMeasurePrice } from "../../utils/number";
+} from "../types/client/websocket";
+import { toMeasurePrice } from "../utils/number";
 import { useChartSettings } from "../context/chartSettings";
-import { PositionOrderType } from "../../types/client/order";
+import { PositionOrderType } from "../types/client/order";
 import { KLineChartPositionData } from "../overlays/position";
 
 type Props = {

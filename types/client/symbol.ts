@@ -1,1 +1,2 @@
-export * from '../src/types/client/symbol';
+export * from '../../src/types/client/symbol';
+

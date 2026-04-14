@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { OverlayCreate } from "klinecharts";
 
-import { useBotPositions } from "../../hooks/api/botPositionHooks";
+import { useBotPositions } from "../hooks/api/botPositionHooks";
 import { useChart } from "../context/chart";
-import { parseServerDate } from "../../utils/date";
+import { parseServerDate } from "../utils/date";
 import { useChartSettings } from "../context/chartSettings";
 
 type Props = {

@@ -1,10 +1,10 @@
 import { registerOverlay } from "klinecharts";
 import { green, red } from "@mui/material/colors";
 
-import { formatBigNumber } from "../../utils/number";
-import { PositionOrder } from "../../types/client/order";
-import { isTruthy } from "../../utils/filter";
-import { formatServerDate } from "../../utils/date";
+import { formatBigNumber } from "../utils/number";
+import { PositionOrder } from "../types/client/order";
+import { isTruthy } from "../utils/filter";
+import { formatServerDate } from "../utils/date";
 
 type ExtendData = PositionOrder & {
   timestamp?: number;

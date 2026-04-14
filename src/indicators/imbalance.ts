@@ -1,5 +1,5 @@
 import { getFigureClass, KLineData, registerIndicator } from "klinecharts";
-import { toMeasurePrice } from "../../utils/number";
+import { toMeasurePrice } from "../utils/number";
 
 type BlockType = "Bullish" | "Bearish";
 

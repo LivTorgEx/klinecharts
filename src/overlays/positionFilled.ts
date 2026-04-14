@@ -1,9 +1,9 @@
 import { registerOverlay } from "klinecharts";
 import { green, red } from "@mui/material/colors";
 
-import { formatBigNumber } from "../../utils/number";
-import { isTruthy } from "../../utils/filter";
-import { OrderDirection } from "../../types/client/order";
+import { formatBigNumber } from "../utils/number";
+import { isTruthy } from "../utils/filter";
+import { OrderDirection } from "../types/client/order";
 
 type ExtendData = {
   side: OrderDirection;

@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { OverlayCreate } from "klinecharts";
 
 import { useChart } from "../context/chart";
-import { parseServerDate } from "../../utils/date";
-import { BacktestRunPositionSchema } from "../../types/backtest/backtestRunPosition";
+import { parseServerDate } from "../utils/date";
+import { BacktestRunPositionSchema } from "../types/backtest/backtestRunPosition";
 import { useChartSettings } from "../context/chartSettings";
 
 type Props = {

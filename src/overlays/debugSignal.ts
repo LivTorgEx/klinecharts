@@ -1,6 +1,6 @@
 import { registerOverlay } from "klinecharts";
 
-import { isTruthy } from "../../utils/filter";
+import { isTruthy } from "../utils/filter";
 
 type ExtendData = {
   showSignal?: boolean;

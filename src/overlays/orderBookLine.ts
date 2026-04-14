@@ -1,6 +1,6 @@
 import { registerOverlay } from "klinecharts";
-import { formatBigNumber } from "../../utils/number";
-import { SuggestionInfoOrderBookLevel } from "../../types/client/suggestion";
+import { formatBigNumber } from "../utils/number";
+import { SuggestionInfoOrderBookLevel } from "../types/client/suggestion";
 
 registerOverlay<SuggestionInfoOrderBookLevel>({
   name: "orderBookLine",

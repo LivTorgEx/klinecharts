@@ -1,5 +1,5 @@
-import { useSymbol } from "../hooks/api/symbolHooks";
-import { SymbolType } from "../types/client/symbol";
+import { useSymbol } from "./hooks/api/symbolHooks";
+import { SymbolType } from "./types/client/symbol";
 import { useChartSettings } from "./context/chartSettings";
 import { KLineChart } from "./KLineChart";
 import { KLineChartFinishedPositions } from "./position/KLineChartFinishedPositions";

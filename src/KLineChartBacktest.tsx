@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useSymbolFromAll, useSymbolsAll } from "../hooks/api/symbolHooks";
-import { BacktestRunWithPositionsSchema } from "../types/backtest/backtestRun";
+import { useSymbolFromAll, useSymbolsAll } from "./hooks/api/symbolHooks";
+import { BacktestRunWithPositionsSchema } from "./types/backtest/backtestRun";
 import { KLineChart } from "./KLineChart";
 import { KLineChartBacktestPositions } from "./position/KLineChartBacktestPositions";
 import { KLineChartLoadDebug } from "./components/KLineChartLoadDebug";

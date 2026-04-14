@@ -1,4 +1,4 @@
-import type { SymbolType } from "../types/client/symbol";
+import type { SymbolType } from "../../types/client/symbol";
 
 export function useSymbol(id?: number): SymbolType | undefined {
   // stub: return undefined or minimal symbol

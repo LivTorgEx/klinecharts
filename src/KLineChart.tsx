@@ -22,7 +22,7 @@ import {
   KLineData,
 } from "klinecharts";
 
-import { loadChartSettings, partialUpdateChartSettings } from "../utils/chart";
+import { loadChartSettings, partialUpdateChartSettings } from "./utils/chart";
 import { KLineChartSettingsModal } from "./settings/KLineChartSettingsModal";
 import { TIMEFRAMES } from "./constants/app";
 import { createTooltipDataSource, getIndicatorStyles } from "./constants/style";

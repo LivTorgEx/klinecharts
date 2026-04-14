@@ -1,5 +1,5 @@
 import { PropsWithChildren } from "react";
-import { useSymbol } from "../hooks/api/symbolHooks";
+import { useSymbol } from "./hooks/api/symbolHooks";
 import { KLineChart } from "./KLineChart";
 
 type Props = PropsWithChildren<{ symbolId: number }>;

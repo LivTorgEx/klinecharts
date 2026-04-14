@@ -25,12 +25,14 @@ Development workflows
      # start dev server
      pnpm run dev
      ```
-  4. Alternatively use pnpm link:
+  4. Alternatively use pnpm link (direct path, no global step needed):
      ```bash
-     cd klinecharts
-     pnpm link --global
-     cd ../trading-app/web
-     pnpm link --global @livtorgex/klinecharts
+     cd trading-app/web          # or trading-bot-react
+     pnpm link /absolute/path/to/klinecharts
+     # start dev server
+     pnpm run dev
+     # restore git dep when done
+     pnpm install
      ```
 
 - CI/CD: klinecharts builds a Docker image and publishes to GitHub Container Registry (ghcr.io) on push to main. The image contains the built dist files and can be used in Kubernetes for demo or static-serving.

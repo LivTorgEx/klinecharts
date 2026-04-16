@@ -3,22 +3,35 @@
   "version": "0.1.0",
   "main": "src/index.ts",
   "module": "src/index.ts",
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "files": [
     "src",
+    "dist",
     "assets"
   ],
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    }
   },
   "private": false,
+  "dependencies": {
+    "klinecharts": "10.0.0-beta1"
+  },
   "peerDependencies": {
-    "react": ">=18",
-    "react-dom": ">=18",
-    "@mui/material": "^6.1.5",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@tanstack/react-query": "^5.14.0"
+    "@mui/icons-material": "^6.1.5",
+    "@mui/lab": "^6.0.0-beta",
+    "@mui/material": "^6.1.5",
+    "@tanstack/react-query": "^5.14.0",
+    "date-fns": "^2.30.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.0.0",
+    "react-i18next": "^14.1.0",
+    "usehooks-ts": "^2.9.1"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -31,22 +44,30 @@
     "url": "git+ssh://git@github.com:LivTorgEx/klinecharts.git"
   },
   "devDependencies": {
-    "@emotion/react": "11.11.1",
-    "@emotion/styled": "11.11.0",
-    "@mui/material": "6.1.5",
-    "@typescript-eslint/eslint-plugin": "^6.3.0",
-    "@typescript-eslint/parser": "^6.3.0",
-    "eslint": "^8.45.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "eslint-plugin-react-refresh": "^0.4.12",
-    "prettier": "^3.3.3",
-    "prettier-eslint": "^16.3.0",
-    "typescript": "^5.3.0",
-    "@tanstack/react-query": "5.95.2",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.1",
+    "@mui/icons-material": "9.0.0",
+    "@mui/lab": "9.0.0-beta.2",
+    "@mui/material": "9.0.0",
+    "@tanstack/react-query": "5.99.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.58.2",
+    "@typescript-eslint/parser": "^8.58.2",
+    "date-fns": "4.1.0",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "prettier": "^3.8.3",
+    "prettier-eslint": "^16.4.2",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "react-hook-form": "7.72.1",
+    "react-i18next": "17.0.3",
+    "typescript": "^6.0.2",
+    "usehooks-ts": "3.1.1"
   },
   "license": "MIT",
   "packageManager": "pnpm@10.32.1"

@@ -136,7 +136,9 @@ export function IndicatorSelector({ chart, name }: Props) {
       <Dialog open={isOpen} onClose={toggleIsOpen} maxWidth="md" fullWidth>
         <DialogTitle>Indicators</DialogTitle>
         <DialogContent>
-          <Box py={2}>
+          <Box sx={{
+            py: 2
+          }}>
             <SearchField
               fullWidth
               defaultValue={search}

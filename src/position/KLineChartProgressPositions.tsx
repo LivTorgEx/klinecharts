@@ -115,8 +115,8 @@ export function KLineChartProgressPositions({ botId, tokenName }: Props) {
     positions?.data?.forEach((position) => {
       position.orders.forEach((order) => {
         let id = `order_${order.id}`;
-        const timestamp = +parseServerDate(order.update_at);
-        const orderPrice = order.price || order.stop_price;
+        const timestamp = +parseServerDate(order.update_at ?? "");
+        const orderPrice = order.price || order.stop_price || 0;
         const positionAmount = position.qty * position.entry_price;
         const positionFactor = position.qty > 0 ? 1 : -1;
         const points: OverlayCreate["points"] = [
@@ -125,7 +125,7 @@ export function KLineChartProgressPositions({ botId, tokenName }: Props) {
             value: orderPrice,
           },
         ];
-        if (["New", "PartiallyFilled"].includes(order.status)) {
+        if (["New", "PartiallyFilled"].includes(order.status ?? "")) {
           id += "_order";
           let pnl = undefined;
           const qtyFactor = order.qty > 0 ? 1 : -1;
@@ -136,7 +136,7 @@ export function KLineChartProgressPositions({ botId, tokenName }: Props) {
             const pricePrc = toMeasurePrice(position.entry_price, orderPrice);
             const floatingPnl = (pricePrc * positionAmount) / 100;
             pnl = position.total_profit - position.fee + floatingPnl;
-          } else if (order.qty !== 0 && qtyFactor !== positionFactor) {
+          } else if (order.qty !== 0 && order.qty !== undefined && qtyFactor !== positionFactor) {
             const pricePrc =
               toMeasurePrice(position.entry_price, orderPrice) / 100;
             const closePosAmount = Math.abs(order.qty) * position.entry_price;
@@ -162,7 +162,7 @@ export function KLineChartProgressPositions({ botId, tokenName }: Props) {
               extendData,
             });
           }
-        } else if (Math.abs(order.qty_filled) > 0) {
+        } else if (Math.abs(order.qty_filled ?? 0) > 0) {
           id += "_orderFilled";
           if (!chart.getOverlays({ id }).length) {
             chart.createOverlay({

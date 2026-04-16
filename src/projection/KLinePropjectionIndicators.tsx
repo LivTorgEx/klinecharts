@@ -1,7 +1,7 @@
 import { Close } from "@mui/icons-material";
 import { format } from "date-fns";
 import { IconButton, Stack, Typography } from "@mui/material";
-import { TradeSettingProIndicatorType } from "@livtorgex/strategy-types";
+import { TradeSettingProIndicatorType } from "../types/strategyIndicatorType";
 
 import { useTradeIndicator } from "../hooks/api/tradeIndicator";
 import { useChartSettings } from "../context/chartSettings";
@@ -64,10 +64,7 @@ export function KLinePropjectionIndicators({
     return null;
   }
 
-  const values = indicator.indicators as Record<
-    string,
-    Record<string, string | number>
-  >;
+  const values = indicator.indicators;
 
   return (
     <Stack>
@@ -85,14 +82,20 @@ export function KLinePropjectionIndicators({
           <Stack>
             {INDICATOR_MAP[name]?.map((key) =>
               values[key] ? (
-                <Stack direction="row" flexWrap="wrap" useFlexGap key={key}>
-                  <Typography mr={1} variant="caption">
+                <Stack direction="row" useFlexGap key={key} sx={{
+                  flexWrap: "wrap"
+                }}>
+                  <Typography variant="caption" sx={{
+                    mr: 1
+                  }}>
                     ({key})
                   </Typography>
                   {Object.entries(properties)
                     .filter(([, isActive]) => isActive)
                     .map(([propertyName]) => (
-                      <Typography mr={1} variant="caption" key={propertyName}>
+                      <Typography variant="caption" key={propertyName} sx={{
+                        mr: 1
+                      }}>
                         {propertyName}: {values[key][propertyName]}
                       </Typography>
                     ))}

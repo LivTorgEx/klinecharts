@@ -4,8 +4,9 @@ import { PositionOrder } from "../types/client/order";
 
 type ExtendData = Pick<
   PositionOrder,
-  "order_type" | "qty" | "id" | "price" | "client_id" | "original_id"
+  "qty" | "id" | "price" | "client_id" | "original_id"
 > & {
+  order_type: string;
   pnl?: number;
 };
 

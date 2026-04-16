@@ -36,7 +36,9 @@ registerIndicator({
     const acc = new Accumulator(period);
 
     return dataList.map((kLineData): Vol => {
-      const volumeDelta = kLineData.buy - kLineData.sell;
+      const buy = typeof kLineData["buy"] === "number" ? kLineData["buy"] : 0;
+      const sell = typeof kLineData["sell"] === "number" ? kLineData["sell"] : 0;
+      const volumeDelta = buy - sell;
       const atrV = atr.next(volumeDelta);
       const smaV = sma.next(volumeDelta);
       const accV = acc.next(volumeDelta);

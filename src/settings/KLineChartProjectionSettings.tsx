@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { Close } from "@mui/icons-material";
-import { TradeSettingProIndicatorType } from "@livtorgex/strategy-types";
+import { TradeSettingProIndicatorType } from "../types/strategyIndicatorType";
 
 import { ChartSettingsProjection } from "../types/client/chart";
 import { TRADING_INDICATOR_PROPERTIES } from "../constants/trading";
@@ -59,8 +59,13 @@ export function KLineChartProjectionSettings({ control }: Props) {
           )}
         />
       ))}
-
-      <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{
+          alignItems: "center",
+          mb: 2
+        }}>
         <Autocomplete
           size="small"
           sx={{ flexGrow: 1 }}
@@ -88,12 +93,21 @@ export function KLineChartProjectionSettings({ control }: Props) {
           Add
         </Button>
       </Stack>
-
       {fields.map((field, idx) => (
-        <Stack direction="row" spacing={2} alignItems="start" mb={2}>
-          <Stack flexGrow={1} spacing={0}>
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{
+            alignItems: "start",
+            mb: 2
+          }}>
+          <Stack spacing={0} sx={{
+            flexGrow: 1
+          }}>
             <Typography>{field.name}</Typography>
-            <Stack direction="row" flexWrap="wrap" useFlexGap>
+            <Stack direction="row" useFlexGap sx={{
+              flexWrap: "wrap"
+            }}>
               {TRADING_INDICATOR_PROPERTIES[
                 field.name as TradeSettingProIndicatorType["type"]
               ]?.map((option) => {

@@ -1,5 +1,5 @@
 import { IndicatorCreate, PaneOptions } from "klinecharts";
-import { TradeSettingProIndicatorType } from "@livtorgex/strategy-types";
+import { TradeSettingProIndicatorType } from "../strategyIndicatorType";
 
 export type ChartSettings = {
   timeframe: number;

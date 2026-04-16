@@ -1,1 +1,5 @@
-export const TRADING_INDICATOR_PROPERTIES = [] as const;
+import { TradeSettingProIndicatorType } from "../types/strategyIndicatorType";
+
+export const TRADING_INDICATOR_PROPERTIES: Partial<
+  Record<TradeSettingProIndicatorType["type"], Array<string | { value: string; label: string }>>
+> = {};

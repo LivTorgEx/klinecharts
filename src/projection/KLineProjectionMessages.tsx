@@ -91,9 +91,9 @@ export function KLineProjectionMessages({ tokenName }: Props) {
         const oiMessage = [
           `Open Interest: ${formatBigNumber(oi.usd)}`,
           `Change: ${oi.change.toFixed(2)}%`,
-          `ChangeQTY: ${formatBigNumber(oi.change_qty, "")}|${formatBigNumber(oi.change_qty * projection.price)}`,
-          `Average: ${formatBigNumber(oi.avg * projection.price)}`,
-          `Candle: ${formatBigNumber(projection.candle.qtym_asset)}`,
+          `ChangeQTY: ${formatBigNumber(oi.change_qty, "")}|${formatBigNumber(oi.change_qty * (projection.price ?? 0))}`,
+          `Average: ${formatBigNumber(oi.avg * (projection.price ?? 0))}`,
+          `Candle: ${formatBigNumber(projection.candle?.qtym_asset ?? 0)}`,
         ];
         messages.push(oiMessage.join("  "));
       }

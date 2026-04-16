@@ -42,7 +42,7 @@ type Token = {
   id: number;
   symbol: string;
   default_trade_group_id?: number;
-  price_precision: number;
+  price_precision?: number;
 };
 type Props = {
   token?: Token;
@@ -90,7 +90,7 @@ export function KLineChart({
     const container = chartEl.current;
     const chart = init(container, {
       decimalFold: {
-        threshold: token.price_precision,
+        threshold: token.price_precision ?? 8,
       },
     });
     chartRef.current = chart;
@@ -108,7 +108,7 @@ export function KLineChart({
     chart.setStyles(themeMode);
     chart.setSymbol({
       ticker: token.symbol,
-      pricePrecision: token.price_precision,
+      pricePrecision: token.price_precision ?? 8,
       volumePrecision: 2,
     });
     // Set period to trigger initial data load via dataLoader
@@ -251,13 +251,19 @@ export function KLineChart({
   return (
     <ChartSettingsContext.Provider value={settings}>
       <ChartContext.Provider value={chartStore}>
-        <Box display="flex" flexDirection="column">
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column"
+          }}>
           <Box ref={controlsRef}>
             <KLineMobile />
             <Stack
               direction={{ xs: "column", sm: "row" }}
               spacing={{ sx: 0, sm: 1 }}
-              alignItems={{ xs: "start", sm: "center" }}
+              sx={{
+                alignItems: { xs: "start", sm: "center" }
+              }}
             >
               <ToggleButtonGroup
                 size="small"
@@ -273,7 +279,9 @@ export function KLineChart({
                   </ToggleButton>
                 ))}
               </ToggleButtonGroup>
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack direction="row" spacing={1} sx={{
+                alignItems: "center"
+              }}>
                 <IndicatorSelector chart={chartStore} name={chartSettingName} />
                 <KLineChartSettingsModal
                   name={chartSettingName}
@@ -307,9 +315,19 @@ export function KLineChart({
             )}
             {children}
           </Box>
-          <Stack direction="row" width="100%" flex={1}>
+          <Stack
+            direction="row"
+            sx={{
+              width: "100%",
+              flex: 1
+            }}>
             <KLineChartSidePanel />
-            <Box ref={chartEl} height={chartHeight} width="100%" />
+            <Box
+              ref={chartEl}
+              sx={{
+                height: chartHeight,
+                width: "100%"
+              }} />
           </Stack>
         </Box>
       </ChartContext.Provider>

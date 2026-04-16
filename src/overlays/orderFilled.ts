@@ -95,7 +95,7 @@ registerOverlay<ExtendData>({
         ignoreEvent: true,
         zLevel: 30,
         attrs: [
-          `Time: ${formatServerDate(order.update_at)}`,
+          order.update_at ? `Time: ${formatServerDate(order.update_at)}` : "",
           `${order.order_type}`,
           order.notes?.map((n) => JSON.stringify(n)).join(" | "),
           `QTY: ${order.qty} Amount: ${order.qty * order.price}$`,

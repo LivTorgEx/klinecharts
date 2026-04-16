@@ -1,5 +1,8 @@
+import { BacktestRunPositionSchema } from "./backtestRunPosition";
+
 export type BacktestRunWithPositionsSchema = {
   id: number;
   name?: string;
-  positions?: Array<Record<string, unknown>>;
+  trade_group_id?: number;
+  positions?: BacktestRunPositionSchema[];
 };

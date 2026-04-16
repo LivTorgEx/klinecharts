@@ -1,6 +1,9 @@
+import { PositionOrder } from "../client/order";
+
 export type BacktestRunPositionSchema = {
   id: number;
-  time_enter: string | number;
-  price_enter: number;
-  qty: number;
+  orders: PositionOrder[];
+  side: string;
+  total_profit: number;
+  fee: number;
 };

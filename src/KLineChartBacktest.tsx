@@ -37,7 +37,7 @@ export function KLineChartBacktest({ backtestRun, timeEndLoader }: Props) {
       {window.location.hostname === "localhost" && (
         <KLineChartLoadDebug backtestRunId={backtestRun.id} />
       )}
-      <KLineChartBacktestPositions positions={backtestRun.positions} />
+      <KLineChartBacktestPositions positions={backtestRun.positions ?? []} />
     </KLineChart>
   );
 }

@@ -1,6 +1,7 @@
 import {
   formatDuration,
   intervalToDuration,
+  type Duration,
   parseISO,
   format,
   addMinutes,
@@ -40,7 +41,7 @@ export function roundToNearestDate(
 
 export function formatHMSDuration(
   diffTime: number,
-  format: string[] = ["days", "hours", "minutes", "seconds"]
+  format: (keyof Duration)[] = ["days", "hours", "minutes", "seconds"]
 ): string {
   const duration = intervalToDuration({
     start: 0,

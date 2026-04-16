@@ -35,13 +35,13 @@ export function KLineChartBacktestPositions({ positions }: Props) {
       if (firstOrder) {
         const points: OverlayCreate["points"] = [
           {
-            timestamp: +parseServerDate(firstOrder.update_at),
+            timestamp: +parseServerDate(firstOrder.update_at ?? ""),
             value: firstOrder.price,
           },
         ];
         if (lastOrder) {
           points.push({
-            timestamp: +parseServerDate(lastOrder.update_at),
+            timestamp: +parseServerDate(lastOrder.update_at ?? ""),
             value: lastOrder.price || lastOrder.stop_price,
           });
         }
@@ -77,7 +77,7 @@ export function KLineChartBacktestPositions({ positions }: Props) {
       }
 
       position.orders.forEach((order) => {
-        const timestamp = +parseServerDate(order.update_at);
+        const timestamp = +parseServerDate(order.update_at ?? "");
         const points: OverlayCreate["points"] = [
           {
             timestamp,

@@ -33,7 +33,7 @@ export function KLineChartFinishedPositions({ botId }: Props) {
       const points: OverlayCreate["points"] = [
         firstOrder
           ? {
-              timestamp: +parseServerDate(firstOrder.update_at),
+              timestamp: +parseServerDate(firstOrder.update_at ?? ""),
               value: firstOrder.price || lastOrder.stop_price,
             }
           : {
@@ -43,7 +43,7 @@ export function KLineChartFinishedPositions({ botId }: Props) {
       ];
       if (lastOrder) {
         points.push({
-          timestamp: +parseServerDate(lastOrder.update_at),
+            timestamp: +parseServerDate(lastOrder.update_at ?? ""),
           value: lastOrder.price || lastOrder.stop_price,
         });
       }
@@ -66,7 +66,7 @@ export function KLineChartFinishedPositions({ botId }: Props) {
       removeSet.delete(posId);
 
       position.orders.forEach((order) => {
-        const timestamp = +parseServerDate(order.update_at);
+        const timestamp = +parseServerDate(order.update_at ?? "");
         const points: OverlayCreate["points"] = [
           {
             timestamp,

@@ -10,7 +10,7 @@ type SuperTrendValue = {
 export class SuperTrend {
   private atr: AverageTrueRange;
   private superTrend?: number;
-  private direction = OrderDirection.BOTH;
+  private direction: OrderDirection = OrderDirection.BOTH;
 
   constructor(
     period: number,
@@ -74,7 +74,7 @@ registerIndicator<SuperTrendValue, number>({
     const { from, to } = chart.getVisibleRange();
     const kLineDataList = chart.getDataList();
     const result = indicator.result;
-    let initialSide = OrderDirection.BOTH;
+    let initialSide: OrderDirection = OrderDirection.BOTH;
 
     for (let i = from; i < to; i++) {
       const data = result[i];

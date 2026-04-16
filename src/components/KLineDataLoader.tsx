@@ -155,9 +155,11 @@ export function KLineDataLoader({
         currentCandle.high = Math.max(currentCandle.high, trade.price);
         currentCandle.low = Math.min(currentCandle.low, trade.price);
         if (trade.was_buyer_maker) {
-          currentCandle.sell += trade.quantity;
+          const prevSell = typeof currentCandle["sell"] === "number" ? currentCandle["sell"] : 0;
+          currentCandle["sell"] = prevSell + trade.quantity;
         } else {
-          currentCandle.buy += trade.quantity;
+          const prevBuy = typeof currentCandle["buy"] === "number" ? currentCandle["buy"] : 0;
+          currentCandle["buy"] = prevBuy + trade.quantity;
         }
         currentCandle.volume = (currentCandle.volume || 0) + trade.quantity;
       }

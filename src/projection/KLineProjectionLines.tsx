@@ -71,17 +71,17 @@ export function KLineProjectionLines({ symbolId, timeframe }: Props) {
         name: "srLine",
         data: {
           message: [
-            `${name}[${line.direction}|${line.crosses}${line.qtym ? `|${line.qtym.toFixed(2)}` : ""}]`,
+            `${name}[${line.direction}|${line.crosses}${line.qtym ? `|${Number(line.qtym).toFixed(2)}` : ""}]`,
           ].join(" "),
           type: name,
         },
-        price: line.price,
+        price: Number(line.price),
         points: [
           {
-            timestamp: +new Date() - line.klines * timeframe * 1_000,
-            value: line.price,
+            timestamp: +new Date() - Number(line.klines) * timeframe * 1_000,
+            value: Number(line.price),
           },
-          { timestamp: +new Date(), value: line.price },
+          { timestamp: +new Date(), value: Number(line.price) },
         ],
       });
     });

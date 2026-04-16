@@ -6,14 +6,14 @@ export function useSymbol(id?: number): SymbolType | undefined {
   return undefined;
 }
 
-export function useSymbols(): SymbolType[] {
-  return [] as SymbolType[];
+export function useSymbols(): { data: SymbolType[] } {
+  return { data: [] };
 }
 
 export function useSymbolFromAll(id?: number) {
   return useSymbol(id);
 }
 
-export function useSymbolsAll(): SymbolType[] {
+export function useSymbolsAll(): { data: SymbolType[] } {
   return useSymbols();
 }

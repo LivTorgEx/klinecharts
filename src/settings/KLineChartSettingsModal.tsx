@@ -68,11 +68,8 @@ export function KLineChartSettingsModal<V extends ChartSettingVariant>({
         onClose={handleClose}
         fullWidth
         maxWidth="sm"
-        PaperProps={{
-          component: "form",
-          onSubmit: form.handleSubmit(handleSave),
-        }}
       >
+        <form onSubmit={form.handleSubmit(handleSave)}>
         <DialogTitle>Settings for {variant}</DialogTitle>
         <DialogContent>
           {variant === "projection" && (
@@ -94,6 +91,7 @@ export function KLineChartSettingsModal<V extends ChartSettingVariant>({
           <Button onClick={handleClose}>Cancel</Button>
           <Button type="submit">Save</Button>
         </DialogActions>
+        </form>
       </Dialog>
     </>
   );

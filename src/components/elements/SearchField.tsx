@@ -1,5 +1,16 @@
-import React from "react";
+type SearchFieldProps = {
+  fullWidth?: boolean;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+  delay?: number;
+  placeholder?: string;
+};
 
-type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
-export const SearchField = (props: InputProps) => <input {...props} />;
+export const SearchField = ({ onChange, fullWidth: _fullWidth, delay: _delay, ...restProps }: SearchFieldProps) => (
+  <input
+    {...restProps}
+    onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+  />
+);
+
 export default SearchField;

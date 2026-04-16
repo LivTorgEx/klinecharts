@@ -1,3 +1,0 @@
-import { jsx as _jsx } from "react/jsx-runtime";
-import { createSvgIcon } from "@mui/material";
-export const HorizontalRayLine = createSvgIcon(_jsx("svg", { viewBox: "0 0 22 22", children: _jsx("path", { d: "M6.91465,11L11.08535,11C11.29127,10.417404,11.84689,10,12.5,10C13.15311,10,13.70873,10.417404,13.91465,11L18.5,11C18.7761,11,19,11.22386,19,11.5C19,11.77614,18.7761,12,18.5,12L13.91465,12C13.70873,12.5826,13.15311,13,12.5,13C11.84689,13,11.29127,12.5826,11.08535,12L6.91465,12C6.70873,12.5826,6.15311,13,5.5,13C4.671573,13,4,12.32843,4,11.5C4,10.671573,4.671573,10,5.5,10C6.15311,10,6.70873,10.417404,6.91465,11Z", strokeOpacity: "0", stroke: "none", fill: "currentColor" }) }), "HorizontalRayLine");

@@ -7,6 +7,7 @@ import {
   DialogTitle,
   Divider,
   IconButton,
+  MenuList,
   MenuItem,
 } from "@mui/material";
 import { InfoOutlined } from "@mui/icons-material";
@@ -148,32 +149,36 @@ export function IndicatorSelector({ chart, name }: Props) {
               delay={16}
             />
           </Box>
-          {INDICATORS.filter(({ label }) =>
-            label.toLowerCase().includes(search.toLowerCase())
-          ).map(({ label, ...params }) => (
-            <MenuItem
-              key={params.name}
-              onClick={() => {
-                handleAddIndicator(params);
-              }}
-            >
-              {label}
-            </MenuItem>
-          ))}
+          <MenuList>
+            {INDICATORS.filter(({ label }) =>
+              label.toLowerCase().includes(search.toLowerCase())
+            ).map(({ label, ...params }) => (
+              <MenuItem
+                key={params.name}
+                onClick={() => {
+                  handleAddIndicator(params);
+                }}
+              >
+                {label}
+              </MenuItem>
+            ))}
+          </MenuList>
 
           <Divider />
-          {SUB_INDICATORS.filter(({ label }) =>
-            label.toLowerCase().includes(search.toLowerCase())
-          ).map(({ label, ...params }) => (
-            <MenuItem
-              key={params.name}
-              onClick={() => {
-                handleAddSubIndicator(params);
-              }}
-            >
-              {label}
-            </MenuItem>
-          ))}
+          <MenuList>
+            {SUB_INDICATORS.filter(({ label }) =>
+              label.toLowerCase().includes(search.toLowerCase())
+            ).map(({ label, ...params }) => (
+              <MenuItem
+                key={params.name}
+                onClick={() => {
+                  handleAddSubIndicator(params);
+                }}
+              >
+                {label}
+              </MenuItem>
+            ))}
+          </MenuList>
         </DialogContent>
       </Dialog>
     </>

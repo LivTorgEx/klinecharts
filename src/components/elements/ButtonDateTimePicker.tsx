@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+
 type ButtonDateTimePickerProps = {
   onAccept?: (value: Date | null) => void;
   children?: React.ReactNode;
@@ -6,14 +9,17 @@ type ButtonDateTimePickerProps = {
 export const ButtonDateTimePicker = ({
   onAccept,
   children,
-}: ButtonDateTimePickerProps) => (
-  <input
-    type="datetime-local"
-    title={typeof children === "string" ? children : undefined}
-    onChange={(e) =>
-      onAccept?.(e.target.value ? new Date(e.target.value) : null)
-    }
-  />
-);
+}: ButtonDateTimePickerProps) => {
+  const [value, setValue] = useState<Date | null>(null);
+
+  return (
+    <DateTimePicker
+      value={value}
+      onChange={setValue}
+      onAccept={onAccept}
+      label={typeof children === "string" ? children : undefined}
+    />
+  );
+};
 
 export default ButtonDateTimePicker;

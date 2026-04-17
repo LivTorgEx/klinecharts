@@ -1,19 +1,52 @@
-import type { SymbolType } from "../../types/client/symbol";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 
-export function useSymbol(id?: number): SymbolType | undefined {
-  // stub: return undefined or minimal symbol
-  void id;
-  return undefined;
+import type { SymbolType } from "../../types/client/symbol";
+import { useKLineChartDataAdapter } from "../../context/dataAdapterContext";
+
+export function useSymbols(can_trade = true, exchange_code?: string) {
+  const adapter = useKLineChartDataAdapter();
+
+  return useQuery({
+    queryKey: ["Symbols", can_trade, exchange_code],
+    queryFn: () =>
+      adapter.loadSymbols({
+        can_trade: can_trade ? true : undefined,
+        exchange_code,
+      }),
+  });
 }
 
-export function useSymbols(): { data: SymbolType[] } {
-  return { data: [] };
+export function useSymbolsAll(exchange_code?: string) {
+  const adapter = useKLineChartDataAdapter();
+
+  return useQuery({
+    queryKey: ["Symbols", "all", exchange_code],
+    queryFn: () => adapter.loadSymbols({ exchange_code }),
+  });
+}
+
+function useSymbolsMap(symbols: SymbolType[]) {
+  return useMemo(
+    () =>
+      symbols.reduce<Record<number, SymbolType>>((accumulator, symbol) => {
+        accumulator[symbol.id] = symbol;
+        return accumulator;
+      }, {}),
+    [symbols]
+  );
+}
+
+export function useSymbol(id?: number) {
+  const { data: symbols = [] } = useSymbols();
+  const symbolsMap = useSymbolsMap(symbols);
+
+  return id !== undefined ? symbolsMap[id] : undefined;
 }
 
 export function useSymbolFromAll(id?: number) {
-  return useSymbol(id);
-}
+  const { data: symbols = [] } = useSymbolsAll();
+  const symbolsMap = useSymbolsMap(symbols);
 
-export function useSymbolsAll(): { data: SymbolType[] } {
-  return useSymbols();
+  return id !== undefined ? symbolsMap[id] : undefined;
 }

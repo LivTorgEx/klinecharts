@@ -64,8 +64,9 @@ export function KLineChartProjectionSettings({ control }: Props) {
         spacing={2}
         sx={{
           alignItems: "center",
-          mb: 2
-        }}>
+          mb: 2,
+        }}
+      >
         <Autocomplete
           size="small"
           sx={{ flexGrow: 1 }}
@@ -99,15 +100,23 @@ export function KLineChartProjectionSettings({ control }: Props) {
           spacing={2}
           sx={{
             alignItems: "start",
-            mb: 2
-          }}>
-          <Stack spacing={0} sx={{
-            flexGrow: 1
-          }}>
+            mb: 2,
+          }}
+        >
+          <Stack
+            spacing={0}
+            sx={{
+              flexGrow: 1,
+            }}
+          >
             <Typography>{field.name}</Typography>
-            <Stack direction="row" useFlexGap sx={{
-              flexWrap: "wrap"
-            }}>
+            <Stack
+              direction="row"
+              useFlexGap
+              sx={{
+                flexWrap: "wrap",
+              }}
+            >
               {TRADING_INDICATOR_PROPERTIES[
                 field.name as TradeSettingProIndicatorType["type"]
               ]?.map((option) => {

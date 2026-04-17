@@ -172,9 +172,11 @@ export function KLineChartLoadDebug({ backtestRunId }: Props) {
   }
 
   return (
-    <Box sx={{
-      height: "128px"
-    }}>
+    <Box
+      sx={{
+        height: "128px",
+      }}
+    >
       {selectedTime && (
         <Typography variant="body2" component="p">
           {format(selectedTime, DATETIME_UI)}

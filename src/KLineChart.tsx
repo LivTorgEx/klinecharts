@@ -33,6 +33,7 @@ import { KLineMobile } from "./components/KLineMobile";
 import { KLineProjection } from "./projection/KLineProjection";
 import { KLineDataLoader } from "./components/KLineDataLoader";
 import { KLineChartSidePanel } from "./components/KLineChartSidePanel";
+import { PositionInfoModalsContainer } from "./components/PositionInfoModalsContainer";
 
 import "./indicators";
 import "./overlays";
@@ -249,88 +250,101 @@ export function KLineChart({
   }, [height]);
 
   return (
-    <ChartSettingsContext.Provider value={settings}>
-      <ChartContext.Provider value={chartStore}>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column"
-          }}>
-          <Box ref={controlsRef}>
-            <KLineMobile />
+    <>
+      <ChartSettingsContext.Provider value={settings}>
+        <ChartContext.Provider value={chartStore}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Box ref={controlsRef}>
+              <KLineMobile />
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={{ sx: 0, sm: 1 }}
+                sx={{
+                  alignItems: { xs: "start", sm: "center" },
+                }}
+              >
+                <ToggleButtonGroup
+                  size="small"
+                  sx={{ height: 32 }}
+                  color="primary"
+                  value={timeframe}
+                  exclusive
+                  onChange={(event, newTF) => handleUpdateTimeframe(newTF)}
+                >
+                  {TIMEFRAMES.map(({ label, value }) => (
+                    <ToggleButton key={value} value={value}>
+                      {label}
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{
+                    alignItems: "center",
+                  }}
+                >
+                  <IndicatorSelector
+                    chart={chartStore}
+                    name={chartSettingName}
+                  />
+                  <KLineChartSettingsModal
+                    name={chartSettingName}
+                    onClose={handleRefreshSettings}
+                    variant="position"
+                  />
+                  <KLineChartSettingsModal
+                    name={chartSettingName}
+                    onClose={handleRefreshSettings}
+                    variant="projection"
+                  />
+                  {token && (
+                    <KLineDataLoader
+                      timeframe={timeframe}
+                      tradeGroupId={token.default_trade_group_id!}
+                      timeEndLoader={timeEndLoader}
+                      symbol={token.symbol}
+                      enableRealTime={enableRealTime}
+                    />
+                  )}
+                </Stack>
+              </Stack>
+              {token && (
+                <KLineProjection
+                  tokenName={token.symbol}
+                  symbolId={token.id}
+                  timeframe={timeframe}
+                  selectedTime={selectedTime}
+                  clearSelectedTime={handleClearSelectedTime}
+                />
+              )}
+              {children}
+            </Box>
             <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={{ sx: 0, sm: 1 }}
+              direction="row"
               sx={{
-                alignItems: { xs: "start", sm: "center" }
+                width: "100%",
+                flex: 1,
               }}
             >
-              <ToggleButtonGroup
-                size="small"
-                sx={{ height: 32 }}
-                color="primary"
-                value={timeframe}
-                exclusive
-                onChange={(event, newTF) => handleUpdateTimeframe(newTF)}
-              >
-                {TIMEFRAMES.map(({ label, value }) => (
-                  <ToggleButton key={value} value={value}>
-                    {label}
-                  </ToggleButton>
-                ))}
-              </ToggleButtonGroup>
-              <Stack direction="row" spacing={1} sx={{
-                alignItems: "center"
-              }}>
-                <IndicatorSelector chart={chartStore} name={chartSettingName} />
-                <KLineChartSettingsModal
-                  name={chartSettingName}
-                  onClose={handleRefreshSettings}
-                  variant="position"
-                />
-                <KLineChartSettingsModal
-                  name={chartSettingName}
-                  onClose={handleRefreshSettings}
-                  variant="projection"
-                />
-                {token && (
-                  <KLineDataLoader
-                    timeframe={timeframe}
-                    tradeGroupId={token.default_trade_group_id!}
-                    timeEndLoader={timeEndLoader}
-                    symbol={token.symbol}
-                    enableRealTime={enableRealTime}
-                  />
-                )}
-              </Stack>
-            </Stack>
-            {token && (
-              <KLineProjection
-                tokenName={token.symbol}
-                symbolId={token.id}
-                timeframe={timeframe}
-                selectedTime={selectedTime}
-                clearSelectedTime={handleClearSelectedTime}
+              <KLineChartSidePanel />
+              <Box
+                ref={chartEl}
+                sx={{
+                  height: chartHeight,
+                  width: "100%",
+                }}
               />
-            )}
-            {children}
+            </Stack>
           </Box>
-          <Stack
-            direction="row"
-            sx={{
-              width: "100%",
-              flex: 1
-            }}>
-            <KLineChartSidePanel />
-            <Box
-              ref={chartEl}
-              sx={{
-                height: chartHeight,
-                width: "100%"
-              }} />
-          </Stack>
-        </Box>
-      </ChartContext.Provider>
-    </ChartSettingsContext.Provider>
+        </ChartContext.Provider>
+      </ChartSettingsContext.Provider>
+      <PositionInfoModalsContainer />
+    </>
   );
 }

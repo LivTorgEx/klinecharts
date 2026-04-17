@@ -43,7 +43,7 @@ export function KLineChartFinishedPositions({ botId }: Props) {
       ];
       if (lastOrder) {
         points.push({
-            timestamp: +parseServerDate(lastOrder.update_at ?? ""),
+          timestamp: +parseServerDate(lastOrder.update_at ?? ""),
           value: lastOrder.price || lastOrder.stop_price,
         });
       }

@@ -1,12 +1,9 @@
-import { useCallback, useContext, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { OverlayCreate } from "klinecharts";
 
 import { useChart } from "../context/chart";
-import { ClientWebSocketContext } from "../context/clientWebSocketContext";
-import {
-  WebsocketEventName,
-  WebsocketProjectionEvent,
-} from "../types/client/websocket";
+import { WebsocketProjectionEvent } from "../types/client/websocket";
+import { useSubscribeProjection } from "../context/dataAdapterContext";
 
 type Props = {
   tokenName: string;
@@ -14,7 +11,7 @@ type Props = {
 
 export function KLineProjectionOrderBook({ tokenName }: Props) {
   const chart = useChart();
-  const ws = useContext(ClientWebSocketContext);
+  const subscribeProjection = useSubscribeProjection();
   const overlayKeys = useRef<Set<string>>(new Set());
 
   const handleUpdateProjection = useCallback(
@@ -58,22 +55,23 @@ export function KLineProjectionOrderBook({ tokenName }: Props) {
   );
 
   useEffect(() => {
-    if (!chart) {
+    if (!chart || !subscribeProjection) {
       return;
     }
 
-    ws.subscribe(WebsocketEventName.Projection, handleUpdateProjection);
-    ws.sendSubscribe({ event: "Projection", symbol: tokenName });
+    const unsubscribeProjection = subscribeProjection(
+      tokenName,
+      handleUpdateProjection
+    );
 
     return () => {
-      ws.unsubscribe(WebsocketEventName.Projection, handleUpdateProjection);
-      ws.sendUnSubscribe({ event: "Projection", symbol: tokenName });
+      unsubscribeProjection();
       // eslint-disable-next-line react-hooks/exhaustive-deps
       overlayKeys.current.forEach((id) => {
         chart.removeOverlay({ id });
       });
     };
-  }, [ws, chart, tokenName, handleUpdateProjection]);
+  }, [subscribeProjection, chart, tokenName, handleUpdateProjection]);
 
   return null;
 }

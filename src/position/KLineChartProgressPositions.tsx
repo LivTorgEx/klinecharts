@@ -1,18 +1,15 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Overlay, OverlayCreate } from "klinecharts";
 
 import { useBotPositions } from "../hooks/api/botPositionHooks";
 import { useChart } from "../context/chart";
 import { parseServerDate } from "../utils/date";
-import { ClientWebSocketContext } from "../context/clientWebSocketContext";
-import {
-  WebsocketEventName,
-  WebsocketTradeEvent,
-} from "../types/client/websocket";
+import { WebsocketTradeEvent } from "../types/client/websocket";
 import { toMeasurePrice } from "../utils/number";
 import { useChartSettings } from "../context/chartSettings";
 import { PositionOrderType } from "../types/client/order";
 import { KLineChartPositionData } from "../overlays/position";
+import { useSubscribeTrade } from "../context/dataAdapterContext";
 
 type Props = {
   botId: number;
@@ -21,7 +18,7 @@ type Props = {
 
 export function KLineChartProgressPositions({ botId, tokenName }: Props) {
   const chart = useChart();
-  const ws = useContext(ClientWebSocketContext);
+  const subscribeTrade = useSubscribeTrade();
   const { timeframe } = useChartSettings();
   const { data: positions } = useBotPositions({
     bot_id: botId,
@@ -136,7 +133,11 @@ export function KLineChartProgressPositions({ botId, tokenName }: Props) {
             const pricePrc = toMeasurePrice(position.entry_price, orderPrice);
             const floatingPnl = (pricePrc * positionAmount) / 100;
             pnl = position.total_profit - position.fee + floatingPnl;
-          } else if (order.qty !== 0 && order.qty !== undefined && qtyFactor !== positionFactor) {
+          } else if (
+            order.qty !== 0 &&
+            order.qty !== undefined &&
+            qtyFactor !== positionFactor
+          ) {
             const pricePrc =
               toMeasurePrice(position.entry_price, orderPrice) / 100;
             const closePosAmount = Math.abs(order.qty) * position.entry_price;
@@ -188,20 +189,18 @@ export function KLineChartProgressPositions({ botId, tokenName }: Props) {
   }, [positions, chart, timeframe]);
 
   useEffect(() => {
+    if (!subscribeTrade) {
+      return;
+    }
+
     function updateTrade(event: WebsocketTradeEvent) {
       if (event.symbol === tokenName) {
         setPrice(event.price);
       }
     }
 
-    ws.subscribe(WebsocketEventName.Trade, updateTrade);
-    ws.sendSubscribe({ event: "Trade", symbol: tokenName });
-
-    return () => {
-      ws.unsubscribe(WebsocketEventName.Trade, updateTrade);
-      ws.sendUnSubscribe({ event: "Trade", symbol: tokenName });
-    };
-  }, [ws, tokenName]);
+    return subscribeTrade(tokenName, updateTrade);
+  }, [subscribeTrade, tokenName]);
 
   return null;
 }

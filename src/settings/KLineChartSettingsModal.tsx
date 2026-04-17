@@ -14,10 +14,7 @@ import {
 import { useState } from "react";
 import { Control, useForm } from "react-hook-form";
 
-import {
-  loadChartSettings,
-  partialUpdateChartSettings,
-} from "../utils/chart";
+import { loadChartSettings, partialUpdateChartSettings } from "../utils/chart";
 import { KLineChartProjectionSettings } from "./KLineChartProjectionSettings";
 import { KLineChartPositionSettings } from "./KLineChartPositionSettings";
 import { ChartSettings } from "../types/client/chart";
@@ -63,34 +60,31 @@ export function KLineChartSettingsModal<V extends ChartSettingVariant>({
       <IconButton onClick={handleOpen} size="small">
         <Icon fontSize="small" />
       </IconButton>
-      <Dialog
-        open={isOpen}
-        onClose={handleClose}
-        fullWidth
-        maxWidth="sm"
-      >
+      <Dialog open={isOpen} onClose={handleClose} fullWidth maxWidth="sm">
         <form onSubmit={form.handleSubmit(handleSave)}>
-        <DialogTitle>Settings for {variant}</DialogTitle>
-        <DialogContent>
-          {variant === "projection" && (
-            <KLineChartProjectionSettings
-              control={
-                form.control as unknown as Control<ChartSettings["projection"]>
-              }
-            />
-          )}
-          {variant === "position" && (
-            <KLineChartPositionSettings
-              control={
-                form.control as unknown as Control<ChartSettings["position"]>
-              }
-            />
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button type="submit">Save</Button>
-        </DialogActions>
+          <DialogTitle>Settings for {variant}</DialogTitle>
+          <DialogContent>
+            {variant === "projection" && (
+              <KLineChartProjectionSettings
+                control={
+                  form.control as unknown as Control<
+                    ChartSettings["projection"]
+                  >
+                }
+              />
+            )}
+            {variant === "position" && (
+              <KLineChartPositionSettings
+                control={
+                  form.control as unknown as Control<ChartSettings["position"]>
+                }
+              />
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button type="submit">Save</Button>
+          </DialogActions>
         </form>
       </Dialog>
     </>

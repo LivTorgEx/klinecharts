@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useChart } from "../context/chart";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import { parseInputFloat } from "../utils/number";
-import { ButtonDateTimePicker } from "../components/elements/ButtonDateTimePicker";
 import { WebsocketTradeEvent } from "../types/client/websocket";
 import { useKLineChartDataAdapter } from "../context/dataAdapterContext";
 import {
@@ -237,5 +236,5 @@ export function KLineDataLoader({
     enableRealTime,
   ]);
 
-  return <ButtonDateTimePicker onAccept={handleGoTo} />;
+  return null;
 }

@@ -39,7 +39,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:LivTorgEx/klinecharts.git"
+    "url": "git+https://github.com/LivTorgEx/klinecharts.git"
   },
   "devDependencies": {
     "@emotion/react": "11.14.0",

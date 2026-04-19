@@ -102,18 +102,6 @@ export function KLineDataLoader({
   const queryClient = useQueryClient();
   const adapter = useKLineChartDataAdapter();
 
-  const handleGoTo = (value: Date | null) => {
-    if (chart && value instanceof Date) {
-      const timeEnd = roundToNearestDate(
-        +value + (KLINE_SIZE / 2) * timeframe * 1_000,
-        timeframe
-      );
-
-      // Scroll to the timestamp - klinecharts will fetch data via dataLoader if needed
-      chart.scrollToTimestamp(timeEnd);
-    }
-  };
-
   // Setup data loader following klinecharts official API
   useEffect(() => {
     if (!chart) {

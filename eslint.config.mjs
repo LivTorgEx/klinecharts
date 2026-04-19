@@ -27,6 +27,10 @@ export default [
       ...reactHooks.configs.recommended.rules,
       "prettier/prettier": "error",
       "react-hooks/exhaustive-deps": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+      ],
     },
   },
 ];

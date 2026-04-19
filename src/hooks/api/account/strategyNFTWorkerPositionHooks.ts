@@ -1,15 +1,40 @@
-type WorkerPositionFilter = { status?: string[] };
-type WorkerPaginationParams = { page: number; page_size: number };
-type WorkerPositionItem = { symbol_id: number; bot_id: number };
-type WorkerPositionsResult = { data: WorkerPositionItem[] };
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+
+import { useKLineChartDataAdapter } from "../../../context/dataAdapterContext";
+import {
+  KLineChartWorkerPosition,
+  KLineChartLoadWorkerPositionsParams,
+  KLineChartBotPositionStatus,
+} from "../../../types/client/dataAdapter";
+
+type WorkerPositionsResult = { data: KLineChartWorkerPosition[] };
 
 export function useAccountStrategyNFTPositions(
-  _workerId?: number,
-  _filter?: WorkerPositionFilter,
-  _pagination?: WorkerPaginationParams
+  workerId?: number,
+  filter?: { status?: KLineChartBotPositionStatus[] },
+  pagination?: { page: number; page_size: number }
 ) {
-  return {
-    data: undefined as WorkerPositionsResult | undefined,
-    isLoading: false,
-  };
+  const adapter = useKLineChartDataAdapter();
+
+  const params: KLineChartLoadWorkerPositionsParams | undefined =
+    workerId !== undefined
+      ? {
+          workerId,
+          status: filter?.status,
+          page: pagination?.page,
+          page_size: pagination?.page_size,
+        }
+      : undefined;
+
+  return useQuery<WorkerPositionsResult>({
+    queryKey: [
+      "Account/Strategy/NFT/Worker/Positions",
+      workerId,
+      filter,
+      pagination,
+    ],
+    queryFn: () => adapter.loadWorkerPositions!(params!),
+    placeholderData: keepPreviousData,
+    enabled: Boolean(params) && Boolean(adapter.loadWorkerPositions),
+  });
 }

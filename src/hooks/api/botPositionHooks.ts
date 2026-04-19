@@ -1,29 +1,22 @@
-import { PositionOrder } from "../../types/client/order";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
-type BotPositionFilter = {
-  bot_id?: number;
-  status?: string[];
-  order_status?: string[];
-};
-
-type BotPositionItem = {
-  id: number | string;
-  orders: PositionOrder[];
-  side: string;
-  total_profit: number;
-  fee: number;
-  created_at: string;
-  entry_price: number;
-  qty: number;
-};
+import { useKLineChartDataAdapter } from "../../context/dataAdapterContext";
+import {
+  KLineChartBotPosition,
+  KLineChartLoadBotPositionsParams,
+} from "../../types/client/dataAdapter";
 
 type BotPositionsResult = {
-  data: BotPositionItem[];
+  data: KLineChartBotPosition[];
 };
 
-export function useBotPositions(_filter?: BotPositionFilter) {
-  return {
-    data: undefined as BotPositionsResult | undefined,
-    isLoading: false,
-  };
+export function useBotPositions(filter?: KLineChartLoadBotPositionsParams) {
+  const adapter = useKLineChartDataAdapter();
+
+  return useQuery<BotPositionsResult>({
+    queryKey: ["BotPositions", filter],
+    queryFn: () => adapter.loadBotPositions!(filter ?? {}),
+    placeholderData: keepPreviousData,
+    enabled: Boolean(adapter.loadBotPositions),
+  });
 }

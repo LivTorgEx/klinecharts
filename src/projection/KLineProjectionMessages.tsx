@@ -121,13 +121,16 @@ export function KLineProjectionMessages({ tokenName }: Props) {
   );
 
   useEffect(() => {
-    setMessages([]);
-
     if (!subscribeProjection) {
       return;
     }
 
-    return subscribeProjection(tokenName, handleUpdateProjection);
+    const unsubscribe = subscribeProjection(tokenName, handleUpdateProjection);
+
+    return () => {
+      unsubscribe();
+      setMessages([]);
+    };
   }, [subscribeProjection, tokenName, handleUpdateProjection]);
 
   return (

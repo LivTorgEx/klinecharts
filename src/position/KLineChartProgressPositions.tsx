@@ -23,6 +23,7 @@ export function KLineChartProgressPositions({ botId, tokenName }: Props) {
   const { data: positions } = useBotPositions({
     bot_id: botId,
     status: ["Created", "InProgress"],
+    order_status: ["New", "PartiallyFilled", "Filled"],
   });
   const [price, setPrice] = useState<number | undefined>();
   const existingPositionKeys = useRef<Set<string>>(new Set());

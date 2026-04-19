@@ -14,7 +14,12 @@ export type PositionOrder = {
   qty_filled?: number;
 };
 
-export type PositionOrderType = "MARKET" | "LIMIT" | "STOP_MARKET" | "STOP_LIMIT" | string;
+export type PositionOrderType =
+  | "MARKET"
+  | "LIMIT"
+  | "STOP_MARKET"
+  | "STOP_LIMIT"
+  | string;
 
 export const PositionOrderType = {
   Market: "MARKET",
@@ -29,4 +34,5 @@ export const OrderDirection = {
   BOTH: "BOTH",
 } as const;
 
-export type OrderDirection = (typeof OrderDirection)[keyof typeof OrderDirection];
+export type OrderDirection =
+  (typeof OrderDirection)[keyof typeof OrderDirection];

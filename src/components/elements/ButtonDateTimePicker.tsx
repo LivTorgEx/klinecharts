@@ -1,14 +1,29 @@
+import { useState } from "react";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+
 type ButtonDateTimePickerProps = {
   onAccept?: (value: Date | null) => void;
   children?: React.ReactNode;
 };
 
-export const ButtonDateTimePicker = ({ onAccept, children }: ButtonDateTimePickerProps) => (
-  <input
-    type="datetime-local"
-    title={typeof children === "string" ? children : undefined}
-    onChange={(e) => onAccept?.(e.target.value ? new Date(e.target.value) : null)}
-  />
-);
+export const ButtonDateTimePicker = ({
+  onAccept,
+  children,
+}: ButtonDateTimePickerProps) => {
+  const [value, setValue] = useState<Date | null>(null);
+
+  return (
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <DateTimePicker
+        value={value}
+        onChange={setValue}
+        onAccept={onAccept}
+        label={typeof children === "string" ? children : undefined}
+      />
+    </LocalizationProvider>
+  );
+};
 
 export default ButtonDateTimePicker;

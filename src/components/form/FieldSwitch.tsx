@@ -8,7 +8,15 @@ type SwitchProps = {
   disabled?: boolean;
 };
 
-export const FieldSwitch = ({ label: _label, onChange, value, checked, name, onBlur, disabled }: SwitchProps) => (
+export const FieldSwitch = ({
+  label: _label,
+  onChange,
+  value,
+  checked,
+  name,
+  onBlur,
+  disabled,
+}: SwitchProps) => (
   <label>
     <input
       type="checkbox"

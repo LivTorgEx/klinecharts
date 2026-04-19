@@ -1,20 +1,17 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Stack, Typography } from "@mui/material";
 
-import { ClientWebSocketContext } from "../context/clientWebSocketContext";
-import {
-  WebsocketEventName,
-  WebsocketProjectionEvent,
-} from "../types/client/websocket";
+import { WebsocketProjectionEvent } from "../types/client/websocket";
 import { formatBigNumber, toMeasurePrice } from "../utils/number";
 import { useChartSettings } from "../context/chartSettings";
+import { useSubscribeProjection } from "../context/dataAdapterContext";
 
 type Props = {
   tokenName: string;
 };
 
 export function KLineProjectionMessages({ tokenName }: Props) {
-  const ws = useContext(ClientWebSocketContext);
+  const subscribeProjection = useSubscribeProjection();
   const { timeframe } = useChartSettings();
   const [messages, setMessages] = useState<string[]>([]);
 
@@ -124,20 +121,17 @@ export function KLineProjectionMessages({ tokenName }: Props) {
   );
 
   useEffect(() => {
-    setMessages([]);
-
-    if (!ws.isConnected) {
+    if (!subscribeProjection) {
       return;
     }
 
-    ws.subscribe(WebsocketEventName.Projection, handleUpdateProjection);
-    ws.sendSubscribe({ event: "Projection", symbol: tokenName });
+    const unsubscribe = subscribeProjection(tokenName, handleUpdateProjection);
 
     return () => {
-      ws.unsubscribe(WebsocketEventName.Projection, handleUpdateProjection);
-      ws.sendUnSubscribe({ event: "Projection", symbol: tokenName });
+      unsubscribe();
+      setMessages([]);
     };
-  }, [ws, tokenName, handleUpdateProjection]);
+  }, [subscribeProjection, tokenName, handleUpdateProjection]);
 
   return (
     <Stack>

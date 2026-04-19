@@ -4,13 +4,15 @@ import { green, red } from "@mui/material/colors";
 import { formatBigNumber } from "../utils/number";
 import { PositionOrder } from "../types/client/order";
 import { isTruthy } from "../utils/filter";
-import { formatServerDate } from "../utils/date";
+import {
+  NOTE_MODAL_EVENT,
+  NoteModalEventDetail,
+} from "../components/PositionInfoModalsContainer";
 
 type ExtendData = PositionOrder & {
   timestamp?: number;
   timeframe?: number;
   showOrder?: boolean;
-  showNotes?: boolean;
 };
 
 registerOverlay<ExtendData>({
@@ -22,11 +24,11 @@ registerOverlay<ExtendData>({
   needDefaultYAxisFigure: true,
 
   onSelected: ({ overlay }) => {
-    overlay.extendData.showNotes = true;
-    return true;
-  },
-  onDeselected: ({ overlay }) => {
-    overlay.extendData.showNotes = false;
+    window.dispatchEvent(
+      new CustomEvent<NoteModalEventDetail>(NOTE_MODAL_EVENT, {
+        detail: { order: overlay.extendData },
+      })
+    );
     return true;
   },
   onMouseEnter: ({ overlay }) => {
@@ -89,29 +91,6 @@ registerOverlay<ExtendData>({
             align: "center",
           },
         ],
-      },
-      order.showNotes && {
-        type: "text",
-        ignoreEvent: true,
-        zLevel: 30,
-        attrs: [
-          order.update_at ? `Time: ${formatServerDate(order.update_at)}` : "",
-          `${order.order_type}`,
-          order.notes?.map((n) => JSON.stringify(n)).join(" | "),
-          `QTY: ${order.qty} Amount: ${order.qty * order.price}$`,
-          // order.original_id ? `#ID ${order.original_id}` : undefined,
-        ]
-          .filter(isTruthy)
-          .map((text, idx) => ({
-            x,
-            y:
-              order.qty > 0
-                ? coordinates[0].y + 30 + 21 * idx
-                : coordinates[0].y - 30 - 21 * idx,
-            text,
-            baseline: "center",
-            align: "center",
-          })),
       },
     ].filter(isTruthy);
   },

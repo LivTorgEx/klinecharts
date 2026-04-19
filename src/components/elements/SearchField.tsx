@@ -6,7 +6,12 @@ type SearchFieldProps = {
   placeholder?: string;
 };
 
-export const SearchField = ({ onChange, fullWidth: _fullWidth, delay: _delay, ...restProps }: SearchFieldProps) => (
+export const SearchField = ({
+  onChange,
+  fullWidth: _fullWidth,
+  delay: _delay,
+  ...restProps
+}: SearchFieldProps) => (
   <input
     {...restProps}
     onChange={onChange ? (e) => onChange(e.target.value) : undefined}

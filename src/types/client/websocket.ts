@@ -1,6 +1,11 @@
 export type WSMessage = {
   type: string;
-  payload?: string | number | boolean | null | Record<string, string | number | boolean | null>;
+  payload?:
+    | string
+    | number
+    | boolean
+    | null
+    | Record<string, string | number | boolean | null>;
 };
 
 export type ClientWebsocketMessage = WSMessage;
@@ -10,7 +15,8 @@ export const WebsocketEventName = {
   Projection: "Projection",
 } as const;
 
-export type WebsocketEventName = (typeof WebsocketEventName)[keyof typeof WebsocketEventName];
+export type WebsocketEventName =
+  (typeof WebsocketEventName)[keyof typeof WebsocketEventName];
 
 export type WebsocketTradeEvent = {
   symbol: string;
@@ -57,7 +63,10 @@ export type WebsocketProjectionEvent = {
   };
   order_book?: WebsocketProjectionOrderBook;
   waves: Record<number, WebsocketProjectionWave>;
-  movements?: Record<number, import("./suggestion").SuggestionLineConsolidationMove>;
+  movements?: Record<
+    number,
+    import("./suggestion").SuggestionLineConsolidationMove
+  >;
   oi?: {
     usd: number;
     change: number;

@@ -8,3 +8,5 @@ export * from "./position/KLineChartFinishedPositions";
 export * from "./position/KLineChartWorkerPositionsContent";
 export * from "./components/KLineChartQuickAddButton";
 export * from "./context/chartSettings";
+export * from "./context/dataAdapterContext";
+export * from "./types/client/dataAdapter";

@@ -82,20 +82,32 @@ export function KLinePropjectionIndicators({
           <Stack>
             {INDICATOR_MAP[name]?.map((key) =>
               values[key] ? (
-                <Stack direction="row" useFlexGap key={key} sx={{
-                  flexWrap: "wrap"
-                }}>
-                  <Typography variant="caption" sx={{
-                    mr: 1
-                  }}>
+                <Stack
+                  direction="row"
+                  useFlexGap
+                  key={key}
+                  sx={{
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      mr: 1,
+                    }}
+                  >
                     ({key})
                   </Typography>
                   {Object.entries(properties)
                     .filter(([, isActive]) => isActive)
                     .map(([propertyName]) => (
-                      <Typography variant="caption" key={propertyName} sx={{
-                        mr: 1
-                      }}>
+                      <Typography
+                        variant="caption"
+                        key={propertyName}
+                        sx={{
+                          mr: 1,
+                        }}
+                      >
                         {propertyName}: {values[key][propertyName]}
                       </Typography>
                     ))}

@@ -77,7 +77,8 @@ registerIndicator<ChandelierExitValue, number>({
       const long = prevValue?.long ?? value.long;
       const short = prevValue?.short ?? value.short;
 
-      let direction: OrderDirection = prevValue?.direction ?? OrderDirection.BOTH;
+      let direction: OrderDirection =
+        prevValue?.direction ?? OrderDirection.BOTH;
 
       if (input.close > short) {
         direction = OrderDirection.LONG;

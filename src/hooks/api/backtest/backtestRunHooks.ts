@@ -1,4 +1,7 @@
-import { ChartInfoDrawType, ChartInfoSignal } from "../../../types/client/chart";
+import {
+  ChartInfoDrawType,
+  ChartInfoSignal,
+} from "../../../types/client/chart";
 
 type BacktestDebugTimeInfo = {
   signals: ChartInfoSignal[];

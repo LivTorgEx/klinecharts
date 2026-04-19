@@ -1,14 +1,11 @@
-import { useCallback, useContext, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { useChart } from "../context/chart";
-import { ClientWebSocketContext } from "../context/clientWebSocketContext";
-import {
-  WebsocketEventName,
-  WebsocketProjectionEvent,
-} from "../types/client/websocket";
+import { WebsocketProjectionEvent } from "../types/client/websocket";
 import { SuggestionLineConsolidationMove } from "../types/client/suggestion";
 import { toMeasurePrice } from "../utils/number";
 import { useChartSettings } from "../context/chartSettings";
+import { useSubscribeProjection } from "../context/dataAdapterContext";
 
 type Props = {
   tokenName: string;
@@ -54,7 +51,7 @@ function updateMovs(
 export function KLineProjectionMovements({ tokenName }: Props) {
   const chart = useChart();
   const { timeframe } = useChartSettings();
-  const ws = useContext(ClientWebSocketContext);
+  const subscribeProjection = useSubscribeProjection();
   const overlayKeys = useRef<Set<string>>(new Set());
   const movs = useRef<SuggestionLineConsolidationMove[]>([]);
 
@@ -159,22 +156,23 @@ export function KLineProjectionMovements({ tokenName }: Props) {
   useEffect(() => {
     movs.current = [];
 
-    if (!chart) {
+    if (!chart || !subscribeProjection) {
       return;
     }
 
-    ws.subscribe(WebsocketEventName.Projection, handleUpdateProjection);
-    ws.sendSubscribe({ event: "Projection", symbol: tokenName });
+    const unsubscribeProjection = subscribeProjection(
+      tokenName,
+      handleUpdateProjection
+    );
 
     return () => {
-      ws.unsubscribe(WebsocketEventName.Projection, handleUpdateProjection);
-      ws.sendUnSubscribe({ event: "Projection", symbol: tokenName });
+      unsubscribeProjection();
       // eslint-disable-next-line react-hooks/exhaustive-deps
       overlayKeys.current.forEach((id) => {
         chart.removeOverlay({ id });
       });
     };
-  }, [ws, chart, tokenName, handleUpdateProjection]);
+  }, [subscribeProjection, chart, tokenName, handleUpdateProjection]);
 
   return null;
 }

@@ -1,19 +1,15 @@
 import { KLineData, DataLoaderGetBarsParams } from "klinecharts";
-import {
-  getTradeGroupLines,
-  TradeGroupLinesParams,
-} from "../api/tradeGroupLine";
 import { roundToNearestDate } from "../utils/date";
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { useChart } from "../context/chart";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import { parseInputFloat } from "../utils/number";
-import { ButtonDateTimePicker } from "../components/elements/ButtonDateTimePicker";
+import { WebsocketTradeEvent } from "../types/client/websocket";
+import { useKLineChartDataAdapter } from "../context/dataAdapterContext";
 import {
-  WebsocketEventName,
-  WebsocketTradeEvent,
-} from "../types/client/websocket";
-import { ClientWebSocketContext } from "../context/clientWebSocketContext";
+  KLineChartBar,
+  KLineChartLoadBarsParams,
+} from "../types/client/dataAdapter";
 
 const KLINE_SIZE = 500;
 
@@ -29,7 +25,7 @@ function getParams(
   timeframe: number,
   { type, timestamp }: DataLoaderGetBarsParams,
   timeEndLoader?: number
-): Omit<TradeGroupLinesParams, "tradeGroupId"> | undefined {
+): Omit<KLineChartLoadBarsParams, "tradeGroupId"> | undefined {
   if (type === "init") {
     const initDateTime = timeEndLoader || +new Date();
     const nearestCurrentTime = roundToNearestDate(initDateTime, timeframe);
@@ -63,18 +59,15 @@ function getParams(
 
 function loadDataByParams(
   queryClient: QueryClient,
+  loadBars: (params: KLineChartLoadBarsParams) => Promise<KLineChartBar[]>,
   tradeGroupId: number,
-  queryParams: Omit<TradeGroupLinesParams, "tradeGroupId">,
+  queryParams: Omit<KLineChartLoadBarsParams, "tradeGroupId">,
   callback: (dataList: KLineData[], more?: boolean) => void
 ) {
   queryClient
     .fetchQuery({
       queryKey: ["TradeGroupLines", tradeGroupId, queryParams],
-      queryFn: () =>
-        getTradeGroupLines({
-          tradeGroupId,
-          ...queryParams,
-        }),
+      queryFn: () => loadBars({ tradeGroupId, ...queryParams }),
     })
     .then((lines) =>
       lines.map(
@@ -107,19 +100,7 @@ export function KLineDataLoader({
 }: Props) {
   const chart = useChart();
   const queryClient = useQueryClient();
-  const ws = useContext(ClientWebSocketContext);
-
-  const handleGoTo = (value: Date | null) => {
-    if (chart && value instanceof Date) {
-      const timeEnd = roundToNearestDate(
-        +value + (KLINE_SIZE / 2) * timeframe * 1_000,
-        timeframe
-      );
-
-      // Scroll to the timestamp - klinecharts will fetch data via dataLoader if needed
-      chart.scrollToTimestamp(timeEnd);
-    }
-  };
+  const adapter = useKLineChartDataAdapter();
 
   // Setup data loader following klinecharts official API
   useEffect(() => {
@@ -129,7 +110,7 @@ export function KLineDataLoader({
 
     const symbolName = symbol;
     let currentCandle: KLineData | null = null;
-    let tradeHandler: ((trade: WebsocketTradeEvent) => void) | null = null;
+    let unsubscribeTrade: (() => void) | undefined;
 
     const updateTrade = (trade: WebsocketTradeEvent) => {
       if (trade.symbol !== symbolName) {
@@ -155,10 +136,14 @@ export function KLineDataLoader({
         currentCandle.high = Math.max(currentCandle.high, trade.price);
         currentCandle.low = Math.min(currentCandle.low, trade.price);
         if (trade.was_buyer_maker) {
-          const prevSell = typeof currentCandle["sell"] === "number" ? currentCandle["sell"] : 0;
+          const prevSell =
+            typeof currentCandle["sell"] === "number"
+              ? currentCandle["sell"]
+              : 0;
           currentCandle["sell"] = prevSell + trade.quantity;
         } else {
-          const prevBuy = typeof currentCandle["buy"] === "number" ? currentCandle["buy"] : 0;
+          const prevBuy =
+            typeof currentCandle["buy"] === "number" ? currentCandle["buy"] : 0;
           currentCandle["buy"] = prevBuy + trade.quantity;
         }
         currentCandle.volume = (currentCandle.volume || 0) + trade.quantity;
@@ -185,29 +170,34 @@ export function KLineDataLoader({
           return;
         }
 
-        loadDataByParams(queryClient, tradeGroupId, queryParams, callback);
+        loadDataByParams(
+          queryClient,
+          adapter.loadBars,
+          tradeGroupId,
+          queryParams,
+          callback
+        );
       },
       subscribeBar:
-        enableRealTime && symbolName && ws.isConnected
+        enableRealTime && symbolName && adapter.subscribeTrade
           ? (params: { callback: (data: KLineData) => void }) => {
               const { callback } = params;
-              tradeHandler = (trade: WebsocketTradeEvent) => {
-                updateTrade(trade);
-                if (currentCandle) {
-                  callback(currentCandle);
+              unsubscribeTrade = adapter.subscribeTrade?.(
+                symbolName,
+                (trade: WebsocketTradeEvent) => {
+                  updateTrade(trade);
+                  if (currentCandle) {
+                    callback(currentCandle);
+                  }
                 }
-              };
-              ws.subscribe(WebsocketEventName.Trade, tradeHandler);
-              ws.sendSubscribe({ event: "Trade", symbol: symbolName });
+              );
             }
           : undefined,
       unsubscribeBar:
-        enableRealTime && symbolName && ws.isConnected
+        enableRealTime && symbolName && adapter.subscribeTrade
           ? () => {
-              if (tradeHandler) {
-                ws.unsubscribe(WebsocketEventName.Trade, tradeHandler);
-              }
-              ws.sendUnSubscribe({ event: "Trade", symbol: symbolName });
+              unsubscribeTrade?.();
+              unsubscribeTrade = undefined;
             }
           : undefined,
     };
@@ -226,13 +216,13 @@ export function KLineDataLoader({
   }, [
     chart,
     queryClient,
+    adapter,
     timeframe,
     tradeGroupId,
     timeEndLoader,
     symbol,
     enableRealTime,
-    ws,
   ]);
 
-  return <ButtonDateTimePicker onAccept={handleGoTo} />;
+  return null;
 }

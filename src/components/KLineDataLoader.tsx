@@ -1,4 +1,4 @@
-import { KLineData, DataLoaderGetBarsParams } from "klinecharts";
+import { KLineData, DataLoaderGetBarsParams, Period } from "klinecharts";
 import { roundToNearestDate } from "../utils/date";
 import { useEffect } from "react";
 import { useChart } from "../context/chart";
@@ -203,6 +203,18 @@ export function KLineDataLoader({
     };
 
     chart.setDataLoader(dataLoader);
+
+    // Set period after data loader is registered so getBars fires with a loader in place
+    const convertTimeframeToPeriod = (timeframeSeconds: number): Period => {
+      if (timeframeSeconds < 3600) {
+        return { type: "minute", span: timeframeSeconds / 60 };
+      } else if (timeframeSeconds < 86400) {
+        return { type: "hour", span: timeframeSeconds / 3600 };
+      } else {
+        return { type: "day", span: timeframeSeconds / 86400 };
+      }
+    };
+    chart.setPeriod(convertTimeframeToPeriod(timeframe));
 
     // Cleanup function when component unmounts or dependencies change
     return () => {

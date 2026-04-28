@@ -112,18 +112,6 @@ export function KLineChart({
       pricePrecision: token.price_precision ?? 8,
       volumePrecision: 2,
     });
-    // Set period to trigger initial data load via dataLoader
-    // Convert timeframe (in seconds) to period
-    const convertTimeframetoPeriod = (timeframeSeconds: number) => {
-      if (timeframeSeconds < 3600) {
-        return { type: "minute" as const, span: timeframeSeconds / 60 };
-      } else if (timeframeSeconds < 86400) {
-        return { type: "hour" as const, span: timeframeSeconds / 3600 };
-      } else {
-        return { type: "day" as const, span: timeframeSeconds / 86400 };
-      }
-    };
-    chart.setPeriod(convertTimeframetoPeriod(timeframe));
     chart.subscribeAction("onCandleBarClick", (data) => {
       const { data: info } = data as { data: NeighborData<KLineData> };
       setSelectedTime(info.current.timestamp);

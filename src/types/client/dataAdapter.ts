@@ -45,7 +45,7 @@ export type KLineChartLoadWorkerPositionsParams = {
 };
 
 export type KLineChartLoadBarsParams = {
-  tradeGroupId: number;
+  symbolKey: string;
   timeStart?: number;
   timeEnd?: number;
   timeframe: number;

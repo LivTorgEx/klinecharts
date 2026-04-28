@@ -1,4 +1,4 @@
-import { KLineData, DataLoaderGetBarsParams, Period } from "klinecharts";
+import { KLineData, DataLoaderGetBarsParams } from "klinecharts";
 import { roundToNearestDate } from "../utils/date";
 import { useEffect } from "react";
 import { useChart } from "../context/chart";
@@ -14,7 +14,7 @@ import {
 const KLINE_SIZE = 500;
 
 type Props = {
-  tradeGroupId: number;
+  symbolKey: string;
   timeframe: number;
   timeEndLoader?: number;
   symbol?: string;
@@ -25,7 +25,7 @@ function getParams(
   timeframe: number,
   { type, timestamp }: DataLoaderGetBarsParams,
   timeEndLoader?: number
-): Omit<KLineChartLoadBarsParams, "tradeGroupId"> | undefined {
+): Omit<KLineChartLoadBarsParams, "symbolKey"> | undefined {
   if (type === "init") {
     const initDateTime = timeEndLoader || +new Date();
     const nearestCurrentTime = roundToNearestDate(initDateTime, timeframe);
@@ -60,14 +60,14 @@ function getParams(
 function loadDataByParams(
   queryClient: QueryClient,
   loadBars: (params: KLineChartLoadBarsParams) => Promise<KLineChartBar[]>,
-  tradeGroupId: number,
-  queryParams: Omit<KLineChartLoadBarsParams, "tradeGroupId">,
+  symbolKey: string,
+  queryParams: Omit<KLineChartLoadBarsParams, "symbolKey">,
   callback: (dataList: KLineData[], more?: boolean) => void
 ) {
   queryClient
     .fetchQuery({
-      queryKey: ["TradeGroupLines", tradeGroupId, queryParams],
-      queryFn: () => loadBars({ tradeGroupId, ...queryParams }),
+      queryKey: ["TradeGroupLines", symbolKey, queryParams],
+      queryFn: () => loadBars({ symbolKey, ...queryParams }),
     })
     .then((lines) =>
       lines.map(
@@ -92,7 +92,7 @@ function loadDataByParams(
 }
 
 export function KLineDataLoader({
-  tradeGroupId,
+  symbolKey,
   timeframe,
   timeEndLoader,
   symbol,
@@ -173,7 +173,7 @@ export function KLineDataLoader({
         loadDataByParams(
           queryClient,
           adapter.loadBars,
-          tradeGroupId,
+          symbolKey,
           queryParams,
           callback
         );
@@ -204,18 +204,6 @@ export function KLineDataLoader({
 
     chart.setDataLoader(dataLoader);
 
-    // Set period after data loader is registered so getBars fires with a loader in place
-    const convertTimeframeToPeriod = (timeframeSeconds: number): Period => {
-      if (timeframeSeconds < 3600) {
-        return { type: "minute", span: timeframeSeconds / 60 };
-      } else if (timeframeSeconds < 86400) {
-        return { type: "hour", span: timeframeSeconds / 3600 };
-      } else {
-        return { type: "day", span: timeframeSeconds / 86400 };
-      }
-    };
-    chart.setPeriod(convertTimeframeToPeriod(timeframe));
-
     // Cleanup function when component unmounts or dependencies change
     return () => {
       // Reset data loader to stop real-time updates
@@ -230,7 +218,7 @@ export function KLineDataLoader({
     queryClient,
     adapter,
     timeframe,
-    tradeGroupId,
+    symbolKey,
     timeEndLoader,
     symbol,
     enableRealTime,

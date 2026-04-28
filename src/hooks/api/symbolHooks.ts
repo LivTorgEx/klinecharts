@@ -41,9 +41,7 @@ function useSymbolsKeyMap(symbols: SymbolType[]) {
   return useMemo(
     () =>
       symbols.reduce<Record<string, SymbolType>>((accumulator, symbol) => {
-        if (symbol.symbol_key) {
-          accumulator[symbol.symbol_key.toUpperCase()] = symbol;
-        }
+        accumulator[symbol.symbol_key.toUpperCase()] = symbol;
         return accumulator;
       }, {}),
     [symbols]

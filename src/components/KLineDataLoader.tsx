@@ -161,6 +161,12 @@ export function KLineDataLoader({
           return;
         }
 
+        if (!symbolKey) {
+          console.error(`[KLineDataLoader] symbolKey is empty, skipping getBars`);
+          callback([], false);
+          return;
+        }
+
         if (
           timeEndLoader &&
           type !== "init" &&

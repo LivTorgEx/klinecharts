@@ -27,6 +27,10 @@ function KLineChartBotContent({ bot, token }: ContentProps) {
 export function KLineChartBot({ bot }: Props) {
   const token = useSymbol(bot.symbol_id);
 
+  if (token === undefined) {
+    console.error(`[KLineChartBot] symbol not found for bot.symbol_id=${bot.symbol_id}`);
+  }
+
   return (
     <KLineChart token={token} chartSettingName="Bot" height={600}>
       {token && <KLineChartBotContent token={token} bot={bot} />}

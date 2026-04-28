@@ -85,6 +85,9 @@ export function KLineChart({
 
   useEffect(() => {
     if (!token || !token.symbol_key || !chartEl.current) {
+      if (token && !token.symbol_key) {
+        console.error(`[KLineChart] token has no symbol_key`, token);
+      }
       return;
     }
 

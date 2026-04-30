@@ -1,4 +1,4 @@
-import { useSymbol } from "./hooks/api/symbolHooks";
+import { useSymbolKeyFromAll } from "./hooks/api/symbolHooks";
 import { BotSchema } from "./types/client/bot";
 import { SymbolType } from "./types/client/symbol";
 import { useChartSettings } from "./context/chartSettings";
@@ -25,7 +25,11 @@ function KLineChartBotContent({ bot, token }: ContentProps) {
 }
 
 export function KLineChartBot({ bot }: Props) {
-  const token = useSymbol(bot.symbol_id);
+  const token = useSymbolKeyFromAll(bot.symbol_key);
+
+  if (token === undefined) {
+    console.error(`[KLineChartBot] symbol not found for bot.symbol_key=${bot.symbol_key}`);
+  }
 
   return (
     <KLineChart token={token} chartSettingName="Bot" height={600}>

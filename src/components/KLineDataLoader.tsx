@@ -14,7 +14,7 @@ import {
 const KLINE_SIZE = 500;
 
 type Props = {
-  tradeGroupId: number;
+  symbolKey: string;
   timeframe: number;
   timeEndLoader?: number;
   symbol?: string;
@@ -25,7 +25,7 @@ function getParams(
   timeframe: number,
   { type, timestamp }: DataLoaderGetBarsParams,
   timeEndLoader?: number
-): Omit<KLineChartLoadBarsParams, "tradeGroupId"> | undefined {
+): Omit<KLineChartLoadBarsParams, "symbolKey"> | undefined {
   if (type === "init") {
     const initDateTime = timeEndLoader || +new Date();
     const nearestCurrentTime = roundToNearestDate(initDateTime, timeframe);
@@ -60,14 +60,14 @@ function getParams(
 function loadDataByParams(
   queryClient: QueryClient,
   loadBars: (params: KLineChartLoadBarsParams) => Promise<KLineChartBar[]>,
-  tradeGroupId: number,
-  queryParams: Omit<KLineChartLoadBarsParams, "tradeGroupId">,
+  symbolKey: string,
+  queryParams: Omit<KLineChartLoadBarsParams, "symbolKey">,
   callback: (dataList: KLineData[], more?: boolean) => void
 ) {
   queryClient
     .fetchQuery({
-      queryKey: ["TradeGroupLines", tradeGroupId, queryParams],
-      queryFn: () => loadBars({ tradeGroupId, ...queryParams }),
+      queryKey: ["TradeGroupLines", symbolKey, queryParams],
+      queryFn: () => loadBars({ symbolKey, ...queryParams }),
     })
     .then((lines) =>
       lines.map(
@@ -92,7 +92,7 @@ function loadDataByParams(
 }
 
 export function KLineDataLoader({
-  tradeGroupId,
+  symbolKey,
   timeframe,
   timeEndLoader,
   symbol,
@@ -111,6 +111,13 @@ export function KLineDataLoader({
     const symbolName = symbol;
     let currentCandle: KLineData | null = null;
     let unsubscribeTrade: (() => void) | undefined;
+    let unsubscribeProjection: (() => void) | undefined;
+
+    // Subscribe to projection events so api_exchange streams projection data
+    // regardless of whether any projection UI components are mounted.
+    if (enableRealTime && symbolKey && adapter.subscribeProjection) {
+      unsubscribeProjection = adapter.subscribeProjection(symbolKey, () => {});
+    }
 
     const updateTrade = (trade: WebsocketTradeEvent) => {
       if (trade.symbol !== symbolName) {
@@ -161,6 +168,12 @@ export function KLineDataLoader({
           return;
         }
 
+        if (!symbolKey) {
+          console.error(`[KLineDataLoader] symbolKey is empty, skipping getBars`);
+          callback([], false);
+          return;
+        }
+
         if (
           timeEndLoader &&
           type !== "init" &&
@@ -173,17 +186,17 @@ export function KLineDataLoader({
         loadDataByParams(
           queryClient,
           adapter.loadBars,
-          tradeGroupId,
+          symbolKey,
           queryParams,
           callback
         );
       },
       subscribeBar:
-        enableRealTime && symbolName && adapter.subscribeTrade
+        enableRealTime && symbolKey && adapter.subscribeTrade
           ? (params: { callback: (data: KLineData) => void }) => {
               const { callback } = params;
               unsubscribeTrade = adapter.subscribeTrade?.(
-                symbolName,
+                symbolKey,
                 (trade: WebsocketTradeEvent) => {
                   updateTrade(trade);
                   if (currentCandle) {
@@ -194,7 +207,7 @@ export function KLineDataLoader({
             }
           : undefined,
       unsubscribeBar:
-        enableRealTime && symbolName && adapter.subscribeTrade
+        enableRealTime && symbolKey && adapter.subscribeTrade
           ? () => {
               unsubscribeTrade?.();
               unsubscribeTrade = undefined;
@@ -206,6 +219,7 @@ export function KLineDataLoader({
 
     // Cleanup function when component unmounts or dependencies change
     return () => {
+      unsubscribeProjection?.();
       // Reset data loader to stop real-time updates
       chart.setDataLoader({
         getBars: (params) => {
@@ -218,7 +232,7 @@ export function KLineDataLoader({
     queryClient,
     adapter,
     timeframe,
-    tradeGroupId,
+    symbolKey,
     timeEndLoader,
     symbol,
     enableRealTime,

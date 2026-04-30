@@ -6,9 +6,11 @@ import { SuggestionLineConsolidationMove } from "../types/client/suggestion";
 import { toMeasurePrice } from "../utils/number";
 import { useChartSettings } from "../context/chartSettings";
 import { useSubscribeProjection } from "../context/dataAdapterContext";
+import { useSymbolKey } from "../context/symbolKey";
 
 type Props = {
-  tokenName: string;
+  /** @deprecated symbolKey is now read from SymbolKeyContext */
+  tokenName?: string;
 };
 
 function updateMovs(
@@ -48,16 +50,18 @@ function updateMovs(
   }
 }
 
-export function KLineProjectionMovements({ tokenName }: Props) {
+export function KLineProjectionMovements(_props: Props) {
   const chart = useChart();
   const { timeframe } = useChartSettings();
   const subscribeProjection = useSubscribeProjection();
   const overlayKeys = useRef<Set<string>>(new Set());
   const movs = useRef<SuggestionLineConsolidationMove[]>([]);
+  const symbolKey = useSymbolKey();
+  const symbol = symbolKey.split("#")[1] ?? "";
 
   const handleUpdateProjection = useCallback(
     (event: WebsocketProjectionEvent) => {
-      if (event.symbol !== tokenName || !chart) {
+      if (event.symbol !== symbol || !chart) {
         return;
       }
       const movement = event.movements?.[timeframe];
@@ -146,7 +150,7 @@ export function KLineProjectionMovements({ tokenName }: Props) {
         chart.removeOverlay({ id });
       });
     },
-    [chart, tokenName, timeframe]
+    [chart, symbolKey, timeframe]
   );
 
   useEffect(() => {
@@ -161,7 +165,7 @@ export function KLineProjectionMovements({ tokenName }: Props) {
     }
 
     const unsubscribeProjection = subscribeProjection(
-      tokenName,
+      symbolKey,
       handleUpdateProjection
     );
 
@@ -172,7 +176,7 @@ export function KLineProjectionMovements({ tokenName }: Props) {
         chart.removeOverlay({ id });
       });
     };
-  }, [subscribeProjection, chart, tokenName, handleUpdateProjection]);
+  }, [subscribeProjection, chart, symbolKey, handleUpdateProjection]);
 
   return null;
 }

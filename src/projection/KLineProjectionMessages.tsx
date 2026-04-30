@@ -5,19 +5,23 @@ import { WebsocketProjectionEvent } from "../types/client/websocket";
 import { formatBigNumber, toMeasurePrice } from "../utils/number";
 import { useChartSettings } from "../context/chartSettings";
 import { useSubscribeProjection } from "../context/dataAdapterContext";
+import { useSymbolKey } from "../context/symbolKey";
 
 type Props = {
-  tokenName: string;
+  /** @deprecated symbolKey is now read from SymbolKeyContext */
+  tokenName?: string;
 };
 
-export function KLineProjectionMessages({ tokenName }: Props) {
+export function KLineProjectionMessages(_props: Props) {
   const subscribeProjection = useSubscribeProjection();
   const { timeframe } = useChartSettings();
   const [messages, setMessages] = useState<string[]>([]);
+  const symbolKey = useSymbolKey();
+  const symbol = symbolKey.split("#")[1] ?? "";
 
   const handleUpdateProjection = useCallback(
     (projection: WebsocketProjectionEvent) => {
-      if (projection.symbol !== tokenName) {
+      if (projection.symbol !== symbol) {
         return;
       }
       const fastTrade = projection.indicator.ntps_fast_time
@@ -117,7 +121,7 @@ export function KLineProjectionMessages({ tokenName }: Props) {
 
       setMessages(messages);
     },
-    [tokenName, timeframe]
+    [symbol, timeframe]
   );
 
   useEffect(() => {
@@ -125,13 +129,13 @@ export function KLineProjectionMessages({ tokenName }: Props) {
       return;
     }
 
-    const unsubscribe = subscribeProjection(tokenName, handleUpdateProjection);
+    const unsubscribe = subscribeProjection(symbolKey, handleUpdateProjection);
 
     return () => {
       unsubscribe();
       setMessages([]);
     };
-  }, [subscribeProjection, tokenName, handleUpdateProjection]);
+  }, [subscribeProjection, symbolKey, handleUpdateProjection]);
 
   return (
     <Stack>

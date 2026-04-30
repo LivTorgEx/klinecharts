@@ -45,7 +45,7 @@ export type KLineChartLoadWorkerPositionsParams = {
 };
 
 export type KLineChartLoadBarsParams = {
-  tradeGroupId: number;
+  symbolKey: string;
   timeStart?: number;
   timeEnd?: number;
   timeframe: number;
@@ -63,12 +63,12 @@ export type KLineChartBar = {
 };
 
 export type KLineChartSubscribeTrade = (
-  symbol: string,
+  symbolKey: string,
   handler: (event: WebsocketTradeEvent) => void
 ) => () => void;
 
 export type KLineChartSubscribeProjection = (
-  symbol: string,
+  symbolKey: string,
   handler: (event: WebsocketProjectionEvent) => void
 ) => () => void;
 

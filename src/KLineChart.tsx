@@ -29,6 +29,7 @@ import { createTooltipDataSource, getIndicatorStyles } from "./constants/style";
 import { IndicatorSelector } from "./components/IndicatorSelector";
 import { ChartContext } from "./context/chart";
 import { ChartSettingsContext } from "./context/chartSettings";
+import { SymbolKeyContext } from "./context/symbolKey";
 import { KLineMobile } from "./components/KLineMobile";
 import { KLineProjection } from "./projection/KLineProjection";
 import { KLineDataLoader } from "./components/KLineDataLoader";
@@ -42,7 +43,7 @@ import "./style.css";
 type Token = {
   id: number;
   symbol: string;
-  default_trade_group_id?: number;
+  symbol_key?: string;
   price_precision?: number;
 };
 type Props = {
@@ -84,7 +85,10 @@ export function KLineChart({
   }, []);
 
   useEffect(() => {
-    if (!token || !token.default_trade_group_id || !chartEl.current) {
+    if (!token || !token.symbol_key || !chartEl.current) {
+      if (token && !token.symbol_key) {
+        console.error(`[KLineChart] token has no symbol_key`, token);
+      }
       return;
     }
 
@@ -112,9 +116,7 @@ export function KLineChart({
       pricePrecision: token.price_precision ?? 8,
       volumePrecision: 2,
     });
-    // Set period to trigger initial data load via dataLoader
-    // Convert timeframe (in seconds) to period
-    const convertTimeframetoPeriod = (timeframeSeconds: number) => {
+    const convertTimeframeToPeriod = (timeframeSeconds: number) => {
       if (timeframeSeconds < 3600) {
         return { type: "minute" as const, span: timeframeSeconds / 60 };
       } else if (timeframeSeconds < 86400) {
@@ -123,7 +125,7 @@ export function KLineChart({
         return { type: "day" as const, span: timeframeSeconds / 86400 };
       }
     };
-    chart.setPeriod(convertTimeframetoPeriod(timeframe));
+    chart.setPeriod(convertTimeframeToPeriod(timeframe));
     chart.subscribeAction("onCandleBarClick", (data) => {
       const { data: info } = data as { data: NeighborData<KLineData> };
       setSelectedTime(info.current.timestamp);
@@ -252,7 +254,8 @@ export function KLineChart({
   return (
     <>
       <ChartSettingsContext.Provider value={settings}>
-        <ChartContext.Provider value={chartStore}>
+        <SymbolKeyContext.Provider value={token?.symbol_key ?? ""}>
+          <ChartContext.Provider value={chartStore}>
           <Box
             sx={{
               display: "flex",
@@ -303,10 +306,10 @@ export function KLineChart({
                     onClose={handleRefreshSettings}
                     variant="projection"
                   />
-                  {token && (
+                  {token?.symbol_key && (
                     <KLineDataLoader
                       timeframe={timeframe}
-                      tradeGroupId={token.default_trade_group_id!}
+                      symbolKey={token.symbol_key}
                       timeEndLoader={timeEndLoader}
                       symbol={token.symbol}
                       enableRealTime={enableRealTime}
@@ -343,6 +346,7 @@ export function KLineChart({
             </Stack>
           </Box>
         </ChartContext.Provider>
+        </SymbolKeyContext.Provider>
       </ChartSettingsContext.Provider>
       <PositionInfoModalsContainer />
     </>

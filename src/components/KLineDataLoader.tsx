@@ -111,6 +111,13 @@ export function KLineDataLoader({
     const symbolName = symbol;
     let currentCandle: KLineData | null = null;
     let unsubscribeTrade: (() => void) | undefined;
+    let unsubscribeProjection: (() => void) | undefined;
+
+    // Subscribe to projection events so api_exchange streams projection data
+    // regardless of whether any projection UI components are mounted.
+    if (enableRealTime && symbolKey && adapter.subscribeProjection) {
+      unsubscribeProjection = adapter.subscribeProjection(symbolKey, () => {});
+    }
 
     const updateTrade = (trade: WebsocketTradeEvent) => {
       if (trade.symbol !== symbolName) {
@@ -185,11 +192,11 @@ export function KLineDataLoader({
         );
       },
       subscribeBar:
-        enableRealTime && symbolName && adapter.subscribeTrade
+        enableRealTime && symbolKey && adapter.subscribeTrade
           ? (params: { callback: (data: KLineData) => void }) => {
               const { callback } = params;
               unsubscribeTrade = adapter.subscribeTrade?.(
-                symbolName,
+                symbolKey,
                 (trade: WebsocketTradeEvent) => {
                   updateTrade(trade);
                   if (currentCandle) {
@@ -200,7 +207,7 @@ export function KLineDataLoader({
             }
           : undefined,
       unsubscribeBar:
-        enableRealTime && symbolName && adapter.subscribeTrade
+        enableRealTime && symbolKey && adapter.subscribeTrade
           ? () => {
               unsubscribeTrade?.();
               unsubscribeTrade = undefined;
@@ -212,6 +219,7 @@ export function KLineDataLoader({
 
     // Cleanup function when component unmounts or dependencies change
     return () => {
+      unsubscribeProjection?.();
       // Reset data loader to stop real-time updates
       chart.setDataLoader({
         getBars: (params) => {

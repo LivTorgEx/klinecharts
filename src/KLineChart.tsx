@@ -29,6 +29,7 @@ import { createTooltipDataSource, getIndicatorStyles } from "./constants/style";
 import { IndicatorSelector } from "./components/IndicatorSelector";
 import { ChartContext } from "./context/chart";
 import { ChartSettingsContext } from "./context/chartSettings";
+import { SymbolKeyContext } from "./context/symbolKey";
 import { KLineMobile } from "./components/KLineMobile";
 import { KLineProjection } from "./projection/KLineProjection";
 import { KLineDataLoader } from "./components/KLineDataLoader";
@@ -253,7 +254,8 @@ export function KLineChart({
   return (
     <>
       <ChartSettingsContext.Provider value={settings}>
-        <ChartContext.Provider value={chartStore}>
+        <SymbolKeyContext.Provider value={token?.symbol_key ?? ""}>
+          <ChartContext.Provider value={chartStore}>
           <Box
             sx={{
               display: "flex",
@@ -344,6 +346,7 @@ export function KLineChart({
             </Stack>
           </Box>
         </ChartContext.Provider>
+        </SymbolKeyContext.Provider>
       </ChartSettingsContext.Provider>
       <PositionInfoModalsContainer />
     </>

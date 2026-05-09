@@ -386,7 +386,7 @@ export function KLineChart({
                     onChange={(event, newTF) => handleUpdateTimeframe(newTF)}
                   >
                     {TIMEFRAMES.map(({ label, value }) => (
-                      <ToggleButton key={value} value={value}>
+                      <ToggleButton key={value} value={value} sx={{borderRadius: 0}}>
                         {label}
                       </ToggleButton>
                     ))}

@@ -112,12 +112,23 @@ export function KLineDataLoader({
     let currentCandle: KLineData | null = null;
     let unsubscribeTrade: (() => void) | undefined;
     let unsubscribeProjection: (() => void) | undefined;
+    let pendingUpdate = false;
+    let animationFrameId: number | undefined;
+    let barCallback: ((data: KLineData) => void) | undefined;
 
     // Subscribe to projection events so api_exchange streams projection data
     // regardless of whether any projection UI components are mounted.
     if (enableRealTime && symbolKey && adapter.subscribeProjection) {
       unsubscribeProjection = adapter.subscribeProjection(symbolKey, () => {});
     }
+
+    const flushUpdate = () => {
+      if (pendingUpdate && currentCandle && barCallback) {
+        barCallback(currentCandle);
+        pendingUpdate = false;
+      }
+      animationFrameId = undefined;
+    };
 
     const updateTrade = (trade: WebsocketTradeEvent) => {
       if (trade.symbol !== symbolName) {
@@ -155,6 +166,12 @@ export function KLineDataLoader({
         }
         currentCandle.volume = (currentCandle.volume || 0) + trade.quantity;
       }
+
+      // Mark that we have a pending update and schedule flush
+      pendingUpdate = true;
+      if (animationFrameId === undefined) {
+        animationFrameId = requestAnimationFrame(flushUpdate);
+      }
     };
 
     // Create the data loader with getBars, subscribeBar, and unsubscribeBar
@@ -169,7 +186,9 @@ export function KLineDataLoader({
         }
 
         if (!symbolKey) {
-          console.error(`[KLineDataLoader] symbolKey is empty, skipping getBars`);
+          console.error(
+            `[KLineDataLoader] symbolKey is empty, skipping getBars`
+          );
           callback([], false);
           return;
         }
@@ -195,14 +214,10 @@ export function KLineDataLoader({
         enableRealTime && symbolKey && adapter.subscribeTrade
           ? (params: { callback: (data: KLineData) => void }) => {
               const { callback } = params;
+              barCallback = callback;
               unsubscribeTrade = adapter.subscribeTrade?.(
                 symbolKey,
-                (trade: WebsocketTradeEvent) => {
-                  updateTrade(trade);
-                  if (currentCandle) {
-                    callback(currentCandle);
-                  }
-                }
+                updateTrade
               );
             }
           : undefined,
@@ -219,6 +234,9 @@ export function KLineDataLoader({
 
     // Cleanup function when component unmounts or dependencies change
     return () => {
+      if (animationFrameId !== undefined) {
+        cancelAnimationFrame(animationFrameId);
+      }
       unsubscribeProjection?.();
       // Reset data loader to stop real-time updates
       chart.setDataLoader({

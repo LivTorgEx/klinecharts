@@ -17,6 +17,7 @@ import {
   init,
   dispose,
   Chart,
+  Crosshair,
   Nullable,
   NeighborData,
   KLineData,
@@ -35,6 +36,7 @@ import { KLineProjection } from "./projection/KLineProjection";
 import { KLineDataLoader } from "./components/KLineDataLoader";
 import { KLineChartSidePanel } from "./components/KLineChartSidePanel";
 import { PositionInfoModalsContainer } from "./components/PositionInfoModalsContainer";
+import { KLineCrossSync, SyncedCursor } from "./components/KLineCrossSync";
 
 import "./indicators";
 import "./overlays";
@@ -42,8 +44,7 @@ import "./style.css";
 
 type Token = {
   id: number;
-  symbol: string;
-  symbol_key?: string;
+  symbol_key: string;
   price_precision?: number;
 };
 type Props = {
@@ -52,6 +53,8 @@ type Props = {
   height?: number;
   enableRealTime?: boolean;
   timeEndLoader?: number;
+  onTimestampSelect?: (cursor: SyncedCursor | null) => void;
+  syncedTimestamp?: SyncedCursor | null;
 };
 
 export function KLineChart({
@@ -61,6 +64,8 @@ export function KLineChart({
   timeEndLoader,
   height = 300,
   enableRealTime = true,
+  onTimestampSelect,
+  syncedTimestamp,
 }: PropsWithChildren<Props>) {
   const {
     palette: { mode: themeMode },
@@ -70,8 +75,13 @@ export function KLineChart({
   const [selectedTime, setSelectedTime] = useState<number | undefined>(
     undefined
   );
+  const [selectedPrice, setSelectedPrice] = useState<number | undefined>(
+    undefined
+  );
   const [chartStore, setChartStore] = useState<Nullable<Chart>>(null);
   const chartRef = useRef<Nullable<Chart>>(null);
+  const onTimestampSelectRef =
+    useRef<typeof onTimestampSelect>(onTimestampSelect);
   const queryClient = useQueryClient();
   const [chartHeight, setChartHeight] = useState(height);
 
@@ -79,23 +89,27 @@ export function KLineChart({
     loadChartSettings(chartSettingName)
   );
   const { timeframe } = settings;
+  const tokenId = token?.id;
+  const tokenSymbolKey = token?.symbol_key;
+  const tokenPricePrecision = token?.price_precision ?? 8;
   const timeframeRef = useRef<number>(timeframe);
   const handleClearSelectedTime = useCallback(() => {
     setSelectedTime(undefined);
   }, []);
 
   useEffect(() => {
-    if (!token || !token.symbol_key || !chartEl.current) {
-      if (token && !token.symbol_key) {
-        console.error(`[KLineChart] token has no symbol_key`, token);
-      }
+    onTimestampSelectRef.current = onTimestampSelect;
+  }, [onTimestampSelect]);
+
+  useEffect(() => {
+    if (!tokenId || !tokenSymbolKey || !chartEl.current) {
       return;
     }
 
     const container = chartEl.current;
     const chart = init(container, {
       decimalFold: {
-        threshold: token.price_precision ?? 8,
+        threshold: tokenPricePrecision,
       },
     });
     chartRef.current = chart;
@@ -112,8 +126,8 @@ export function KLineChart({
 
     chart.setStyles(themeMode);
     chart.setSymbol({
-      ticker: token.symbol,
-      pricePrecision: token.price_precision ?? 8,
+      ticker: token!.symbol_key,
+      pricePrecision: tokenPricePrecision,
       volumePrecision: 2,
     });
     const convertTimeframeToPeriod = (timeframeSeconds: number) => {
@@ -126,9 +140,74 @@ export function KLineChart({
       }
     };
     chart.setPeriod(convertTimeframeToPeriod(timeframe));
+    const emitCursorSync = (cursor: SyncedCursor | null) => {
+      onTimestampSelectRef.current?.(cursor);
+    };
+
+    const syncTimestampFromNeighborData = (info: NeighborData<KLineData>) => {
+      const timestamp = info.current?.timestamp;
+      const price = info.current?.close;
+      if (timestamp !== undefined && price !== undefined) {
+        emitCursorSync({
+          timestamp,
+          price,
+          source: chartSettingName,
+        });
+      }
+    };
+
+    const syncTimestamp = (
+      timestamp: number | undefined,
+      price: number | undefined
+    ) => {
+      if (!timestamp || price === undefined) {
+        return;
+      }
+
+      emitCursorSync({
+        timestamp,
+        price,
+        source: chartSettingName,
+      });
+    };
+
+    const getCursorFromCrosshair = (crosshair: Crosshair) => {
+      if (crosshair.x === undefined || crosshair.y === undefined) {
+        return undefined;
+      }
+
+      const converted = chart.convertFromPixel(
+        [
+          {
+            x: crosshair.x,
+            y: crosshair.y,
+          },
+        ],
+        crosshair.paneId ? { paneId: crosshair.paneId } : undefined
+      ) as Array<Partial<{ timestamp: number; value: number }>>;
+
+      const point = converted[0];
+      if (point?.timestamp === undefined || point.value === undefined) {
+        return undefined;
+      }
+
+      return {
+        timestamp: point.timestamp,
+        price: point.value,
+      };
+    };
+
     chart.subscribeAction("onCandleBarClick", (data) => {
       const { data: info } = data as { data: NeighborData<KLineData> };
-      setSelectedTime(info.current.timestamp);
+      syncTimestampFromNeighborData(info);
+    });
+
+    chart.subscribeAction("onCrosshairChange", (data) => {
+      const crosshairPayload = data as Crosshair;
+      const resolvedCursor = getCursorFromCrosshair(crosshairPayload);
+      if (resolvedCursor) {
+        syncTimestamp(resolvedCursor.timestamp, resolvedCursor.price);
+      }
     });
 
     chart.subscribeAction("onIndicatorTooltipFeatureClick", (data: unknown) => {
@@ -192,8 +271,15 @@ export function KLineChart({
       chart.resize();
     };
 
+    const handleMouseLeave = () => {
+      setSelectedTime(undefined);
+      setSelectedPrice(undefined);
+      emitCursorSync(null);
+    };
+
     // Listen to window resize
     window.addEventListener("resize", handleResize);
+    container.addEventListener("mouseleave", handleMouseLeave);
 
     // Listen to container resize (for parent component resizes)
     const resizeObserver = new ResizeObserver(() => {
@@ -206,10 +292,30 @@ export function KLineChart({
       chartRef.current = null;
       setChartStore(null);
       window.removeEventListener("resize", handleResize);
+      container.removeEventListener("mouseleave", handleMouseLeave);
       resizeObserver.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryClient, token]);
+  }, [queryClient, tokenId, tokenSymbolKey, tokenPricePrecision]);
+
+  useEffect(() => {
+    if (syncedTimestamp === null || syncedTimestamp === undefined) {
+      return;
+    }
+
+    if (syncedTimestamp.source === chartSettingName) {
+      setSelectedTime(undefined);
+      setSelectedPrice(undefined);
+      return;
+    }
+
+    setSelectedTime((prev) =>
+      prev === syncedTimestamp.timestamp ? prev : syncedTimestamp.timestamp
+    );
+    setSelectedPrice((prev) =>
+      prev === syncedTimestamp.price ? prev : syncedTimestamp.price
+    );
+  }, [chartSettingName, syncedTimestamp]);
 
   useEffect(() => {
     timeframeRef.current = timeframe;
@@ -256,96 +362,102 @@ export function KLineChart({
       <ChartSettingsContext.Provider value={settings}>
         <SymbolKeyContext.Provider value={token?.symbol_key ?? ""}>
           <ChartContext.Provider value={chartStore}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <Box ref={controlsRef}>
-              <KLineMobile />
-              <Stack
-                direction={{ xs: "column", sm: "row" }}
-                spacing={{ sx: 0, sm: 1 }}
-                sx={{
-                  alignItems: { xs: "start", sm: "center" },
-                }}
-              >
-                <ToggleButtonGroup
-                  size="small"
-                  sx={{ height: 32 }}
-                  color="primary"
-                  value={timeframe}
-                  exclusive
-                  onChange={(event, newTF) => handleUpdateTimeframe(newTF)}
-                >
-                  {TIMEFRAMES.map(({ label, value }) => (
-                    <ToggleButton key={value} value={value}>
-                      {label}
-                    </ToggleButton>
-                  ))}
-                </ToggleButtonGroup>
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{
-                    alignItems: "center",
-                  }}
-                >
-                  <IndicatorSelector
-                    chart={chartStore}
-                    name={chartSettingName}
-                  />
-                  <KLineChartSettingsModal
-                    name={chartSettingName}
-                    onClose={handleRefreshSettings}
-                    variant="position"
-                  />
-                  <KLineChartSettingsModal
-                    name={chartSettingName}
-                    onClose={handleRefreshSettings}
-                    variant="projection"
-                  />
-                  {token?.symbol_key && (
-                    <KLineDataLoader
-                      timeframe={timeframe}
-                      symbolKey={token.symbol_key}
-                      timeEndLoader={timeEndLoader}
-                      symbol={token.symbol}
-                      enableRealTime={enableRealTime}
-                    />
-                  )}
-                </Stack>
-              </Stack>
-              {token && (
-                <KLineProjection
-                  tokenName={token.symbol}
-                  symbolId={token.id}
-                  timeframe={timeframe}
-                  selectedTime={selectedTime}
-                  clearSelectedTime={handleClearSelectedTime}
-                />
-              )}
-              {children}
-            </Box>
-            <Stack
-              direction="row"
+            <Box
               sx={{
-                width: "100%",
-                flex: 1,
+                display: "flex",
+                flexDirection: "column",
               }}
             >
-              <KLineChartSidePanel />
-              <Box
-                ref={chartEl}
+              <Box ref={controlsRef}>
+                <KLineMobile />
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={{ sx: 0, sm: 1 }}
+                  sx={{
+                    alignItems: { xs: "start", sm: "center" },
+                  }}
+                >
+                  <ToggleButtonGroup
+                    size="small"
+                    sx={{ height: 32 }}
+                    color="primary"
+                    value={timeframe}
+                    exclusive
+                    onChange={(event, newTF) => handleUpdateTimeframe(newTF)}
+                  >
+                    {TIMEFRAMES.map(({ label, value }) => (
+                      <ToggleButton key={value} value={value}>
+                        {label}
+                      </ToggleButton>
+                    ))}
+                  </ToggleButtonGroup>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{
+                      alignItems: "center",
+                    }}
+                  >
+                    <IndicatorSelector
+                      chart={chartStore}
+                      name={chartSettingName}
+                    />
+                    <KLineChartSettingsModal
+                      name={chartSettingName}
+                      onClose={handleRefreshSettings}
+                      variant="position"
+                    />
+                    <KLineChartSettingsModal
+                      name={chartSettingName}
+                      onClose={handleRefreshSettings}
+                      variant="projection"
+                    />
+                    {token?.symbol_key && (
+                      <KLineDataLoader
+                        timeframe={timeframe}
+                        symbolKey={token.symbol_key}
+                        timeEndLoader={timeEndLoader}
+                        symbol={token.symbol_key}
+                        enableRealTime={enableRealTime}
+                      />
+                    )}
+                  </Stack>
+                </Stack>
+                {token && (
+                  <KLineProjection
+                    tokenName={token.symbol_key}
+                    symbolId={token.id}
+                    timeframe={timeframe}
+                    selectedTime={selectedTime}
+                    clearSelectedTime={handleClearSelectedTime}
+                  />
+                )}
+                {children}
+              </Box>
+              <Stack
+                direction="row"
                 sx={{
-                  height: chartHeight,
                   width: "100%",
+                  flex: 1,
                 }}
-              />
-            </Stack>
-          </Box>
-        </ChartContext.Provider>
+              >
+                <KLineChartSidePanel />
+                <Box
+                  ref={chartEl}
+                  sx={{
+                    height: chartHeight,
+                    width: "100%",
+                  }}
+                />
+                <KLineCrossSync
+                  chart={chartStore}
+                  selectedTime={selectedTime}
+                  selectedPrice={selectedPrice}
+                  themeMode={themeMode}
+                />
+              </Stack>
+            </Box>
+          </ChartContext.Provider>
         </SymbolKeyContext.Provider>
       </ChartSettingsContext.Provider>
       <PositionInfoModalsContainer />

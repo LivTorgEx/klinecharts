@@ -108,7 +108,8 @@ export function KLineDataLoader({
       return;
     }
 
-    const symbolName = symbol;
+    // Extract trading pair from symbolKey (format: "EXCHANGE#PAIR#TYPE")
+    const symbolName = symbol ? symbol.split("#")[1] : symbol;
     let currentCandle: KLineData | null = null;
     let unsubscribeTrade: (() => void) | undefined;
     let unsubscribeProjection: (() => void) | undefined;

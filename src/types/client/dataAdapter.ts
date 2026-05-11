@@ -72,6 +72,13 @@ export type KLineChartSubscribeProjection = (
   handler: (event: WebsocketProjectionEvent) => void
 ) => () => void;
 
+export type KLineChartAlertLine = {
+  id: string;
+  price: number;
+  label: string;
+  color?: string;
+};
+
 export type KLineChartDataAdapter = {
   loadSymbols: (params: KLineChartLoadSymbolsParams) => Promise<SymbolType[]>;
   loadBars: (params: KLineChartLoadBarsParams) => Promise<KLineChartBar[]>;
@@ -81,6 +88,12 @@ export type KLineChartDataAdapter = {
   loadWorkerPositions?: (
     params: KLineChartLoadWorkerPositionsParams
   ) => Promise<{ data: KLineChartWorkerPosition[] }>;
+  loadAlerts?: (params: {
+    symbolKey: string;
+  }) => Promise<KLineChartAlertLine[]>;
+  updateAlertPrice?: (alertId: string, newPrice: number) => Promise<void>;
+  deleteAlert?: (alertId: string) => Promise<void>;
+  onAlertError?: (message: string) => void;
   subscribeTrade?: KLineChartSubscribeTrade;
   subscribeProjection?: KLineChartSubscribeProjection;
 };

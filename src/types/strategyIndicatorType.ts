@@ -21,6 +21,7 @@ export type TradeSettingProIndicatorTypeName =
   | "Imbalance"
   | "Mrc"
   | "EmaCross"
+  | "Movement"
   | "Volume"
   | "Smc"
   | "DPSignal"

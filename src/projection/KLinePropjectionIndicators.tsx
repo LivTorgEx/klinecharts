@@ -37,6 +37,7 @@ const INDICATOR_MAP: IndicatorMaps = {
   Stoch: ["stoch_14,1,3"],
   Supertrend: ["supertrend"],
   EmaCross: ["emacross_9,26"],
+  Movement: ["movement"],
   Smc: ["smc"],
   DPSignal: ["dpsignal"],
   Volume: ["volume_50"],

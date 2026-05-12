@@ -20,8 +20,6 @@ export type TradeSettingProIndicatorTypeName =
   | "Stoch"
   | "Imbalance"
   | "Mrc"
-  | "Window"
-  | "Wave"
   | "EmaCross"
   | "Volume"
   | "Smc"

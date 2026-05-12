@@ -3,7 +3,6 @@ import { Stack, Typography } from "@mui/material";
 
 import { WebsocketProjectionEvent } from "../types/client/websocket";
 import { formatBigNumber, toMeasurePrice } from "../utils/number";
-import { useChartSettings } from "../context/chartSettings";
 import { useSubscribeProjection } from "../context/dataAdapterContext";
 import { useSymbolKey } from "../context/symbolKey";
 
@@ -14,7 +13,6 @@ type Props = {
 
 export function KLineProjectionMessages(_props: Props) {
   const subscribeProjection = useSubscribeProjection();
-  const { timeframe } = useChartSettings();
   const [messages, setMessages] = useState<string[]>([]);
   const symbolKey = useSymbolKey();
   const symbol = symbolKey.split("#")[1] ?? "";
@@ -99,29 +97,9 @@ export function KLineProjectionMessages(_props: Props) {
         messages.push(oiMessage.join("  "));
       }
 
-      const wave = projection.waves[timeframe];
-
-      if (wave) {
-        const blocks = (wave.exit_time - wave.enter_time) / 1_000 / timeframe;
-        const prc = toMeasurePrice(wave.enter_price, wave.exit_price).toFixed(
-          2
-        );
-        messages.push(
-          [
-            `Wave[${wave.direction}|${(timeframe / 60).toFixed(0)}m|${prc}%]`,
-            `Blocks: ${blocks.toFixed(2)}`,
-            `QTYM: ${wave.qtym.toFixed(2)}%`,
-            `Percentile: ${wave.percentile.toFixed(2)}`,
-            wave.over_candles
-              .map(([idx, c]) => `${c.toFixed(2)}%(${idx})`)
-              .join(" "),
-          ].join("    ")
-        );
-      }
-
       setMessages(messages);
     },
-    [symbol, timeframe]
+    [symbol]
   );
 
   useEffect(() => {

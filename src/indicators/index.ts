@@ -21,3 +21,4 @@ import "./emaCross";
 import "./volume";
 import "./volumeBuySell";
 import "./DirectionalPivotSignal";
+import "./movement";

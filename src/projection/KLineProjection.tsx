@@ -1,7 +1,5 @@
 import { useChartSettings } from "../context/chartSettings";
-import { KLineProjectionLines } from "./KLineProjectionLines";
 import { KLineProjectionMessages } from "./KLineProjectionMessages";
-import { KLineProjectionMovements } from "./KLineProjectionMovements";
 import { KLineProjectionOrderBook } from "./KLineProjectionOrderBook";
 import { KLinePropjectionIndicators } from "./KLinePropjectionIndicators";
 
@@ -24,18 +22,8 @@ export function KLineProjection({
 
   return (
     <>
-      {projection.showMessages && (
-        <KLineProjectionMessages />
-      )}
-      {projection.showOrderBookLines && (
-        <KLineProjectionOrderBook />
-      )}
-      {projection.showLines && (
-        <KLineProjectionLines symbolId={symbolId} timeframe={timeframe} />
-      )}
-      {projection.showMovements && (
-        <KLineProjectionMovements />
-      )}
+      {projection.showMessages && <KLineProjectionMessages />}
+      {projection.showOrderBookLines && <KLineProjectionOrderBook />}
       {!!projection.indicators &&
         !!Object.keys(projection.indicators).length && (
           <KLinePropjectionIndicators

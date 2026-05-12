@@ -8,10 +8,8 @@ const DEFAULT_VALUES: ChartSettings = {
   },
   klinechart: { mode: "normal" },
   projection: {
-    showLines: false,
     showMessages: false,
     showOrderBookLines: false,
-    showMovements: false,
     indicators: [],
   },
 };

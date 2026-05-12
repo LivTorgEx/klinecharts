@@ -82,7 +82,22 @@ registerIndicator<MovementOutput>({
 
     const { blocks } = last;
 
-    blocks
+    const lastTwo = blocks.slice(-2);
+    const historical = blocks.slice(0, -2);
+
+    const avgSize =
+      historical.length > 0
+        ? historical.reduce((sum, b) => sum + (b.high - b.low), 0) /
+          historical.length
+        : 0;
+
+    const lastTwoSet = new Set(lastTwo);
+    const significant = blocks.filter(
+      (b) =>
+        lastTwoSet.has(b) || (avgSize > 0 && b.high - b.low >= avgSize * 0.6)
+    );
+
+    significant
       .filter((block) => block.endIndex >= from && block.startIndex <= to)
       .forEach((block) => {
         const xStart = xAxis.convertToPixel(block.startIndex);
@@ -112,6 +127,23 @@ registerIndicator<MovementOutput>({
             borderRadius: 0,
           },
         }).draw(ctx);
+
+        // Draw percentage label above the block (Long) or below (Short)
+        const pct = ((block.high - block.low) / block.low) * 100;
+        const label = `${pct.toFixed(1)}%`;
+        const cx = xStart + width / 2;
+        const labelY =
+          block.direction === "Long" ? yTop - 5 : yTop + height + 14;
+        ctx.save();
+        ctx.font = "bold 11px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.shadowColor = "rgba(0,0,0,0.8)";
+        ctx.shadowBlur = 3;
+        ctx.fillStyle =
+          block.direction === "Long" ? "rgb(0,230,100)" : "rgb(255,80,80)";
+        ctx.fillText(label, cx, labelY);
+        ctx.restore();
       });
 
     return false;

@@ -52,6 +52,7 @@ const INDICATORS: IndicatorOption[] = [
   },
   { name: "EMACross", label: "EMA Cross", calcParams: [9, 26] },
   { name: "Imbalance", label: "Imbalance" },
+  { name: "movement", label: "Movement" },
 ];
 const SUB_INDICATORS: IndicatorOption[] = [
   { name: "VOL", label: "Volume" },

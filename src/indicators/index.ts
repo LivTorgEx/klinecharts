@@ -22,3 +22,4 @@ import "./volume";
 import "./volumeBuySell";
 import "./DirectionalPivotSignal";
 import "./movement";
+import "./movementCascade";

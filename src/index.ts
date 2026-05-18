@@ -7,6 +7,7 @@ export * from "./position/KLineChartProgressPositions";
 export * from "./position/KLineChartFinishedPositions";
 export * from "./position/KLineChartWorkerPositionsContent";
 export * from "./components/KLineChartAlerts";
+export * from "./components/KLineChartAlertActions";
 export * from "./components/KLineChartQuickAddButton";
 export * from "./components/PositionInfoModalsContainer";
 export * from "./context/chartSettings";

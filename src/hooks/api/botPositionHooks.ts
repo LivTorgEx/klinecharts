@@ -10,11 +10,14 @@ type BotPositionsResult = {
   data: KLineChartBotPosition[];
 };
 
-export function useBotPositions(filter?: KLineChartLoadBotPositionsParams) {
+export function useBotPositions(
+  filter?: KLineChartLoadBotPositionsParams,
+  priority: "critical" | "default" = "default"
+) {
   const adapter = useKLineChartDataAdapter();
 
   return useQuery<BotPositionsResult>({
-    queryKey: ["BotPositions", filter],
+    queryKey: ["BotPositions", priority, filter],
     queryFn: () => adapter.loadBotPositions!(filter ?? {}),
     placeholderData: keepPreviousData,
     enabled: Boolean(adapter.loadBotPositions),

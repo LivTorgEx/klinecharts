@@ -29,12 +29,15 @@ export function KLineChartProgressPositions({
   const symbolKeyCtx = useSymbolKey();
   const symbolKey = symbolKeyProp ?? symbolKeyCtx;
   const symbol = symbolKey.split("#")[1] ?? "";
-  const { data: positions } = useBotPositions({
-    bot_id: botId,
-    symbol_key: symbolKeyProp,
-    status: ["Created", "InProgress"],
-    order_status: ["New", "PartiallyFilled", "Filled"],
-  });
+  const { data: positions } = useBotPositions(
+    {
+      bot_id: botId,
+      symbol_key: symbolKeyProp,
+      status: ["Created", "InProgress"],
+      order_status: ["New", "PartiallyFilled", "Filled"],
+    },
+    "critical"
+  );
   const [price, setPrice] = useState<number | undefined>();
   const existingPositionKeys = useRef<Set<string>>(new Set());
   const existingOrderKeys = useRef<Set<string>>(new Set());

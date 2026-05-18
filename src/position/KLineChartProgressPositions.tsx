@@ -16,16 +16,22 @@ type Props = {
   botId: number;
   /** @deprecated symbolKey is now read from SymbolKeyContext */
   tokenName?: string;
+  symbolKey?: string;
 };
 
-export function KLineChartProgressPositions({ botId }: Props) {
+export function KLineChartProgressPositions({
+  botId,
+  symbolKey: symbolKeyProp,
+}: Props) {
   const chart = useChart();
   const subscribeTrade = useSubscribeTrade();
   const { timeframe } = useChartSettings();
-  const symbolKey = useSymbolKey();
+  const symbolKeyCtx = useSymbolKey();
+  const symbolKey = symbolKeyProp ?? symbolKeyCtx;
   const symbol = symbolKey.split("#")[1] ?? "";
   const { data: positions } = useBotPositions({
     bot_id: botId,
+    symbol_key: symbolKeyProp,
     status: ["Created", "InProgress"],
     order_status: ["New", "PartiallyFilled", "Filled"],
   });

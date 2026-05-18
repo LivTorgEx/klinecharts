@@ -28,6 +28,7 @@ export type KLineChartBotPosition = {
 
 export type KLineChartLoadBotPositionsParams = {
   bot_id?: number;
+  symbol_key?: string;
   status?: KLineChartBotPositionStatus[];
   order_status?: string[];
 };

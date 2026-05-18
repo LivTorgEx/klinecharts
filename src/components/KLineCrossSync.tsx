@@ -50,15 +50,24 @@ export function KLineCrossSync({
         return false;
       }
 
-      let nearest = dataList[0];
-      let minDistance = Math.abs(dataList[0].timestamp - selectedTime);
-
-      for (let i = 1; i < dataList.length; i += 1) {
-        const item = dataList[i];
-        const distance = Math.abs(item.timestamp - selectedTime);
-        if (distance < minDistance) {
-          nearest = item;
-          minDistance = distance;
+      let lo = 0;
+      let hi = dataList.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (dataList[mid].timestamp < selectedTime) {
+          lo = mid + 1;
+        } else {
+          hi = mid;
+        }
+      }
+      let nearest = dataList[lo];
+      if (lo > 0) {
+        const prev = dataList[lo - 1];
+        if (
+          Math.abs(prev.timestamp - selectedTime) <
+          Math.abs(nearest.timestamp - selectedTime)
+        ) {
+          nearest = prev;
         }
       }
 

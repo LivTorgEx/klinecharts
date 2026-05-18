@@ -144,11 +144,32 @@ export function KLineChart({
       onTimestampSelectRef.current?.(cursor);
     };
 
+    let syncRafId: number | undefined;
+    let pendingCursor: SyncedCursor | null | undefined;
+    let lastEmittedTimestamp: number | undefined;
+
+    const scheduleEmitCursorSync = (cursor: SyncedCursor | null) => {
+      pendingCursor = cursor;
+      if (syncRafId === undefined) {
+        syncRafId = requestAnimationFrame(() => {
+          syncRafId = undefined;
+          if (pendingCursor !== undefined) {
+            const newTs = pendingCursor?.timestamp;
+            if (newTs !== lastEmittedTimestamp) {
+              lastEmittedTimestamp = newTs;
+              emitCursorSync(pendingCursor);
+            }
+            pendingCursor = undefined;
+          }
+        });
+      }
+    };
+
     const syncTimestampFromNeighborData = (info: NeighborData<KLineData>) => {
       const timestamp = info.current?.timestamp;
       const price = info.current?.close;
       if (timestamp !== undefined && price !== undefined) {
-        emitCursorSync({
+        scheduleEmitCursorSync({
           timestamp,
           price,
           source: chartSettingName,
@@ -164,7 +185,7 @@ export function KLineChart({
         return;
       }
 
-      emitCursorSync({
+      scheduleEmitCursorSync({
         timestamp,
         price,
         source: chartSettingName,
@@ -274,7 +295,7 @@ export function KLineChart({
     const handleMouseLeave = () => {
       setSelectedTime(undefined);
       setSelectedPrice(undefined);
-      emitCursorSync(null);
+      scheduleEmitCursorSync(null);
     };
 
     // Listen to window resize
@@ -288,6 +309,9 @@ export function KLineChart({
     resizeObserver.observe(container);
 
     return () => {
+      if (syncRafId !== undefined) {
+        cancelAnimationFrame(syncRafId);
+      }
       dispose(chart);
       chartRef.current = null;
       setChartStore(null);

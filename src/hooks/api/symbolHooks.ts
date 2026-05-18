@@ -37,6 +37,17 @@ function useSymbolsMap(symbols: SymbolType[]) {
   );
 }
 
+function useSymbolsKeyMap(symbols: SymbolType[]) {
+  return useMemo(
+    () =>
+      symbols.reduce<Record<string, SymbolType>>((accumulator, symbol) => {
+        accumulator[symbol.symbol_key.toUpperCase()] = symbol;
+        return accumulator;
+      }, {}),
+    [symbols]
+  );
+}
+
 export function useSymbol(id?: number) {
   const { data: symbols = [] } = useSymbols();
   const symbolsMap = useSymbolsMap(symbols);
@@ -49,4 +60,11 @@ export function useSymbolFromAll(id?: number) {
   const symbolsMap = useSymbolsMap(symbols);
 
   return id !== undefined ? symbolsMap[id] : undefined;
+}
+
+export function useSymbolKeyFromAll(symbolKey?: string) {
+  const { data: symbols = [] } = useSymbolsAll();
+  const symbolsKeyMap = useSymbolsKeyMap(symbols);
+
+  return symbolKey ? symbolsKeyMap[symbolKey.toUpperCase()] : undefined;
 }

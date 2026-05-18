@@ -14,7 +14,7 @@ import {
 const KLINE_SIZE = 500;
 
 type Props = {
-  tradeGroupId: number;
+  symbolKey: string;
   timeframe: number;
   timeEndLoader?: number;
   symbol?: string;
@@ -25,7 +25,7 @@ function getParams(
   timeframe: number,
   { type, timestamp }: DataLoaderGetBarsParams,
   timeEndLoader?: number
-): Omit<KLineChartLoadBarsParams, "tradeGroupId"> | undefined {
+): Omit<KLineChartLoadBarsParams, "symbolKey"> | undefined {
   if (type === "init") {
     const initDateTime = timeEndLoader || +new Date();
     const nearestCurrentTime = roundToNearestDate(initDateTime, timeframe);
@@ -60,14 +60,14 @@ function getParams(
 function loadDataByParams(
   queryClient: QueryClient,
   loadBars: (params: KLineChartLoadBarsParams) => Promise<KLineChartBar[]>,
-  tradeGroupId: number,
-  queryParams: Omit<KLineChartLoadBarsParams, "tradeGroupId">,
+  symbolKey: string,
+  queryParams: Omit<KLineChartLoadBarsParams, "symbolKey">,
   callback: (dataList: KLineData[], more?: boolean) => void
 ) {
   queryClient
     .fetchQuery({
-      queryKey: ["TradeGroupLines", tradeGroupId, queryParams],
-      queryFn: () => loadBars({ tradeGroupId, ...queryParams }),
+      queryKey: ["TradeGroupLines", symbolKey, queryParams],
+      queryFn: () => loadBars({ symbolKey, ...queryParams }),
     })
     .then((lines) =>
       lines.map(
@@ -92,7 +92,7 @@ function loadDataByParams(
 }
 
 export function KLineDataLoader({
-  tradeGroupId,
+  symbolKey,
   timeframe,
   timeEndLoader,
   symbol,
@@ -108,9 +108,28 @@ export function KLineDataLoader({
       return;
     }
 
-    const symbolName = symbol;
+    // Extract trading pair from symbolKey (format: "EXCHANGE#PAIR#TYPE")
+    const symbolName = symbol ? symbol.split("#")[1] : symbol;
     let currentCandle: KLineData | null = null;
     let unsubscribeTrade: (() => void) | undefined;
+    let unsubscribeProjection: (() => void) | undefined;
+    let pendingUpdate = false;
+    let animationFrameId: number | undefined;
+    let barCallback: ((data: KLineData) => void) | undefined;
+
+    // Subscribe to projection events so api_exchange streams projection data
+    // regardless of whether any projection UI components are mounted.
+    if (enableRealTime && symbolKey && adapter.subscribeProjection) {
+      unsubscribeProjection = adapter.subscribeProjection(symbolKey, () => {});
+    }
+
+    const flushUpdate = () => {
+      if (pendingUpdate && currentCandle && barCallback) {
+        barCallback(currentCandle);
+        pendingUpdate = false;
+      }
+      animationFrameId = undefined;
+    };
 
     const updateTrade = (trade: WebsocketTradeEvent) => {
       if (trade.symbol !== symbolName) {
@@ -148,6 +167,12 @@ export function KLineDataLoader({
         }
         currentCandle.volume = (currentCandle.volume || 0) + trade.quantity;
       }
+
+      // Mark that we have a pending update and schedule flush
+      pendingUpdate = true;
+      if (animationFrameId === undefined) {
+        animationFrameId = requestAnimationFrame(flushUpdate);
+      }
     };
 
     // Create the data loader with getBars, subscribeBar, and unsubscribeBar
@@ -157,6 +182,14 @@ export function KLineDataLoader({
         const queryParams = getParams(timeframe, params, timeEndLoader);
 
         if (!queryParams) {
+          callback([], false);
+          return;
+        }
+
+        if (!symbolKey) {
+          console.error(
+            `[KLineDataLoader] symbolKey is empty, skipping getBars`
+          );
           callback([], false);
           return;
         }
@@ -173,28 +206,24 @@ export function KLineDataLoader({
         loadDataByParams(
           queryClient,
           adapter.loadBars,
-          tradeGroupId,
+          symbolKey,
           queryParams,
           callback
         );
       },
       subscribeBar:
-        enableRealTime && symbolName && adapter.subscribeTrade
+        enableRealTime && symbolKey && adapter.subscribeTrade
           ? (params: { callback: (data: KLineData) => void }) => {
               const { callback } = params;
+              barCallback = callback;
               unsubscribeTrade = adapter.subscribeTrade?.(
-                symbolName,
-                (trade: WebsocketTradeEvent) => {
-                  updateTrade(trade);
-                  if (currentCandle) {
-                    callback(currentCandle);
-                  }
-                }
+                symbolKey,
+                updateTrade
               );
             }
           : undefined,
       unsubscribeBar:
-        enableRealTime && symbolName && adapter.subscribeTrade
+        enableRealTime && symbolKey && adapter.subscribeTrade
           ? () => {
               unsubscribeTrade?.();
               unsubscribeTrade = undefined;
@@ -206,6 +235,10 @@ export function KLineDataLoader({
 
     // Cleanup function when component unmounts or dependencies change
     return () => {
+      if (animationFrameId !== undefined) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      unsubscribeProjection?.();
       // Reset data loader to stop real-time updates
       chart.setDataLoader({
         getBars: (params) => {
@@ -218,7 +251,7 @@ export function KLineDataLoader({
     queryClient,
     adapter,
     timeframe,
-    tradeGroupId,
+    symbolKey,
     timeEndLoader,
     symbol,
     enableRealTime,

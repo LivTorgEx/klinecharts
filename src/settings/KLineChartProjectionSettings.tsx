@@ -31,8 +31,6 @@ const OPTIONS: {
   label: string;
 }[] = [
   { name: "showMessages", label: "Messages" },
-  { name: "showLines", label: "Lines" },
-  { name: "showMovements", label: "Movements" },
   { name: "showOrderBookLines", label: "Order Book lines" },
 ];
 

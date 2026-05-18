@@ -8,13 +8,15 @@ import { useChartSettings } from "../context/chartSettings";
 
 type Props = {
   botId: number;
+  symbolKey?: string;
 };
 
-export function KLineChartFinishedPositions({ botId }: Props) {
+export function KLineChartFinishedPositions({ botId, symbolKey }: Props) {
   const chart = useChart();
   const { timeframe } = useChartSettings();
   const { data: positions } = useBotPositions({
     bot_id: botId,
+    symbol_key: symbolKey,
     status: ["Completed"],
     order_status: ["Filled"],
   });

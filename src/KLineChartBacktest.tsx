@@ -1,5 +1,4 @@
-import { useMemo } from "react";
-import { useSymbolFromAll, useSymbolsAll } from "./hooks/api/symbolHooks";
+import { useSymbolKeyFromAll } from "./hooks/api/symbolHooks";
 import { BacktestRunWithPositionsSchema } from "./types/backtest/backtestRun";
 import { KLineChart } from "./KLineChart";
 import { KLineChartBacktestPositions } from "./position/KLineChartBacktestPositions";
@@ -11,16 +10,7 @@ type Props = {
 };
 
 export function KLineChartBacktest({ backtestRun, timeEndLoader }: Props) {
-  const { data: symbols = [] } = useSymbolsAll();
-
-  const symbol = useMemo(
-    () =>
-      symbols.find(
-        (symbol) => symbol.default_trade_group_id === backtestRun.trade_group_id
-      ),
-    [backtestRun, symbols]
-  );
-  const token = useSymbolFromAll(symbol?.id);
+  const token = useSymbolKeyFromAll(backtestRun.symbol_key);
 
   if (!token) {
     return null;

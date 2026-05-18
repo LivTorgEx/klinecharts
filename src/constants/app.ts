@@ -1,9 +1,3 @@
-export const IS_SHOW_UNSTABLE = import.meta.env.VITE_IS_SHOW_UNTABLE === "true";
-export const VITE_IS_SHOW_BACKTESTS =
-  window.location.hostname === "localhost" ||
-  window.location.hostname.includes("simulation");
-export const IS_DEBUG = import.meta.env.VITE_IS_DEBUG === "true";
-
 export const TF_1M = 60;
 export const TF_5M = 300;
 export const TF_15M = 900;

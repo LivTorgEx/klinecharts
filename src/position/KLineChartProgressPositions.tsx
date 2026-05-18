@@ -10,21 +10,34 @@ import { useChartSettings } from "../context/chartSettings";
 import { PositionOrderType } from "../types/client/order";
 import { KLineChartPositionData } from "../overlays/position";
 import { useSubscribeTrade } from "../context/dataAdapterContext";
+import { useSymbolKey } from "../context/symbolKey";
 
 type Props = {
   botId: number;
-  tokenName: string;
+  /** @deprecated symbolKey is now read from SymbolKeyContext */
+  tokenName?: string;
+  symbolKey?: string;
 };
 
-export function KLineChartProgressPositions({ botId, tokenName }: Props) {
+export function KLineChartProgressPositions({
+  botId,
+  symbolKey: symbolKeyProp,
+}: Props) {
   const chart = useChart();
   const subscribeTrade = useSubscribeTrade();
   const { timeframe } = useChartSettings();
-  const { data: positions } = useBotPositions({
-    bot_id: botId,
-    status: ["Created", "InProgress"],
-    order_status: ["New", "PartiallyFilled", "Filled"],
-  });
+  const symbolKeyCtx = useSymbolKey();
+  const symbolKey = symbolKeyProp ?? symbolKeyCtx;
+  const symbol = symbolKey.split("#")[1] ?? "";
+  const { data: positions } = useBotPositions(
+    {
+      bot_id: botId,
+      symbol_key: symbolKeyProp,
+      status: ["Created", "InProgress"],
+      order_status: ["New", "PartiallyFilled", "Filled"],
+    },
+    "critical"
+  );
   const [price, setPrice] = useState<number | undefined>();
   const existingPositionKeys = useRef<Set<string>>(new Set());
   const existingOrderKeys = useRef<Set<string>>(new Set());
@@ -195,13 +208,13 @@ export function KLineChartProgressPositions({ botId, tokenName }: Props) {
     }
 
     function updateTrade(event: WebsocketTradeEvent) {
-      if (event.symbol === tokenName) {
+      if (event.symbol === symbol) {
         setPrice(event.price);
       }
     }
 
-    return subscribeTrade(tokenName, updateTrade);
-  }, [subscribeTrade, tokenName]);
+    return subscribeTrade(symbolKey, updateTrade);
+  }, [subscribeTrade, symbolKey, symbol]);
 
   return null;
 }

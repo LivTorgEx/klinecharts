@@ -1,3 +1,4 @@
+import "./alert";
 import "./debugSignal";
 import "./measure";
 import "./order";

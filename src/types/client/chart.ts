@@ -26,9 +26,7 @@ export type ChartSettingsPosition = {
 
 export type ChartSettingsProjection = {
   showMessages: boolean;
-  showLines: boolean;
   showOrderBookLines: boolean;
-  showMovements: boolean;
   indicators: {
     name: TradeSettingProIndicatorType["type"];
     properties: Record<string, boolean>;

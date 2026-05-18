@@ -35,17 +35,6 @@ type WebsocketProjectionOrderBook = {
   short_levels: Array<{ price: number; qty: number; time_start: number }>;
 };
 
-type WebsocketProjectionWave = {
-  exit_time: number;
-  enter_time: number;
-  enter_price: number;
-  exit_price: number;
-  direction: string;
-  qtym: number;
-  percentile: number;
-  over_candles: Array<[number, number]>;
-};
-
 export type WebsocketProjectionEvent = {
   symbol: string;
   status: string;
@@ -62,11 +51,6 @@ export type WebsocketProjectionEvent = {
     price_24h: number;
   };
   order_book?: WebsocketProjectionOrderBook;
-  waves: Record<number, WebsocketProjectionWave>;
-  movements?: Record<
-    number,
-    import("./suggestion").SuggestionLineConsolidationMove
-  >;
   oi?: {
     usd: number;
     change: number;

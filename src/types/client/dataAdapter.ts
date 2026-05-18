@@ -28,6 +28,7 @@ export type KLineChartBotPosition = {
 
 export type KLineChartLoadBotPositionsParams = {
   bot_id?: number;
+  symbol_key?: string;
   status?: KLineChartBotPositionStatus[];
   order_status?: string[];
 };
@@ -45,7 +46,7 @@ export type KLineChartLoadWorkerPositionsParams = {
 };
 
 export type KLineChartLoadBarsParams = {
-  tradeGroupId: number;
+  symbolKey: string;
   timeStart?: number;
   timeEnd?: number;
   timeframe: number;
@@ -63,14 +64,21 @@ export type KLineChartBar = {
 };
 
 export type KLineChartSubscribeTrade = (
-  symbol: string,
+  symbolKey: string,
   handler: (event: WebsocketTradeEvent) => void
 ) => () => void;
 
 export type KLineChartSubscribeProjection = (
-  symbol: string,
+  symbolKey: string,
   handler: (event: WebsocketProjectionEvent) => void
 ) => () => void;
+
+export type KLineChartAlertLine = {
+  id: string;
+  price: number;
+  label: string;
+  color?: string;
+};
 
 export type KLineChartDataAdapter = {
   loadSymbols: (params: KLineChartLoadSymbolsParams) => Promise<SymbolType[]>;
@@ -81,6 +89,12 @@ export type KLineChartDataAdapter = {
   loadWorkerPositions?: (
     params: KLineChartLoadWorkerPositionsParams
   ) => Promise<{ data: KLineChartWorkerPosition[] }>;
+  loadAlerts?: (params: {
+    symbolKey: string;
+  }) => Promise<KLineChartAlertLine[]>;
+  updateAlertPrice?: (alertId: string, newPrice: number) => Promise<void>;
+  deleteAlert?: (alertId: string) => Promise<void>;
+  onAlertError?: (message: string) => void;
   subscribeTrade?: KLineChartSubscribeTrade;
   subscribeProjection?: KLineChartSubscribeProjection;
 };

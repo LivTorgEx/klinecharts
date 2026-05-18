@@ -4,19 +4,23 @@ import { OverlayCreate } from "klinecharts";
 import { useChart } from "../context/chart";
 import { WebsocketProjectionEvent } from "../types/client/websocket";
 import { useSubscribeProjection } from "../context/dataAdapterContext";
+import { useSymbolKey } from "../context/symbolKey";
 
 type Props = {
-  tokenName: string;
+  /** @deprecated symbolKey is now read from SymbolKeyContext */
+  tokenName?: string;
 };
 
-export function KLineProjectionOrderBook({ tokenName }: Props) {
+export function KLineProjectionOrderBook(_props: Props) {
   const chart = useChart();
   const subscribeProjection = useSubscribeProjection();
   const overlayKeys = useRef<Set<string>>(new Set());
+  const symbolKey = useSymbolKey();
+  const symbol = symbolKey.split("#")[1] ?? "";
 
   const handleUpdateProjection = useCallback(
     (event: WebsocketProjectionEvent) => {
-      if (event.symbol !== tokenName || !chart || !event.order_book) {
+      if (event.symbol !== symbol || !chart || !event.order_book) {
         return;
       }
 
@@ -51,7 +55,7 @@ export function KLineProjectionOrderBook({ tokenName }: Props) {
         chart.removeOverlay({ id });
       });
     },
-    [chart, tokenName]
+    [chart, symbolKey]
   );
 
   useEffect(() => {
@@ -60,7 +64,7 @@ export function KLineProjectionOrderBook({ tokenName }: Props) {
     }
 
     const unsubscribeProjection = subscribeProjection(
-      tokenName,
+      symbolKey,
       handleUpdateProjection
     );
 
@@ -71,7 +75,7 @@ export function KLineProjectionOrderBook({ tokenName }: Props) {
         chart.removeOverlay({ id });
       });
     };
-  }, [subscribeProjection, chart, tokenName, handleUpdateProjection]);
+  }, [subscribeProjection, chart, symbolKey, handleUpdateProjection]);
 
   return null;
 }

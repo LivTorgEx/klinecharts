@@ -35,7 +35,6 @@ import { KLineMobile } from "./components/KLineMobile";
 import { KLineProjection } from "./projection/KLineProjection";
 import { KLineDataLoader } from "./components/KLineDataLoader";
 import { KLineChartSidePanel } from "./components/KLineChartSidePanel";
-import { PositionInfoModalsContainer } from "./components/PositionInfoModalsContainer";
 import { KLineCrossSync, SyncedCursor } from "./components/KLineCrossSync";
 
 import "./indicators";
@@ -484,7 +483,6 @@ export function KLineChart({
           </ChartContext.Provider>
         </SymbolKeyContext.Provider>
       </ChartSettingsContext.Provider>
-      <PositionInfoModalsContainer />
     </>
   );
 }

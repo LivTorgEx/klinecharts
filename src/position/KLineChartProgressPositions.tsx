@@ -34,7 +34,7 @@ export function KLineChartProgressPositions({
       bot_id: botId,
       symbol_key: symbolKeyProp,
       status: ["Created", "InProgress"],
-      order_status: ["New", "PartiallyFilled", "Filled"],
+      order_status: ["New", "PartiallyFilled", "Filled", "PendingTrigger"],
     },
     "critical"
   );
@@ -136,7 +136,11 @@ export function KLineChartProgressPositions({
             value: orderPrice,
           },
         ];
-        if (["New", "PartiallyFilled"].includes(order.status ?? "")) {
+        if (
+          ["New", "PartiallyFilled", "PendingTrigger"].includes(
+            order.status ?? ""
+          )
+        ) {
           id += "_order";
           let pnl = undefined;
           const qtyFactor = order.qty > 0 ? 1 : -1;

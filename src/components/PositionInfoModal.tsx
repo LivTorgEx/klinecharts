@@ -173,7 +173,7 @@ export function PositionInfoModal({
           <Table size="small" sx={{ tableLayout: "auto" }}>
             <TableBody>
               <InfoRow label="Price" value={price} />
-              {order.stop_price && order.stop_price !== order.price && (
+              {!!order.stop_price && order.stop_price !== order.price && (
                 <InfoRow label="Stop price" value={order.stop_price} />
               )}
               <InfoRow

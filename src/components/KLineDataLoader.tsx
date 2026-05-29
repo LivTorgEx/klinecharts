@@ -110,10 +110,11 @@ export function KLineDataLoader({
 
     // Extract trading pair from symbolKey (format: "EXCHANGE#PAIR#TYPE")
     const symbolName = symbol ? symbol.split("#")[1] : symbol;
-    let currentCandle: KLineData | null = null;
+    // Map from timestamp → accumulated candle; preserves all candles that
+    // closed while the tab was hidden and RAF was paused.
+    const pendingCandles = new Map<number, KLineData>();
     let unsubscribeTrade: (() => void) | undefined;
     let unsubscribeProjection: (() => void) | undefined;
-    let pendingUpdate = false;
     let animationFrameId: number | undefined;
     let barCallback: ((data: KLineData) => void) | undefined;
 
@@ -124,9 +125,15 @@ export function KLineDataLoader({
     }
 
     const flushUpdate = () => {
-      if (pendingUpdate && currentCandle && barCallback) {
-        barCallback(currentCandle);
-        pendingUpdate = false;
+      if (barCallback && pendingCandles.size > 0) {
+        // Flush in chronological order so the chart receives candles in sequence.
+        const sorted = Array.from(pendingCandles.values()).sort(
+          (a, b) => a.timestamp - b.timestamp
+        );
+        pendingCandles.clear();
+        for (const candle of sorted) {
+          barCallback(candle);
+        }
       }
       animationFrameId = undefined;
     };
@@ -136,10 +143,10 @@ export function KLineDataLoader({
         return;
       }
       const roundTime = roundToNearestDate(trade.trade_time, timeframe);
+      const existing = pendingCandles.get(roundTime);
 
-      // If it's a new candle, reset
-      if (!currentCandle || currentCandle.timestamp !== roundTime) {
-        currentCandle = {
+      if (!existing) {
+        pendingCandles.set(roundTime, {
           timestamp: roundTime,
           open: trade.price,
           close: trade.price,
@@ -148,28 +155,20 @@ export function KLineDataLoader({
           buy: trade.was_buyer_maker ? 0 : trade.quantity,
           sell: trade.was_buyer_maker ? trade.quantity : 0,
           volume: trade.quantity,
-        };
+        });
       } else {
-        // Update existing candle
-        currentCandle.close = trade.price;
-        currentCandle.high = Math.max(currentCandle.high, trade.price);
-        currentCandle.low = Math.min(currentCandle.low, trade.price);
+        existing.close = trade.price;
+        existing.high = Math.max(existing.high, trade.price);
+        existing.low = Math.min(existing.low, trade.price);
         if (trade.was_buyer_maker) {
-          const prevSell =
-            typeof currentCandle["sell"] === "number"
-              ? currentCandle["sell"]
-              : 0;
-          currentCandle["sell"] = prevSell + trade.quantity;
+          existing["sell"] =
+            ((existing["sell"] as number) || 0) + trade.quantity;
         } else {
-          const prevBuy =
-            typeof currentCandle["buy"] === "number" ? currentCandle["buy"] : 0;
-          currentCandle["buy"] = prevBuy + trade.quantity;
+          existing["buy"] = ((existing["buy"] as number) || 0) + trade.quantity;
         }
-        currentCandle.volume = (currentCandle.volume || 0) + trade.quantity;
+        existing.volume = (existing.volume || 0) + trade.quantity;
       }
 
-      // Mark that we have a pending update and schedule flush
-      pendingUpdate = true;
       if (animationFrameId === undefined) {
         animationFrameId = requestAnimationFrame(flushUpdate);
       }

@@ -28,7 +28,9 @@ export function KLineChartBot({ bot }: Props) {
   const token = useSymbolKeyFromAll(bot.symbol_key);
 
   if (token === undefined) {
-    console.error(`[KLineChartBot] symbol not found for bot.symbol_key=${bot.symbol_key}`);
+    console.error(
+      `[KLineChartBot] symbol not found for bot.symbol_key=${bot.symbol_key}`
+    );
   }
 
   return (

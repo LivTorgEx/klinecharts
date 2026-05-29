@@ -27,7 +27,9 @@ export function KLineChartPosition({ botId, tokenId }: Props) {
   const token = useSymbol(tokenId);
 
   if (token === undefined) {
-    console.error(`[KLineChartPosition] symbol not found for tokenId=${tokenId} botId=${botId}`);
+    console.error(
+      `[KLineChartPosition] symbol not found for tokenId=${tokenId} botId=${botId}`
+    );
   }
 
   return (

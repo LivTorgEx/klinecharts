@@ -3,10 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { useKLineChartDataAdapter } from "../context/dataAdapterContext";
 import { CHART_ALERTS_QUERY_KEY } from "../hooks/api/alertHooks";
-import {
-  setPendingDrag,
-  clearPendingDrag,
-} from "../store/alertPendingStore";
+import { setPendingDrag, clearPendingDrag } from "../store/alertPendingStore";
 
 export function KLineChartAlertActions() {
   const adapter = useKLineChartDataAdapter();

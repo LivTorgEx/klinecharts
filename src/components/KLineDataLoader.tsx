@@ -110,9 +110,7 @@ export function KLineDataLoader({
 
     // Extract trading pair from symbolKey (format: "EXCHANGE#PAIR#TYPE")
     const symbolName = symbol ? symbol.split("#")[1] : symbol;
-    // Map from timestamp → accumulated candle; preserves all candles that
-    // closed while the tab was hidden and RAF was paused.
-    const pendingCandles = new Map<number, KLineData>();
+    let currentCandle: KLineData | null = null;
     let unsubscribeTrade: (() => void) | undefined;
     let unsubscribeProjection: (() => void) | undefined;
     let animationFrameId: number | undefined;
@@ -125,15 +123,8 @@ export function KLineDataLoader({
     }
 
     const flushUpdate = () => {
-      if (barCallback && pendingCandles.size > 0) {
-        // Flush in chronological order so the chart receives candles in sequence.
-        const sorted = Array.from(pendingCandles.values()).sort(
-          (a, b) => a.timestamp - b.timestamp
-        );
-        pendingCandles.clear();
-        for (const candle of sorted) {
-          barCallback(candle);
-        }
+      if (currentCandle && barCallback) {
+        barCallback(currentCandle);
       }
       animationFrameId = undefined;
     };
@@ -143,30 +134,46 @@ export function KLineDataLoader({
         return;
       }
       const roundTime = roundToNearestDate(trade.trade_time, timeframe);
-      const existing = pendingCandles.get(roundTime);
 
-      if (!existing) {
-        pendingCandles.set(roundTime, {
-          timestamp: roundTime,
-          open: trade.price,
-          close: trade.price,
-          high: trade.price,
-          low: trade.price,
-          buy: trade.was_buyer_maker ? 0 : trade.quantity,
-          sell: trade.was_buyer_maker ? trade.quantity : 0,
-          volume: trade.quantity,
-        });
-      } else {
-        existing.close = trade.price;
-        existing.high = Math.max(existing.high, trade.price);
-        existing.low = Math.min(existing.low, trade.price);
-        if (trade.was_buyer_maker) {
-          existing["sell"] =
-            ((existing["sell"] as number) || 0) + trade.quantity;
-        } else {
-          existing["buy"] = ((existing["buy"] as number) || 0) + trade.quantity;
+      if (!currentCandle || currentCandle.timestamp !== roundTime) {
+        // Current candle closed — force-push it immediately so it is never
+        // lost while the tab is hidden and RAF is paused.
+        if (currentCandle && barCallback) {
+          if (animationFrameId !== undefined) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = undefined;
+          }
+          barCallback(currentCandle);
         }
-        existing.volume = (existing.volume || 0) + trade.quantity;
+
+        // Seed the new candle from the chart's own last bar when timestamps
+        // match, so we start with the correct historical baseline rather than
+        // discarding volume/OHLC data that was loaded via getBars.
+        const dataList = chart.getDataList();
+        const lastBar = dataList[dataList.length - 1];
+        const base = lastBar?.timestamp === roundTime ? lastBar : null;
+
+        currentCandle = {
+          timestamp: roundTime,
+          open: base?.open ?? trade.price,
+          close: trade.price,
+          high: Math.max(base?.high ?? trade.price, trade.price),
+          low: Math.min(base?.low ?? trade.price, trade.price),
+          buy: (base?.buy ?? 0) + (trade.was_buyer_maker ? 0 : trade.quantity),
+          sell:
+            (base?.sell ?? 0) + (trade.was_buyer_maker ? trade.quantity : 0),
+          volume: (base?.volume ?? 0) + trade.quantity,
+        };
+      } else {
+        currentCandle.close = trade.price;
+        currentCandle.high = Math.max(currentCandle.high, trade.price);
+        currentCandle.low = Math.min(currentCandle.low, trade.price);
+        if (trade.was_buyer_maker) {
+          currentCandle.sell += trade.quantity;
+        } else {
+          currentCandle.buy += trade.quantity;
+        }
+        currentCandle.volume = (currentCandle.volume ?? 0) + trade.quantity;
       }
 
       if (animationFrameId === undefined) {

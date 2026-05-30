@@ -31,8 +31,20 @@ type WebsocketProjectionOrderBook = {
   sell_amount?: number;
   buy_price?: number;
   sell_price?: number;
-  long_levels: Array<{ price: number; qty: number; time_start: number }>;
-  short_levels: Array<{ price: number; qty: number; time_start: number }>;
+  long_levels: Array<{
+    price: number;
+    quantity: number;
+    total_amount: number;
+    time_start: number;
+    filled?: number;
+  }>;
+  short_levels: Array<{
+    price: number;
+    quantity: number;
+    total_amount: number;
+    time_start: number;
+    filled?: number;
+  }>;
 };
 
 export type WebsocketProjectionEvent = {

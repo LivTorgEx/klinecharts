@@ -12,6 +12,12 @@ export type PositionOrder = {
   notes?: Array<{ [property: string]: string | number | boolean }>;
   status?: string;
   qty_filled?: number;
+  /** Direction of the parent position (LONG/SHORT) this order belongs to. */
+  position_side?: OrderDirection;
+  /** Exchange-reported realized PnL for this order (quote ccy). */
+  realized_pnl?: number;
+  /** Cumulative trading fee charged for this order (quote ccy). */
+  fee?: number;
 };
 
 export type PositionOrderType =

@@ -173,6 +173,9 @@ export function PositionInfoModal({
           <Table size="small" sx={{ tableLayout: "auto" }}>
             <TableBody>
               <InfoRow label="Price" value={price} />
+              {order.position_side && (
+                <InfoRow label="Position side" value={order.position_side} />
+              )}
               {!!order.stop_price && order.stop_price !== order.price && (
                 <InfoRow label="Stop price" value={order.stop_price} />
               )}
@@ -190,6 +193,19 @@ export function PositionInfoModal({
                 label="Amount"
                 value={`${formatBigNumber(amount, "")} $`}
               />
+              {order.realized_pnl !== undefined &&
+                order.realized_pnl !== null && (
+                  <InfoRow
+                    label="Realized PnL"
+                    value={`${formatBigNumber(order.realized_pnl, "")} $`}
+                  />
+                )}
+              {order.fee !== undefined && order.fee !== null && (
+                <InfoRow
+                  label="Fee"
+                  value={`${formatBigNumber(order.fee, "")} $`}
+                />
+              )}
               {order.status && <InfoRow label="Status" value={order.status} />}
               {order.update_at && (
                 <InfoRow

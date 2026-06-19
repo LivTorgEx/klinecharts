@@ -56,6 +56,16 @@ type Props = {
   syncedTimestamp?: SyncedCursor | null;
 };
 
+function convertTimeframeToPeriod(timeframeSeconds: number) {
+  if (timeframeSeconds < 3600) {
+    return { type: "minute" as const, span: timeframeSeconds / 60 };
+  }
+  if (timeframeSeconds < 86400) {
+    return { type: "hour" as const, span: timeframeSeconds / 3600 };
+  }
+  return { type: "day" as const, span: timeframeSeconds / 86400 };
+}
+
 export function KLineChart({
   chartSettingName,
   token,
@@ -91,7 +101,6 @@ export function KLineChart({
   const tokenId = token?.id;
   const tokenSymbolKey = token?.symbol_key;
   const tokenPricePrecision = token?.price_precision ?? 8;
-  const timeframeRef = useRef<number>(timeframe);
   const handleClearSelectedTime = useCallback(() => {
     setSelectedTime(undefined);
   }, []);
@@ -129,15 +138,6 @@ export function KLineChart({
       pricePrecision: tokenPricePrecision,
       volumePrecision: 2,
     });
-    const convertTimeframeToPeriod = (timeframeSeconds: number) => {
-      if (timeframeSeconds < 3600) {
-        return { type: "minute" as const, span: timeframeSeconds / 60 };
-      } else if (timeframeSeconds < 86400) {
-        return { type: "hour" as const, span: timeframeSeconds / 3600 };
-      } else {
-        return { type: "day" as const, span: timeframeSeconds / 86400 };
-      }
-    };
     chart.setPeriod(convertTimeframeToPeriod(timeframe));
     const emitCursorSync = (cursor: SyncedCursor | null) => {
       onTimestampSelectRef.current?.(cursor);
@@ -341,7 +341,7 @@ export function KLineChart({
   }, [chartSettingName, syncedTimestamp]);
 
   useEffect(() => {
-    timeframeRef.current = timeframe;
+    chartRef.current?.setPeriod(convertTimeframeToPeriod(timeframe));
   }, [timeframe]);
 
   useEffect(() => {

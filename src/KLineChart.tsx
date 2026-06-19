@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type ReactNode,
 } from "react";
 import {
   Box,
@@ -52,6 +53,7 @@ type Props = {
   height?: number;
   enableRealTime?: boolean;
   timeEndLoader?: number;
+  headerActions?: ReactNode;
   onTimestampSelect?: (cursor: SyncedCursor | null) => void;
   syncedTimestamp?: SyncedCursor | null;
 };
@@ -73,6 +75,7 @@ export function KLineChart({
   timeEndLoader,
   height = 300,
   enableRealTime = true,
+  headerActions,
   onTimestampSelect,
   syncedTimestamp,
 }: PropsWithChildren<Props>) {
@@ -439,6 +442,7 @@ export function KLineChart({
                       onClose={handleRefreshSettings}
                       variant="projection"
                     />
+                    {headerActions}
                     {token?.symbol_key && (
                       <KLineDataLoader
                         timeframe={timeframe}

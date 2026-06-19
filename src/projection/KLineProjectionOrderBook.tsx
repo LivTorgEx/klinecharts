@@ -55,7 +55,7 @@ export function KLineProjectionOrderBook(_props: Props) {
         chart.removeOverlay({ id });
       });
     },
-    [chart, symbolKey]
+    [chart, symbol]
   );
 
   useEffect(() => {

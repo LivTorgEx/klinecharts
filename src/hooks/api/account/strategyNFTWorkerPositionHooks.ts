@@ -4,14 +4,14 @@ import { useKLineChartDataAdapter } from "../../../context/dataAdapterContext";
 import {
   KLineChartWorkerPosition,
   KLineChartLoadWorkerPositionsParams,
-  KLineChartBotPositionStatus,
 } from "../../../types/client/dataAdapter";
+import { KLineChartPositionStatus } from "../../../types/client/klinechart";
 
 type WorkerPositionsResult = { data: KLineChartWorkerPosition[] };
 
 export function useAccountStrategyNFTPositions(
   workerId?: number,
-  filter?: { status?: KLineChartBotPositionStatus[] },
+  filter?: { status?: KLineChartPositionStatus[] },
   pagination?: { page: number; page_size: number }
 ) {
   const adapter = useKLineChartDataAdapter();

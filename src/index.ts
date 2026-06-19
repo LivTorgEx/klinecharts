@@ -13,4 +13,10 @@ export * from "./components/PositionInfoModalsContainer";
 export * from "./context/chartSettings";
 export * from "./context/dataAdapterContext";
 export * from "./context/symbolKey";
-export * from "./types/client/dataAdapter";
+export type {
+  KLineChartPosition,
+  KLineChartPositionOrder,
+  KLineChartPositionStatus,
+} from "./types/client/klinechart";
+export type { OrderNote } from "./types/client/orderNote";
+export type { KLineChartDataAdapter } from "./types/client/dataAdapter";

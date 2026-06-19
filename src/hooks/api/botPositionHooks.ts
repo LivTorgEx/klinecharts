@@ -1,13 +1,11 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { useKLineChartDataAdapter } from "../../context/dataAdapterContext";
-import {
-  KLineChartBotPosition,
-  KLineChartLoadBotPositionsParams,
-} from "../../types/client/dataAdapter";
+import { KLineChartLoadBotPositionsParams } from "../../types/client/dataAdapter";
+import { KLineChartPosition } from "../../types/client/klinechart";
 
 type BotPositionsResult = {
-  data: KLineChartBotPosition[];
+  data: KLineChartPosition[];
 };
 
 export function useBotPositions(

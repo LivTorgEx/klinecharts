@@ -1,35 +1,19 @@
 import { WebsocketProjectionEvent, WebsocketTradeEvent } from "./websocket";
 import { SymbolType } from "./symbol";
-import { PositionOrder } from "./order";
+import type {
+  KLineChartPosition,
+  KLineChartPositionStatus,
+} from "./klinechart";
 
 export type KLineChartLoadSymbolsParams = {
   can_trade?: boolean;
   exchange_code?: string;
 };
 
-export type KLineChartBotPositionStatus =
-  | "Created"
-  | "InProgress"
-  | "Finishing"
-  | "Completed"
-  | "Failed";
-
-export type KLineChartBotPosition = {
-  id: number | string;
-  side: string;
-  qty: number;
-  entry_price: number;
-  total_profit: number;
-  fee: number;
-  status: KLineChartBotPositionStatus;
-  created_at: string;
-  orders: PositionOrder[];
-};
-
 export type KLineChartLoadBotPositionsParams = {
   bot_id?: number;
   symbol_key?: string;
-  status?: KLineChartBotPositionStatus[];
+  status?: KLineChartPositionStatus[];
   order_status?: string[];
 };
 
@@ -40,7 +24,7 @@ export type KLineChartWorkerPosition = {
 
 export type KLineChartLoadWorkerPositionsParams = {
   workerId: number;
-  status?: KLineChartBotPositionStatus[];
+  status?: KLineChartPositionStatus[];
   page?: number;
   page_size?: number;
 };
@@ -85,7 +69,7 @@ export type KLineChartDataAdapter = {
   loadBars: (params: KLineChartLoadBarsParams) => Promise<KLineChartBar[]>;
   loadBotPositions?: (
     params: KLineChartLoadBotPositionsParams
-  ) => Promise<{ data: KLineChartBotPosition[] }>;
+  ) => Promise<{ data: KLineChartPosition[] }>;
   loadWorkerPositions?: (
     params: KLineChartLoadWorkerPositionsParams
   ) => Promise<{ data: KLineChartWorkerPosition[] }>;

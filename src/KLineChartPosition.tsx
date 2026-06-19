@@ -23,12 +23,12 @@ function KLineChartBotContent({ botId, token }: ContentProps) {
   );
 }
 
-export function KLineChartPosition({ botId, tokenId }: Props) {
+export function KLineChartPositionView({ botId, tokenId }: Props) {
   const token = useSymbol(tokenId);
 
   if (token === undefined) {
     console.error(
-      `[KLineChartPosition] symbol not found for tokenId=${tokenId} botId=${botId}`
+      `[KLineChartPositionView] symbol not found for tokenId=${tokenId} botId=${botId}`
     );
   }
 

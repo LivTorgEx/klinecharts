@@ -26,60 +26,6 @@ type Props = {
   onClose: () => void;
 };
 
-type NoteEntry =
-  | string
-  | number
-  | boolean
-  | { [key: string]: string | number | boolean };
-
-function renderNoteEntry(note: NoteEntry, idx: number) {
-  if (
-    typeof note === "string" ||
-    typeof note === "number" ||
-    typeof note === "boolean"
-  ) {
-    return (
-      <Chip
-        key={idx}
-        label={String(note)}
-        size="small"
-        variant="outlined"
-        sx={{
-          fontSize: 11,
-          height: "auto",
-          "& .MuiChip-label": { whiteSpace: "normal", wordBreak: "break-word" },
-        }}
-      />
-    );
-  }
-  const entries = Object.entries(note);
-  if (entries.length === 1) {
-    const [key, val] = entries[0];
-    return (
-      <Chip
-        key={idx}
-        label={`${key}: ${String(val)}`}
-        size="small"
-        variant="outlined"
-        sx={{
-          fontSize: 11,
-          height: "auto",
-          "& .MuiChip-label": { whiteSpace: "normal", wordBreak: "break-word" },
-        }}
-      />
-    );
-  }
-  return (
-    <Paper key={idx} variant="outlined" sx={{ px: 1, py: 0.5, width: "100%" }}>
-      {entries.map(([key, val]) => (
-        <Typography key={key} variant="caption" component="div">
-          <b>{key}:</b> {String(val)}
-        </Typography>
-      ))}
-    </Paper>
-  );
-}
-
 function InfoRow({ label, value }: { label: string; value: string | number }) {
   return (
     <TableRow sx={{ "& td": { border: 0, py: 0.25, px: 0.5 } }}>
@@ -108,7 +54,7 @@ export function PositionInfoModal({
   const amount = Math.abs(order.qty) * price;
   const isBuy = order.qty > 0;
 
-  const notes = order.notes as NoteEntry[] | undefined;
+  const note = order.notes;
 
   return (
     <Draggable
@@ -223,7 +169,7 @@ export function PositionInfoModal({
           </Table>
 
           {/* Notes / context */}
-          {notes && notes.length > 0 && (
+          {note && (
             <>
               <Divider sx={{ my: 0.75 }} />
               <Typography
@@ -242,7 +188,36 @@ export function PositionInfoModal({
                 direction="row"
                 sx={{ flexWrap: "wrap", gap: 0.5, px: 0.5 }}
               >
-                {notes.map((note, idx) => renderNoteEntry(note, idx))}
+                {note.note !== undefined && note.note !== "" && (
+                  <Chip
+                    label={note.note}
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      fontSize: 11,
+                      height: "auto",
+                      "& .MuiChip-label": {
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                      },
+                    }}
+                  />
+                )}
+                {note.size !== undefined && (
+                  <Chip
+                    label={String(note.size)}
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      fontSize: 11,
+                      height: "auto",
+                      "& .MuiChip-label": {
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                      },
+                    }}
+                  />
+                )}
               </Stack>
             </>
           )}

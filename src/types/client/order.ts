@@ -1,3 +1,5 @@
+import type { OrderNote } from "./orderNote";
+
 export type PositionOrder = {
   id?: number | string;
   price: number;
@@ -9,7 +11,7 @@ export type PositionOrder = {
   update_at?: string;
   client_id?: number | string;
   original_id?: number | string;
-  notes?: Array<{ [property: string]: string | number | boolean }>;
+  notes?: OrderNote | null;
   status?: string;
   qty_filled?: number;
   /** Direction of the parent position (LONG/SHORT) this order belongs to. */

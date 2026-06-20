@@ -1,4 +1,5 @@
 import type { PositionOrder } from "../order";
+import type { PositionDirection } from "../direction";
 
 export type KLineChartPositionStatus =
   | "Created"
@@ -11,12 +12,12 @@ export type KLineChartPositionOrder = PositionOrder;
 
 export type KLineChartPosition = {
   id: number | string;
-  side: string;
+  side: PositionDirection;
   qty: number;
   entry_price: number;
   total_profit: number;
   fee: number;
   status: KLineChartPositionStatus;
-  created_at: string;
+  created_at?: number;
   orders: KLineChartPositionOrder[];
 };

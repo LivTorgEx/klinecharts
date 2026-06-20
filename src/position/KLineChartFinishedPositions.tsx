@@ -3,7 +3,6 @@ import { OverlayCreate } from "klinecharts";
 
 import { useBotPositions } from "../hooks/api/botPositionHooks";
 import { useChart } from "../context/chart";
-import { parseServerDate } from "../utils/date";
 import { useChartSettings } from "../context/chartSettings";
 
 type Props = {
@@ -32,20 +31,22 @@ export function KLineChartFinishedPositions({ botId, symbolKey }: Props) {
       const posId = `position_${position.id}`;
       const firstOrder = position.orders[0];
       const lastOrder = position.orders[position.orders.length - 1];
+      const startTimestamp = firstOrder?.update_at;
+      if (startTimestamp === undefined) {
+        return;
+      }
       const points: OverlayCreate["points"] = [
-        firstOrder
-          ? {
-              timestamp: +parseServerDate(firstOrder.update_at ?? ""),
-              value: firstOrder.price || lastOrder.stop_price,
-            }
-          : {
-              timestamp: +parseServerDate(position.created_at),
-              value: position.entry_price,
-            },
+        {
+          timestamp: startTimestamp,
+          value: firstOrder.price || lastOrder.stop_price,
+        },
       ];
       if (lastOrder) {
+        if (lastOrder.update_at === undefined) {
+          return;
+        }
         points.push({
-          timestamp: +parseServerDate(lastOrder.update_at ?? ""),
+          timestamp: lastOrder.update_at,
           value: lastOrder.price || lastOrder.stop_price,
         });
       }
@@ -68,7 +69,10 @@ export function KLineChartFinishedPositions({ botId, symbolKey }: Props) {
       removeSet.delete(posId);
 
       position.orders.forEach((order) => {
-        const timestamp = +parseServerDate(order.update_at ?? "");
+        const timestamp = order.update_at;
+        if (timestamp === undefined) {
+          return;
+        }
         const points: OverlayCreate["points"] = [
           {
             timestamp,

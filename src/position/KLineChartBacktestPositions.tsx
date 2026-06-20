@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { OverlayCreate } from "klinecharts";
 
 import { useChart } from "../context/chart";
-import { parseServerDate } from "../utils/date";
 import { BacktestRunPositionSchema } from "../types/backtest/backtestRunPosition";
 import { useChartSettings } from "../context/chartSettings";
 
@@ -33,15 +32,21 @@ export function KLineChartBacktestPositions({ positions }: Props) {
       const firstOrder = position.orders[0];
       const lastOrder = position.orders[position.orders.length - 1];
       if (firstOrder) {
+        if (firstOrder.update_at === undefined) {
+          return;
+        }
         const points: OverlayCreate["points"] = [
           {
-            timestamp: +parseServerDate(firstOrder.update_at ?? ""),
+            timestamp: firstOrder.update_at,
             value: firstOrder.price,
           },
         ];
         if (lastOrder) {
+          if (lastOrder.update_at === undefined) {
+            return;
+          }
           points.push({
-            timestamp: +parseServerDate(lastOrder.update_at ?? ""),
+            timestamp: lastOrder.update_at,
             value: lastOrder.price || lastOrder.stop_price,
           });
         }
@@ -77,7 +82,10 @@ export function KLineChartBacktestPositions({ positions }: Props) {
       }
 
       position.orders.forEach((order) => {
-        const timestamp = +parseServerDate(order.update_at ?? "");
+        const timestamp = order.update_at;
+        if (timestamp === undefined) {
+          return;
+        }
         const points: OverlayCreate["points"] = [
           {
             timestamp,

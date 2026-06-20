@@ -1,6 +1,6 @@
 import { KLineData, registerIndicator } from "klinecharts";
 import { ExponentialMovingAverage } from "./exponentialMovingAverage";
-import { OrderDirection } from "../types/client/order";
+import { PositionDirection } from "../types/client/direction";
 
 type EmaCrossOutput = {
   emaSlow: number;
@@ -11,7 +11,7 @@ type EmaCrossOutput = {
 class EmaCross {
   private emaSlow: ExponentialMovingAverage;
   private emaFast: ExponentialMovingAverage;
-  private direction: OrderDirection = OrderDirection.BOTH;
+  private direction: PositionDirection = PositionDirection.BOTH;
 
   constructor(periodFast: number, periodSlow: number) {
     this.emaFast = new ExponentialMovingAverage(periodFast);
@@ -23,7 +23,7 @@ class EmaCross {
     const emaSlow = this.emaSlow.next(input.close);
 
     const direction =
-      emaSlow > emaFast ? OrderDirection.SHORT : OrderDirection.LONG;
+      emaSlow > emaFast ? PositionDirection.SHORT : PositionDirection.LONG;
     let isChanged = false;
 
     if (this.direction != direction) {

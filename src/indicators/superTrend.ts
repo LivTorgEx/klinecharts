@@ -1,6 +1,6 @@
 import { KLineData, registerIndicator } from "klinecharts";
 import { AverageTrueRange } from "./averageTrueRange";
-import { OrderDirection } from "../types/client/order";
+import { PositionDirection } from "../types/client/direction";
 
 type SuperTrendValue = {
   buy?: number;
@@ -10,7 +10,7 @@ type SuperTrendValue = {
 export class SuperTrend {
   private atr: AverageTrueRange;
   private superTrend?: number;
-  private direction: OrderDirection = OrderDirection.BOTH;
+  private direction: PositionDirection = PositionDirection.BOTH;
 
   constructor(
     period: number,
@@ -31,19 +31,19 @@ export class SuperTrend {
     // Determine the Supertrend value.
     if (this.superTrend === undefined) {
       this.superTrend = lowerBand;
-      this.direction = OrderDirection.LONG;
+      this.direction = PositionDirection.LONG;
     } else if (input.close > this.superTrend) {
-      if (this.direction === OrderDirection.LONG) {
+      if (this.direction === PositionDirection.LONG) {
         this.superTrend = Math.max(lowerBand, this.superTrend);
       } else {
-        this.direction = OrderDirection.LONG;
+        this.direction = PositionDirection.LONG;
         this.superTrend = lowerBand;
       }
     } else {
-      if (this.direction === OrderDirection.SHORT) {
+      if (this.direction === PositionDirection.SHORT) {
         this.superTrend = Math.min(upperBand, this.superTrend);
       } else {
-        this.direction = OrderDirection.SHORT;
+        this.direction = PositionDirection.SHORT;
         this.superTrend = upperBand;
       }
     }
@@ -74,7 +74,7 @@ registerIndicator<SuperTrendValue, number>({
     const { from, to } = chart.getVisibleRange();
     const kLineDataList = chart.getDataList();
     const result = indicator.result;
-    let initialSide: OrderDirection = OrderDirection.BOTH;
+    let initialSide: PositionDirection = PositionDirection.BOTH;
 
     for (let i = from; i < to; i++) {
       const data = result[i];
@@ -86,13 +86,13 @@ registerIndicator<SuperTrendValue, number>({
 
       if (data.buy !== undefined) {
         const dataY = yAxis.convertToPixel(data.buy);
-        if (initialSide !== OrderDirection.LONG) {
+        if (initialSide !== PositionDirection.LONG) {
           const y = yAxis.convertToPixel(kLineData.low);
           ctx.stroke();
           ctx.closePath();
           ctx.fillStyle = "green";
           ctx.fillText("Buy", x - 6, y + 4);
-          initialSide = OrderDirection.LONG;
+          initialSide = PositionDirection.LONG;
           ctx.beginPath();
           ctx.setLineDash([]);
           ctx.strokeStyle = "green";
@@ -102,13 +102,13 @@ registerIndicator<SuperTrendValue, number>({
         }
       } else if (data.sell !== undefined) {
         const dataY = yAxis.convertToPixel(data.sell);
-        if (initialSide !== OrderDirection.SHORT) {
+        if (initialSide !== PositionDirection.SHORT) {
           const y = yAxis.convertToPixel(kLineData.high);
           ctx.stroke();
           ctx.closePath();
           ctx.fillStyle = "red";
           ctx.fillText("Sell", x - 8, y - 12);
-          initialSide = OrderDirection.SHORT;
+          initialSide = PositionDirection.SHORT;
           ctx.beginPath();
           ctx.strokeStyle = "red";
           ctx.setLineDash([]);

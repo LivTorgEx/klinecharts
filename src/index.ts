@@ -13,6 +13,8 @@ export * from "./components/PositionInfoModalsContainer";
 export * from "./context/chartSettings";
 export * from "./context/dataAdapterContext";
 export * from "./context/symbolKey";
+export * from "./utils/date";
+export * from "./types/client/direction";
 export type {
   KLineChartPosition,
   KLineChartPositionOrder,

@@ -3,7 +3,6 @@ import { Overlay, OverlayCreate } from "klinecharts";
 
 import { useBotPositions } from "../hooks/api/botPositionHooks";
 import { useChart } from "../context/chart";
-import { parseServerDate } from "../utils/date";
 import { WebsocketTradeEvent } from "../types/client/websocket";
 import { toMeasurePrice } from "../utils/number";
 import { useChartSettings } from "../context/chartSettings";
@@ -78,9 +77,13 @@ export function KLineChartProgressPositions({
         entryPrice: position.entry_price,
       };
 
+      if (position.created_at === undefined) {
+        return;
+      }
+
       const points: OverlayCreate["points"] = [
         {
-          timestamp: +parseServerDate(position.created_at),
+          timestamp: position.created_at,
           value: position.entry_price,
         },
       ];
@@ -126,7 +129,10 @@ export function KLineChartProgressPositions({
     positions?.data?.forEach((position) => {
       position.orders.forEach((order) => {
         let id = `order_${order.id}`;
-        const timestamp = +parseServerDate(order.update_at ?? "");
+        const timestamp = order.update_at;
+        if (timestamp === undefined) {
+          return;
+        }
         const orderPrice = order.price || order.stop_price || 0;
         const positionAmount = position.qty * position.entry_price;
         const positionFactor = position.qty > 0 ? 1 : -1;

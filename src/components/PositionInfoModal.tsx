@@ -16,7 +16,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import Draggable from "react-draggable";
 
 import { PositionOrder } from "../types/client/order";
-import { formatServerDate } from "../utils/date";
+import { formatChartDate } from "../utils/date";
 import { formatBigNumber } from "../utils/number";
 
 type Props = {
@@ -153,10 +153,10 @@ export function PositionInfoModal({
                 />
               )}
               {order.status && <InfoRow label="Status" value={order.status} />}
-              {order.update_at && (
+              {order.update_at !== undefined && (
                 <InfoRow
                   label="Time"
-                  value={formatServerDate(order.update_at)}
+                  value={formatChartDate(order.update_at)}
                 />
               )}
               {order.original_id && (

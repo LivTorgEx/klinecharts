@@ -1,11 +1,10 @@
 import { Close } from "@mui/icons-material";
-import { format } from "date-fns";
 import { IconButton, Stack, Typography } from "@mui/material";
 import { TradeSettingProIndicatorType } from "../types/strategyIndicatorType";
 
 import { useTradeIndicator } from "../hooks/api/tradeIndicator";
 import { useChartSettings } from "../context/chartSettings";
-import { DATETIME_UI } from "../constants/date";
+import { formatChartDate } from "../utils/date";
 
 type Props = {
   symbolId: number;
@@ -69,7 +68,7 @@ export function KLinePropjectionIndicators({
     <Stack>
       {selectedTime && (
         <Typography variant="caption">
-          Selected time: {format(selectedTime, DATETIME_UI)}{" "}
+          Selected time: {formatChartDate(selectedTime)}{" "}
           <IconButton color="error" size="small" onClick={clearSelectedTime}>
             <Close fontSize="inherit" />
           </IconButton>

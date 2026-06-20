@@ -3,10 +3,10 @@ import { green, red } from "@mui/material/colors";
 
 import { formatBigNumber } from "../utils/number";
 import { isTruthy } from "../utils/filter";
-import { OrderDirection } from "../types/client/order";
+import { PositionDirection } from "../types/client/direction";
 
 type ExtendData = {
-  side: OrderDirection;
+  side: PositionDirection;
   pnl: number;
   showInfo?: boolean;
 };
@@ -31,7 +31,7 @@ registerOverlay<ExtendData>({
   },
   createPointFigures: ({ coordinates, overlay }) => {
     const data = overlay.extendData;
-    const side = data.side === OrderDirection.LONG ? "Long" : "Short";
+    const side = data.side === PositionDirection.LONG ? "Long" : "Short";
     return [
       {
         type: "circle",

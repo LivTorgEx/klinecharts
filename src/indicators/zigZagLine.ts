@@ -5,13 +5,13 @@ import {
   registerIndicator,
 } from "klinecharts";
 import { ZigZag, Point } from "./zigZag";
-import { OrderDirection } from "../types/client/order";
+import { PositionDirection } from "../types/client/direction";
 import { getRayLine } from "../helper/getRayLine";
 
 type ZigZagLineValue = {
   coordinatePoints: Point[];
   lastPoint: Point;
-  direction: OrderDirection;
+  direction: PositionDirection;
   points: Point[];
 };
 
@@ -66,8 +66,8 @@ registerIndicator({
       const firstPoint = points[lastIdx - 2];
       const direction =
         firstPoint.price < secondPoint.price
-          ? OrderDirection.LONG
-          : OrderDirection.SHORT;
+          ? PositionDirection.LONG
+          : PositionDirection.SHORT;
 
       // if (result.length && result[result.length - 1].direction === direction) {
       //   result.pop();
@@ -117,7 +117,7 @@ registerIndicator({
           attrs: coordinates.map(({ x, y }) => ({ x, y, r: 5 }))[0],
           styles: {
             ...defaultStyles.circles[0],
-            color: line.direction === OrderDirection.LONG ? "green" : "red",
+            color: line.direction === PositionDirection.LONG ? "green" : "red",
           },
         }).draw(ctx);
         new FigureText({

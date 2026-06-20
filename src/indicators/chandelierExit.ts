@@ -3,7 +3,7 @@ import { KLineData, registerIndicator } from "klinecharts";
 import { AverageTrueRange } from "./averageTrueRange";
 import { Maximum } from "./maximum";
 import { Minimum } from "./minimum";
-import { OrderDirection } from "../types/client/order";
+import { PositionDirection } from "../types/client/direction";
 
 type ChandelierExitOutput = {
   long: number;
@@ -12,7 +12,7 @@ type ChandelierExitOutput = {
 type ChandelierExitValue = {
   ceLong?: number;
   ceShort?: number;
-  direction: OrderDirection;
+  direction: PositionDirection;
   long: number;
   short: number;
 };
@@ -77,19 +77,20 @@ registerIndicator<ChandelierExitValue, number>({
       const long = prevValue?.long ?? value.long;
       const short = prevValue?.short ?? value.short;
 
-      let direction: OrderDirection =
-        prevValue?.direction ?? OrderDirection.BOTH;
+      let direction: PositionDirection =
+        prevValue?.direction ?? PositionDirection.BOTH;
 
       if (input.close > short) {
-        direction = OrderDirection.LONG;
+        direction = PositionDirection.LONG;
       } else if (input.close < long) {
-        direction = OrderDirection.SHORT;
+        direction = PositionDirection.SHORT;
       }
 
       prevValue = {
         ...value,
-        ceLong: direction === OrderDirection.LONG ? value.long : undefined,
-        ceShort: direction === OrderDirection.SHORT ? value.short : undefined,
+        ceLong: direction === PositionDirection.LONG ? value.long : undefined,
+        ceShort:
+          direction === PositionDirection.SHORT ? value.short : undefined,
         direction,
       };
       return prevValue;

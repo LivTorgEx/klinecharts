@@ -1,5 +1,3 @@
-import { parseServerDate } from "./date";
-
 export function formatNum(amount: number, precision = 0): string {
   const roundedAmount = amount.toFixed(precision);
   const parts = roundedAmount.toString().split(".");
@@ -20,15 +18,12 @@ export function toChartY(price: number, zeroPrice: number, gapY: number) {
 }
 
 export function toChartX(
-  time: string | number,
+  time: number,
   timeStart: number,
   timeframe: number,
   gapBar: number
 ) {
-  const timeNum =
-    typeof time === "string" ? parseServerDate(time).getTime() : time;
-
-  return ((timeNum - timeStart) / (timeframe * 1000)) * gapBar;
+  return ((time - timeStart) / (timeframe * 1000)) * gapBar;
 }
 
 export function format_tf(value: number | string): string {

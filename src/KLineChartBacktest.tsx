@@ -2,7 +2,6 @@ import { useSymbolKeyFromAll } from "./hooks/api/symbolHooks";
 import { BacktestRunWithPositionsSchema } from "./types/backtest/backtestRun";
 import { KLineChart } from "./KLineChart";
 import { KLineChartBacktestPositions } from "./position/KLineChartBacktestPositions";
-import { KLineChartLoadDebug } from "./components/KLineChartLoadDebug";
 
 type Props = {
   backtestRun: BacktestRunWithPositionsSchema;
@@ -24,9 +23,6 @@ export function KLineChartBacktest({ backtestRun, timeEndLoader }: Props) {
       enableRealTime={false}
       height={600}
     >
-      {window.location.hostname === "localhost" && (
-        <KLineChartLoadDebug backtestRunId={backtestRun.id} />
-      )}
       <KLineChartBacktestPositions positions={backtestRun.positions ?? []} />
     </KLineChart>
   );

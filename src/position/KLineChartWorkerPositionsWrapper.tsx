@@ -24,7 +24,6 @@ export function KLineChartWorkerPositionsWrapper({
         <WorkerPositionsRenderer
           key={workerId}
           workerId={workerId}
-          tokenName={tokenName}
           currentSymbol={currentSymbol}
         />
       ))}
@@ -35,11 +34,9 @@ export function KLineChartWorkerPositionsWrapper({
 // Helper component to fetch and render positions for a single worker
 function WorkerPositionsRenderer({
   workerId,
-  tokenName,
   currentSymbol,
 }: {
   workerId: number;
-  tokenName: string;
   currentSymbol: SymbolType | undefined;
 }) {
   const { data: workerPositions } = useAccountStrategyNFTPositions(
@@ -68,7 +65,6 @@ function WorkerPositionsRenderer({
         <KLineChartProgressPositions
           key={botId}
           botId={botId}
-          tokenName={tokenName}
         />
       ))}
     </>

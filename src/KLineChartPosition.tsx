@@ -1,5 +1,4 @@
 import { useSymbol } from "./hooks/api/symbolHooks";
-import { SymbolType } from "./types/client/symbol";
 import { useChartSettings } from "./context/chartSettings";
 import { KLineChart } from "./KLineChart";
 import { KLineChartFinishedPositions } from "./position/KLineChartFinishedPositions";
@@ -9,16 +8,15 @@ type Props = { botId: number; tokenId: number };
 
 type ContentProps = {
   botId: number;
-  token: SymbolType;
 };
 
-function KLineChartBotContent({ botId, token }: ContentProps) {
+function KLineChartBotContent({ botId }: ContentProps) {
   const { position } = useChartSettings();
 
   return (
     <>
       {position.showFinished && <KLineChartFinishedPositions botId={botId} />}
-      <KLineChartProgressPositions botId={botId} tokenName={token.symbol} />
+      <KLineChartProgressPositions botId={botId} />
     </>
   );
 }
@@ -34,7 +32,7 @@ export function KLineChartPositionView({ botId, tokenId }: Props) {
 
   return (
     <KLineChart token={token} chartSettingName="Position">
-      {token && <KLineChartBotContent token={token} botId={botId} />}
+      {token && <KLineChartBotContent botId={botId} />}
     </KLineChart>
   );
 }

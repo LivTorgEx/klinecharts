@@ -13,25 +13,18 @@ import { useSymbolKey } from "../context/symbolKey";
 
 type Props = {
   botId: number;
-  /** @deprecated symbolKey is now read from SymbolKeyContext */
-  tokenName?: string;
-  symbolKey?: string;
 };
 
-export function KLineChartProgressPositions({
-  botId,
-  symbolKey: symbolKeyProp,
-}: Props) {
+export function KLineChartProgressPositions({ botId }: Props) {
   const chart = useChart();
   const subscribeTrade = useSubscribeTrade();
   const { timeframe } = useChartSettings();
-  const symbolKeyCtx = useSymbolKey();
-  const symbolKey = symbolKeyProp ?? symbolKeyCtx;
+  const symbolKey = useSymbolKey();
   const symbol = symbolKey.split("#")[1] ?? "";
   const { data: positions } = useBotPositions(
     {
       bot_id: botId,
-      symbol_key: symbolKeyProp,
+      symbol_key: symbolKey,
       status: ["Created", "InProgress"],
       order_status: ["New", "PartiallyFilled", "Filled", "PendingTrigger"],
     },

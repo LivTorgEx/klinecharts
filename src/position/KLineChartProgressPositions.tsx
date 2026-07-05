@@ -15,6 +15,13 @@ type Props = {
   botId: number;
 };
 
+function shouldRenderPositionOverlay(position: {
+  qty: number;
+  entry_price: number;
+}): boolean {
+  return position.qty !== 0 && position.entry_price !== 0;
+}
+
 export function KLineChartProgressPositions({ botId }: Props) {
   const chart = useChart();
   const subscribeTrade = useSubscribeTrade();
@@ -59,6 +66,11 @@ export function KLineChartProgressPositions({ botId }: Props) {
 
     const removeSet = new Set(existingPositionKeys.current);
     positions?.data?.forEach((position) => {
+      // Hide empty shells; only real positions should draw the position body.
+      if (!shouldRenderPositionOverlay(position)) {
+        return;
+      }
+
       const assetSize = position.qty * position.entry_price;
       const change = toMeasurePrice(position.entry_price, price!) / 100;
 

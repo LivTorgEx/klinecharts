@@ -15,7 +15,13 @@ export function useBotPositions(
   const adapter = useKLineChartDataAdapter();
 
   return useQuery<BotPositionsResult>({
-    queryKey: ["BotPositions", priority, filter],
+    queryKey: [
+      "BotPositions",
+      priority,
+      filter?.status ?? null,
+      filter ?? null,
+      null,
+    ],
     queryFn: () => adapter.loadBotPositions!(filter ?? {}),
     placeholderData: keepPreviousData,
     enabled: Boolean(adapter.loadBotPositions),

@@ -33,7 +33,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "echo \"no tests\" && exit 0",
+    "test": "node --experimental-strip-types --test scripts/run-tests.ts",
     "lint": "eslint \"src/**/*.{ts,tsx,js,jsx}\" --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },

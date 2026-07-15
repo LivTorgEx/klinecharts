@@ -6,6 +6,7 @@ import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import { parseInputFloat } from "../utils/number";
 import { WebsocketTradeEvent } from "../types/client/websocket";
 import { useKLineChartDataAdapter } from "../context/dataAdapterContext";
+import { applyRealtimeTradeUpdate } from "../helpers/realtimeCandle";
 import {
   KLineChartBar,
   KLineChartLoadBarsParams,
@@ -124,57 +125,41 @@ export function KLineDataLoader({
 
     const flushUpdate = () => {
       if (currentCandle && barCallback) {
-        barCallback(currentCandle);
+        barCallback({ ...currentCandle });
       }
       animationFrameId = undefined;
     };
 
     const updateTrade = (trade: WebsocketTradeEvent) => {
-      if (trade.symbol !== symbolName) {
+      const dataList = chart.getDataList();
+      const lastBar = dataList[dataList.length - 1];
+      const {
+        currentCandle: nextCandle,
+        flushedCandle,
+        ignored,
+      } = applyRealtimeTradeUpdate({
+        currentCandle,
+        trade,
+        timeframe,
+        symbolName,
+        lastBar,
+      });
+
+      if (ignored) {
         return;
       }
-      const roundTime = roundToNearestDate(trade.trade_time, timeframe);
 
-      if (!currentCandle || currentCandle.timestamp !== roundTime) {
+      if (flushedCandle && barCallback) {
         // Current candle closed — force-push it immediately so it is never
         // lost while the tab is hidden and RAF is paused.
-        if (currentCandle && barCallback) {
-          if (animationFrameId !== undefined) {
-            cancelAnimationFrame(animationFrameId);
-            animationFrameId = undefined;
-          }
-          barCallback(currentCandle);
+        if (animationFrameId !== undefined) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = undefined;
         }
-
-        // Seed the new candle from the chart's own last bar when timestamps
-        // match, so we start with the correct historical baseline rather than
-        // discarding volume/OHLC data that was loaded via getBars.
-        const dataList = chart.getDataList();
-        const lastBar = dataList[dataList.length - 1];
-        const base = lastBar?.timestamp === roundTime ? lastBar : null;
-
-        currentCandle = {
-          timestamp: roundTime,
-          open: base?.open ?? trade.price,
-          close: trade.price,
-          high: Math.max(base?.high ?? trade.price, trade.price),
-          low: Math.min(base?.low ?? trade.price, trade.price),
-          buy: (base?.buy ?? 0) + (trade.was_buyer_maker ? 0 : trade.quantity),
-          sell:
-            (base?.sell ?? 0) + (trade.was_buyer_maker ? trade.quantity : 0),
-          volume: (base?.volume ?? 0) + trade.quantity,
-        };
-      } else {
-        currentCandle.close = trade.price;
-        currentCandle.high = Math.max(currentCandle.high, trade.price);
-        currentCandle.low = Math.min(currentCandle.low, trade.price);
-        if (trade.was_buyer_maker) {
-          currentCandle.sell = (currentCandle.sell ?? 0) + trade.quantity;
-        } else {
-          currentCandle.buy = (currentCandle.buy ?? 0) + trade.quantity;
-        }
-        currentCandle.volume = (currentCandle.volume ?? 0) + trade.quantity;
+        barCallback(flushedCandle);
       }
+
+      currentCandle = nextCandle;
 
       if (animationFrameId === undefined) {
         animationFrameId = requestAnimationFrame(flushUpdate);
@@ -244,7 +229,11 @@ export function KLineDataLoader({
       if (animationFrameId !== undefined) {
         cancelAnimationFrame(animationFrameId);
       }
+      unsubscribeTrade?.();
+      unsubscribeTrade = undefined;
       unsubscribeProjection?.();
+      currentCandle = null;
+      barCallback = undefined;
       // Reset data loader to stop real-time updates
       chart.setDataLoader({
         getBars: (params) => {

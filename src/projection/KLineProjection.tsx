@@ -9,13 +9,10 @@ import { KLinePropjectionIndicators } from "./KLinePropjectionIndicators";
 
 type Props = {
   timeframe: number;
-  selectedTime?: number;
+  selectedIndicatorTime?: number;
 };
 
-export function KLineProjection({
-  timeframe,
-  selectedTime,
-}: Props) {
+export function KLineProjection({ timeframe, selectedIndicatorTime }: Props) {
   const { projection } = useChartSettings();
   const subscribeProjection = useSubscribeProjection();
   const symbolKey = useSymbolKey();
@@ -24,7 +21,7 @@ export function KLineProjection({
   >(undefined);
   const { data: indicatorSnapshot } = useTradeIndicator({
     timeframe,
-    time: selectedTime,
+    time: selectedIndicatorTime,
   });
 
   useEffect(() => {

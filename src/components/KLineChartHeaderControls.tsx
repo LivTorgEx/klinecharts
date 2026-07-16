@@ -1,4 +1,4 @@
-import { Close, InfoOutlined } from "@mui/icons-material";
+import { AccessTime, Close, InfoOutlined } from "@mui/icons-material";
 import {
   Box,
   IconButton,
@@ -7,6 +7,7 @@ import {
   Stack,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { MouseEvent, ReactNode } from "react";
@@ -21,6 +22,7 @@ import type { ChartSettingsProjectionItem } from "../types/client/chart";
 import type { KLineChartProjectionIndicatorSnapshot } from "../types/client/dataAdapter";
 import type { WebsocketProjectionEvent } from "../types/client/websocket";
 import { getProjectionSummary } from "../projection/KLinePropjectionIndicators";
+import { formatChartDate } from "../utils/date";
 
 type Props = {
   chart: Chart | null;
@@ -34,10 +36,11 @@ type Props = {
   projectionTooltipItems: ChartSettingsProjectionItem[];
   projectionEvent?: WebsocketProjectionEvent;
   indicatorSnapshot?: KLineChartProjectionIndicatorSnapshot;
+  selectedIndicatorTime?: number;
+  onClearSelectedIndicatorTime: () => void;
   projectionTooltipAnchorEl: HTMLButtonElement | null;
   onUpdateTimeframe: (timeframe: number) => void;
   onProjectionTooltipToggle: (event: MouseEvent<HTMLButtonElement>) => void;
-  onProjectionTooltipClose: () => void;
   onRefreshSettings: () => void;
 };
 
@@ -53,10 +56,11 @@ export function KLineChartHeaderControls({
   projectionTooltipItems,
   projectionEvent,
   indicatorSnapshot,
+  selectedIndicatorTime,
+  onClearSelectedIndicatorTime,
   projectionTooltipAnchorEl,
   onUpdateTimeframe,
   onProjectionTooltipToggle,
-  onProjectionTooltipClose,
   onRefreshSettings,
 }: Props) {
   return (
@@ -88,11 +92,7 @@ export function KLineChartHeaderControls({
             onChange={(_, newTF) => onUpdateTimeframe(newTF)}
           >
             {TIMEFRAMES.map(({ label, value }) => (
-              <ToggleButton
-                key={value}
-                value={value}
-                sx={{ borderRadius: 0 }}
-              >
+              <ToggleButton key={value} value={value} sx={{ borderRadius: 0 }}>
                 {label}
               </ToggleButton>
             ))}
@@ -120,7 +120,8 @@ export function KLineChartHeaderControls({
           )}
         </Box>
         <Box sx={{ display: { xs: "none", sm: "block" }, flex: 1 }} />
-        {projectionTooltipItems.length > 0 && (
+        {(selectedIndicatorTime !== undefined ||
+          projectionTooltipItems.length > 0) && (
           <Box
             sx={{
               display: "flex",
@@ -130,78 +131,98 @@ export function KLineChartHeaderControls({
               flexShrink: 0,
             }}
           >
-            <IconButton
-              size="small"
-              onClick={onProjectionTooltipToggle}
-              aria-label="Projection tooltip"
-            >
-              {projectionTooltipAnchorEl ? (
-                <Close fontSize="inherit" />
-              ) : (
-                <InfoOutlined fontSize="inherit" />
-              )}
-            </IconButton>
-            <Popover
-              open={Boolean(projectionTooltipAnchorEl)}
-              anchorEl={projectionTooltipAnchorEl}
-              onClose={onProjectionTooltipClose}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              disableScrollLock
-              slotProps={{
-                paper: {
-                  sx: {
-                    mt: 0.5,
-                    minWidth: 240,
-                    maxWidth: 420,
-                    backgroundColor: "rgba(10, 12, 18, 0.92)",
-                    backdropFilter: "blur(10px)",
-                  },
-                },
-              }}
-            >
-              <Paper
-                variant="outlined"
-                sx={{
-                  minWidth: 0,
-                  backgroundColor: "transparent",
-                  border: "none",
-                }}
-              >
-                <Stack spacing={0.5} sx={{ px: 1, py: 1 }}>
-                  {projectionTooltipItems.map((item) => {
-                    const lines = getProjectionSummary(
-                      item,
-                      projectionEvent,
-                      indicatorSnapshot
-                    );
-                    return (
-                      <Typography
-                        key={item.id}
-                        variant="caption"
-                        noWrap
-                        sx={{
-                          display: "block",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {lines
-                          .map((line) => `${line.label}: ${line.value}`)
-                          .join(" | ")}
-                      </Typography>
-                    );
-                  })}
-                </Stack>
-              </Paper>
-            </Popover>
+            {selectedIndicatorTime !== undefined && (
+              <Tooltip title={formatChartDate(selectedIndicatorTime)}>
+                <IconButton
+                  size="small"
+                  aria-label="Selected candle time"
+                  onClick={onClearSelectedIndicatorTime}
+                >
+                  <AccessTime fontSize="inherit" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {projectionTooltipItems.length > 0 && (
+              <>
+                <IconButton
+                  size="small"
+                  onClick={onProjectionTooltipToggle}
+                  aria-label="Projection tooltip"
+                >
+                  {projectionTooltipAnchorEl ? (
+                    <Close fontSize="inherit" />
+                  ) : (
+                    <InfoOutlined fontSize="inherit" />
+                  )}
+                </IconButton>
+                <Popover
+                  open={Boolean(projectionTooltipAnchorEl)}
+                  anchorEl={projectionTooltipAnchorEl}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right",
+                  }}
+                  transformOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                  disableScrollLock
+                  slotProps={{
+                    root: {
+                      sx: {
+                        pointerEvents: "none",
+                      },
+                    },
+                    paper: {
+                      sx: {
+                        mt: 0.5,
+                        minWidth: 240,
+                        maxWidth: 420,
+                        backgroundColor: "rgba(10, 12, 18, 0.92)",
+                        backdropFilter: "blur(10px)",
+                        pointerEvents: "auto",
+                      },
+                    },
+                  }}
+                >
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      minWidth: 0,
+                      backgroundColor: "transparent",
+                      border: "none",
+                    }}
+                  >
+                    <Stack spacing={0.5} sx={{ px: 1, py: 1 }}>
+                      {projectionTooltipItems.map((item) => {
+                        const lines = getProjectionSummary(
+                          item,
+                          projectionEvent,
+                          indicatorSnapshot
+                        );
+                        return (
+                          <Typography
+                            key={item.id}
+                            variant="caption"
+                            noWrap
+                            sx={{
+                              display: "block",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {lines
+                              .map((line) => `${line.label}: ${line.value}`)
+                              .join(" | ")}
+                          </Typography>
+                        );
+                      })}
+                    </Stack>
+                  </Paper>
+                </Popover>
+              </>
+            )}
           </Box>
         )}
       </Stack>

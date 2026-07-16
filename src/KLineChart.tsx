@@ -79,12 +79,11 @@ export function KLineChart({
   } = useTheme();
   const chartEl = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
-  const [selectedTime, setSelectedTime] = useState<number | undefined>(
-    undefined
-  );
-  const [selectedPrice, setSelectedPrice] = useState<number | undefined>(
-    undefined
-  );
+  const [cursorTime, setCursorTime] = useState<number | undefined>(undefined);
+  const [cursorPrice, setCursorPrice] = useState<number | undefined>(undefined);
+  const [selectedIndicatorTime, setSelectedIndicatorTime] = useState<
+    number | undefined
+  >(undefined);
   const [projectionTooltipAnchorEl, setProjectionTooltipAnchorEl] =
     useState<HTMLButtonElement | null>(null);
   const subscribeProjection = useSubscribeProjection();
@@ -104,9 +103,7 @@ export function KLineChart({
   const { timeframe } = settings;
   const projectionTooltipItems = useMemo(
     () =>
-      settings.projection.items.filter(
-        (item) => item.placement === "tooltip"
-      ),
+      settings.projection.items.filter((item) => item.placement === "tooltip"),
     [settings.projection.items]
   );
   const tokenId = token?.id;
@@ -114,7 +111,7 @@ export function KLineChart({
   const tokenPricePrecision = token?.price_precision ?? 8;
   const { data: indicatorSnapshot } = useTradeIndicator({
     timeframe,
-    time: selectedTime,
+    time: selectedIndicatorTime,
     symbolKey: tokenSymbolKey,
   });
 
@@ -188,15 +185,12 @@ export function KLineChart({
       }
     };
 
-    const syncTimestampFromNeighborData = (info: NeighborData<KLineData>) => {
+    const setIndicatorTimeFromNeighborData = (
+      info: NeighborData<KLineData>
+    ) => {
       const timestamp = info.current?.timestamp;
-      const price = info.current?.close;
-      if (timestamp !== undefined && price !== undefined) {
-        scheduleEmitCursorSync({
-          timestamp,
-          price,
-          source: chartSettingName,
-        });
+      if (timestamp !== undefined) {
+        setSelectedIndicatorTime(timestamp);
       }
     };
 
@@ -243,7 +237,7 @@ export function KLineChart({
 
     chart.subscribeAction("onCandleBarClick", (data) => {
       const { data: info } = data as { data: NeighborData<KLineData> };
-      syncTimestampFromNeighborData(info);
+      setIndicatorTimeFromNeighborData(info);
     });
 
     chart.subscribeAction("onCrosshairChange", (data) => {
@@ -316,8 +310,8 @@ export function KLineChart({
     };
 
     const handleMouseLeave = () => {
-      setSelectedTime(undefined);
-      setSelectedPrice(undefined);
+      setCursorTime(undefined);
+      setCursorPrice(undefined);
       scheduleEmitCursorSync(null);
     };
 
@@ -351,18 +345,25 @@ export function KLineChart({
     }
 
     if (syncedTimestamp.source === chartSettingName) {
-      setSelectedTime(undefined);
-      setSelectedPrice(undefined);
+      setCursorTime(undefined);
+      setCursorPrice(undefined);
       return;
     }
 
-    setSelectedTime((prev) =>
+    setCursorTime((prev) =>
       prev === syncedTimestamp.timestamp ? prev : syncedTimestamp.timestamp
     );
-    setSelectedPrice((prev) =>
+    setCursorPrice((prev) =>
       prev === syncedTimestamp.price ? prev : syncedTimestamp.price
     );
   }, [chartSettingName, syncedTimestamp]);
+
+  useEffect(() => {
+    setSelectedIndicatorTime(undefined);
+    setCursorTime(undefined);
+    setCursorPrice(undefined);
+    setProjectionTooltipAnchorEl(null);
+  }, [tokenSymbolKey]);
 
   useEffect(() => {
     chartRef.current?.setPeriod(convertTimeframeToPeriod(timeframe));
@@ -389,8 +390,8 @@ export function KLineChart({
     []
   );
 
-  const handleProjectionTooltipClose = useCallback(() => {
-    setProjectionTooltipAnchorEl(null);
+  const handleClearSelectedIndicatorTime = useCallback(() => {
+    setSelectedIndicatorTime(undefined);
   }, []);
 
   // Calculate available height for chart
@@ -440,10 +441,13 @@ export function KLineChart({
                   projectionTooltipItems={projectionTooltipItems}
                   projectionEvent={projectionEvent}
                   indicatorSnapshot={indicatorSnapshot}
+                  selectedIndicatorTime={selectedIndicatorTime}
+                  onClearSelectedIndicatorTime={
+                    handleClearSelectedIndicatorTime
+                  }
                   projectionTooltipAnchorEl={projectionTooltipAnchorEl}
                   onUpdateTimeframe={handleUpdateTimeframe}
                   onProjectionTooltipToggle={handleProjectionTooltipToggle}
-                  onProjectionTooltipClose={handleProjectionTooltipClose}
                   onRefreshSettings={handleRefreshSettings}
                 >
                   {children}
@@ -467,8 +471,8 @@ export function KLineChart({
                 />
                 <KLineCrossSync
                   chart={chartStore}
-                  selectedTime={selectedTime}
-                  selectedPrice={selectedPrice}
+                  selectedTime={cursorTime}
+                  selectedPrice={cursorPrice}
                   themeMode={themeMode}
                 />
               </Stack>

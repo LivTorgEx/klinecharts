@@ -1,10 +1,10 @@
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { useMemo } from "react";
 
 import type { ChartSettingsProjectionItem } from "../types/client/chart";
 import type { KLineChartProjectionIndicatorSnapshot } from "../types/client/dataAdapter";
 import type { WebsocketProjectionEvent } from "../types/client/websocket";
-import { formatBigNumber, toMeasurePrice } from "../utils/number";
+import { formatBigNumber } from "../utils/number";
 type Props = {
   items: ChartSettingsProjectionItem[];
   projection?: WebsocketProjectionEvent;
@@ -17,7 +17,10 @@ export type ProjectionValueLine = {
   value: string;
 };
 
-type ProjectionPlacementGroup = Record<"line1" | "line2" | "tooltip", ChartSettingsProjectionItem[]>;
+type ProjectionPlacementGroup = Record<
+  "line1" | "line2" | "tooltip",
+  ChartSettingsProjectionItem[]
+>;
 
 function formatValue(value: unknown): string {
   if (value === null || value === undefined) {
@@ -43,14 +46,9 @@ function formatProjectionCount(value: number | undefined): string {
   return formatBigNumber(value);
 }
 
-function formatProjectionMoney(value: number | undefined): string {
-  if (value === undefined || Number.isNaN(value)) {
-    return "-";
-  }
-  return formatBigNumber(value);
-}
-
-export function getProjectionItemLabel(item: ChartSettingsProjectionItem): string {
+export function getProjectionItemLabel(
+  item: ChartSettingsProjectionItem
+): string {
   if (item.source.type === "projection") {
     return item.source.name;
   }
@@ -99,7 +97,9 @@ export function getProjectionSummary(
           {
             label: "Asset",
             value: formatProjectionCount(
-              indicator?.asset_01 !== undefined ? indicator.asset_01 * 100 : undefined
+              indicator?.asset_01 !== undefined
+                ? indicator.asset_01 * 100
+                : undefined
             ),
           },
         ];
@@ -163,7 +163,7 @@ export function getProjectionSummary(
     indicatorSnapshot?.indicators[item.source.key]?.[item.source.property];
   return [
     {
-      label: `${item.source.name}[${item.source.key}]`,
+      label: `${item.source.name}[${item.source.property}]`,
       value: formatValue(snapshotValue),
     },
   ];
@@ -185,10 +185,7 @@ export function KLinePropjectionIndicators({
     );
   }, [items]);
 
-  if (
-    groupedItems.line1.length === 0 &&
-    groupedItems.line2.length === 0
-  ) {
+  if (groupedItems.line1.length === 0 && groupedItems.line2.length === 0) {
     return null;
   }
 
@@ -246,9 +243,9 @@ export function KLinePropjectionIndicators({
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {lines.map((line) => `${line.label}: ${line.value}`).join(
-                          " | "
-                        )}
+                        {lines
+                          .map((line) => `${line.label}: ${line.value}`)
+                          .join(" | ")}
                       </Typography>
                     );
                   })}

@@ -1,5 +1,4 @@
 import { IndicatorCreate, PaneOptions } from "klinecharts";
-import { TradeSettingProIndicatorType } from "../strategyIndicatorType";
 
 export type ChartSettings = {
   timeframe: number;
@@ -24,13 +23,43 @@ export type ChartSettingsPosition = {
   showFinished: boolean;
 };
 
+export type ChartSettingsProjectionPlacement = "line1" | "line2" | "tooltip";
+
+export type ChartSettingsProjectionSourceProjectionType =
+  | "Status"
+  | "NTPS"
+  | "TrandM"
+  | "Asset"
+  | "Price"
+  | "OrderBook"
+  | "OpenInterest"
+  | "Candle";
+
+export type ChartSettingsProjectionProjectionSource = {
+  type: "projection";
+  name: ChartSettingsProjectionSourceProjectionType;
+};
+
+export type ChartSettingsProjectionIndicatorSource = {
+  type: "indicator";
+  name: string;
+  key: string;
+  property: string;
+  period?: string;
+};
+
+export type ChartSettingsProjectionSource =
+  | ChartSettingsProjectionProjectionSource
+  | ChartSettingsProjectionIndicatorSource;
+
+export type ChartSettingsProjectionItem = {
+  id: string;
+  placement: ChartSettingsProjectionPlacement;
+  source: ChartSettingsProjectionSource;
+};
+
 export type ChartSettingsProjection = {
-  showMessages: boolean;
-  showOrderBookLines: boolean;
-  indicators: {
-    name: TradeSettingProIndicatorType["type"];
-    properties: Record<string, boolean>;
-  }[];
+  items: ChartSettingsProjectionItem[];
 };
 
 export type ChartInfo = {

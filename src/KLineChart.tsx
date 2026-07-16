@@ -2,17 +2,13 @@ import {
   PropsWithChildren,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
+  type MouseEvent,
   type ReactNode,
 } from "react";
-import {
-  Box,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-  useTheme,
-} from "@mui/material";
+import { Box, Stack, useTheme } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   init,
@@ -25,18 +21,17 @@ import {
 } from "klinecharts";
 
 import { loadChartSettings, partialUpdateChartSettings } from "./utils/chart";
-import { KLineChartSettingsModal } from "./settings/KLineChartSettingsModal";
-import { TIMEFRAMES } from "./constants/app";
 import { createTooltipDataSource, getIndicatorStyles } from "./constants/style";
-import { IndicatorSelector } from "./components/IndicatorSelector";
 import { ChartContext } from "./context/chart";
 import { ChartSettingsContext } from "./context/chartSettings";
+import { useSubscribeProjection } from "./context/dataAdapterContext";
 import { SymbolKeyContext } from "./context/symbolKey";
-import { KLineMobile } from "./components/KLineMobile";
-import { KLineProjection } from "./projection/KLineProjection";
-import { KLineDataLoader } from "./components/KLineDataLoader";
 import { KLineChartSidePanel } from "./components/KLineChartSidePanel";
 import { KLineCrossSync, SyncedCursor } from "./components/KLineCrossSync";
+import { KLineChartHeaderControls } from "./components/KLineChartHeaderControls";
+import { KLineChartViewport } from "./components/KLineChartViewport";
+import { useTradeIndicator } from "./hooks/api/tradeIndicator";
+import type { WebsocketProjectionEvent } from "./types/client/websocket";
 
 import "./indicators";
 import "./overlays";
@@ -90,6 +85,12 @@ export function KLineChart({
   const [selectedPrice, setSelectedPrice] = useState<number | undefined>(
     undefined
   );
+  const [projectionTooltipAnchorEl, setProjectionTooltipAnchorEl] =
+    useState<HTMLButtonElement | null>(null);
+  const subscribeProjection = useSubscribeProjection();
+  const [projectionEvent, setProjectionEvent] = useState<
+    WebsocketProjectionEvent | undefined
+  >(undefined);
   const [chartStore, setChartStore] = useState<Nullable<Chart>>(null);
   const chartRef = useRef<Nullable<Chart>>(null);
   const onTimestampSelectRef =
@@ -101,16 +102,36 @@ export function KLineChart({
     loadChartSettings(chartSettingName)
   );
   const { timeframe } = settings;
+  const projectionTooltipItems = useMemo(
+    () =>
+      settings.projection.items.filter(
+        (item) => item.placement === "tooltip"
+      ),
+    [settings.projection.items]
+  );
   const tokenId = token?.id;
   const tokenSymbolKey = token?.symbol_key;
   const tokenPricePrecision = token?.price_precision ?? 8;
-  const handleClearSelectedTime = useCallback(() => {
-    setSelectedTime(undefined);
-  }, []);
+  const { data: indicatorSnapshot } = useTradeIndicator({
+    timeframe,
+    time: selectedTime,
+    symbolKey: tokenSymbolKey,
+  });
 
   useEffect(() => {
     onTimestampSelectRef.current = onTimestampSelect;
   }, [onTimestampSelect]);
+
+  useEffect(() => {
+    if (!tokenSymbolKey || !subscribeProjection) {
+      return;
+    }
+
+    const unsubscribe = subscribeProjection(tokenSymbolKey, setProjectionEvent);
+    return () => {
+      unsubscribe();
+    };
+  }, [subscribeProjection, tokenSymbolKey]);
 
   useEffect(() => {
     if (!tokenId || !tokenSymbolKey || !chartEl.current) {
@@ -359,6 +380,19 @@ export function KLineChart({
     handleRefreshSettings();
   };
 
+  const handleProjectionTooltipToggle = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      setProjectionTooltipAnchorEl((current) =>
+        current ? null : event.currentTarget
+      );
+    },
+    []
+  );
+
+  const handleProjectionTooltipClose = useCallback(() => {
+    setProjectionTooltipAnchorEl(null);
+  }, []);
+
   // Calculate available height for chart
   useEffect(() => {
     const updateChartHeight = () => {
@@ -395,75 +429,25 @@ export function KLineChart({
               }}
             >
               <Box ref={controlsRef}>
-                <KLineMobile />
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={{ sx: 0, sm: 1 }}
-                  sx={{
-                    alignItems: { xs: "start", sm: "center" },
-                  }}
+                <KLineChartHeaderControls
+                  chart={chartStore}
+                  chartSettingName={chartSettingName}
+                  timeframe={timeframe}
+                  tokenSymbolKey={token?.symbol_key}
+                  enableRealTime={enableRealTime}
+                  timeEndLoader={timeEndLoader}
+                  headerActions={headerActions}
+                  projectionTooltipItems={projectionTooltipItems}
+                  projectionEvent={projectionEvent}
+                  indicatorSnapshot={indicatorSnapshot}
+                  projectionTooltipAnchorEl={projectionTooltipAnchorEl}
+                  onUpdateTimeframe={handleUpdateTimeframe}
+                  onProjectionTooltipToggle={handleProjectionTooltipToggle}
+                  onProjectionTooltipClose={handleProjectionTooltipClose}
+                  onRefreshSettings={handleRefreshSettings}
                 >
-                  <ToggleButtonGroup
-                    size="small"
-                    sx={{ height: 32 }}
-                    color="primary"
-                    value={timeframe}
-                    exclusive
-                    onChange={(event, newTF) => handleUpdateTimeframe(newTF)}
-                  >
-                    {TIMEFRAMES.map(({ label, value }) => (
-                      <ToggleButton
-                        key={value}
-                        value={value}
-                        sx={{ borderRadius: 0 }}
-                      >
-                        {label}
-                      </ToggleButton>
-                    ))}
-                  </ToggleButtonGroup>
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    sx={{
-                      alignItems: "center",
-                    }}
-                  >
-                    <IndicatorSelector
-                      chart={chartStore}
-                      name={chartSettingName}
-                    />
-                    <KLineChartSettingsModal
-                      name={chartSettingName}
-                      onClose={handleRefreshSettings}
-                      variant="position"
-                    />
-                    <KLineChartSettingsModal
-                      name={chartSettingName}
-                      onClose={handleRefreshSettings}
-                      variant="projection"
-                    />
-                    {headerActions}
-                    {token?.symbol_key && (
-                      <KLineDataLoader
-                        timeframe={timeframe}
-                        symbolKey={token.symbol_key}
-                        timeEndLoader={timeEndLoader}
-                        symbol={token.symbol_key}
-                        enableRealTime={enableRealTime}
-                      />
-                    )}
-                  </Stack>
-                </Stack>
-                {token && (
-                  <KLineProjection
-                    tokenName={token.symbol_key}
-                    symbolId={token.id}
-                    timeframe={timeframe}
-                    selectedTime={selectedTime}
-                    clearSelectedTime={handleClearSelectedTime}
-                  />
-                )}
-                {children}
+                  {children}
+                </KLineChartHeaderControls>
               </Box>
               <Stack
                 direction="row"
@@ -473,12 +457,13 @@ export function KLineChart({
                 }}
               >
                 <KLineChartSidePanel />
-                <Box
-                  ref={chartEl}
-                  sx={{
-                    height: chartHeight,
-                    width: "100%",
-                  }}
+                <KLineChartViewport
+                  chartRef={chartEl}
+                  chartHeight={chartHeight}
+                  tokenPresent={Boolean(token)}
+                  items={settings.projection.items}
+                  projection={projectionEvent}
+                  indicatorSnapshot={indicatorSnapshot}
                 />
                 <KLineCrossSync
                   chart={chartStore}

@@ -4,6 +4,7 @@ import type {
   KLineChartPosition,
   KLineChartPositionStatus,
 } from "./klinechart";
+import type { ChartSettingsProjectionIndicatorSource } from "./chart";
 
 export type KLineChartLoadSymbolsParams = {
   can_trade?: boolean;
@@ -64,9 +65,37 @@ export type KLineChartAlertLine = {
   color?: string;
 };
 
+export type KLineChartProjectionIndicatorCatalogItem = {
+  name: string;
+  key: string;
+  period?: string;
+  properties?: string[];
+};
+
+export type KLineChartProjectionIndicatorSnapshot = {
+  id: number;
+  time: number;
+  indicators: Record<string, Record<string, string | number>>;
+};
+
+export type KLineChartLoadProjectionIndicatorsParams = {
+  symbolKey: string;
+  timeframe: number;
+  time?: number;
+  indicatorName?: string;
+  limit?: number;
+  offset?: number;
+};
+
 export type KLineChartDataAdapter = {
   loadSymbols: (params: KLineChartLoadSymbolsParams) => Promise<SymbolType[]>;
   loadBars: (params: KLineChartLoadBarsParams) => Promise<KLineChartBar[]>;
+  loadProjectionIndicatorCatalog?: () => Promise<
+    KLineChartProjectionIndicatorCatalogItem[]
+  >;
+  loadProjectionIndicators?: (
+    params: KLineChartLoadProjectionIndicatorsParams
+  ) => Promise<KLineChartProjectionIndicatorSnapshot | null>;
   loadBotPositions?: (
     params: KLineChartLoadBotPositionsParams
   ) => Promise<{ data: KLineChartPosition[] }>;

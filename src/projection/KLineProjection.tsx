@@ -1,38 +1,52 @@
+import { useEffect, useState } from "react";
+
 import { useChartSettings } from "../context/chartSettings";
-import { KLineProjectionMessages } from "./KLineProjectionMessages";
-import { KLineProjectionOrderBook } from "./KLineProjectionOrderBook";
+import { useSubscribeProjection } from "../context/dataAdapterContext";
+import { useSymbolKey } from "../context/symbolKey";
+import { useTradeIndicator } from "../hooks/api/tradeIndicator";
+import type { WebsocketProjectionEvent } from "../types/client/websocket";
 import { KLinePropjectionIndicators } from "./KLinePropjectionIndicators";
 
 type Props = {
-  /** @deprecated symbolKey is now read from SymbolKeyContext; this prop is unused */
-  tokenName?: string;
-  symbolId: number;
   timeframe: number;
   selectedTime?: number;
-  clearSelectedTime(): void;
 };
 
 export function KLineProjection({
-  symbolId,
   timeframe,
   selectedTime,
-  clearSelectedTime,
 }: Props) {
   const { projection } = useChartSettings();
+  const subscribeProjection = useSubscribeProjection();
+  const symbolKey = useSymbolKey();
+  const [projectionEvent, setProjectionEvent] = useState<
+    WebsocketProjectionEvent | undefined
+  >(undefined);
+  const { data: indicatorSnapshot } = useTradeIndicator({
+    timeframe,
+    time: selectedTime,
+  });
+
+  useEffect(() => {
+    if (!symbolKey || !subscribeProjection) {
+      return;
+    }
+
+    const unsubscribe = subscribeProjection(symbolKey, setProjectionEvent);
+    return () => {
+      unsubscribe();
+    };
+  }, [subscribeProjection, symbolKey]);
+
+  if (!projection.items.length) {
+    return null;
+  }
 
   return (
-    <>
-      {projection.showMessages && <KLineProjectionMessages />}
-      {projection.showOrderBookLines && <KLineProjectionOrderBook />}
-      {!!projection.indicators &&
-        !!Object.keys(projection.indicators).length && (
-          <KLinePropjectionIndicators
-            symbolId={symbolId}
-            timeframe={timeframe}
-            selectedTime={selectedTime}
-            clearSelectedTime={clearSelectedTime}
-          />
-        )}
-    </>
+    <KLinePropjectionIndicators
+      items={projection.items}
+      projection={projectionEvent}
+      indicatorSnapshot={indicatorSnapshot}
+    />
   );
 }

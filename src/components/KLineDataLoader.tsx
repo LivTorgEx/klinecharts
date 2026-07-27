@@ -3,7 +3,6 @@ import { roundToNearestDate } from "../utils/date";
 import { useEffect } from "react";
 import { useChart } from "../context/chart";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
-import { parseInputFloat } from "../utils/number";
 import { WebsocketTradeEvent } from "../types/client/websocket";
 import { useKLineChartDataAdapter } from "../context/dataAdapterContext";
 import { applyRealtimeTradeUpdate } from "../helpers/realtimeCandle";
@@ -67,7 +66,7 @@ function loadDataByParams(
 ) {
   queryClient
     .fetchQuery({
-      queryKey: ["TradeGroupLines", symbolKey, queryParams],
+      queryKey: ["Klines", symbolKey, queryParams],
       queryFn: () => loadBars({ symbolKey, ...queryParams }),
     })
     .then((lines) =>
@@ -78,11 +77,9 @@ function loadDataByParams(
           close: line.close,
           high: line.high,
           low: line.low,
-          buy: parseInputFloat(line.qty_buy, 0),
-          sell: parseInputFloat(line.qty_sell, 0),
-          volume:
-            parseInputFloat(line.qty_buy, 0) +
-            Math.abs(parseInputFloat(line.qty_sell, 0)),
+          buy: line.qty_buy,
+          sell: line.qty_sell,
+          volume: line.qty_buy + Math.abs(line.qty_sell),
         })
       )
     )

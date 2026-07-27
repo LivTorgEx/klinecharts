@@ -44,8 +44,8 @@ export type KLineChartBar = {
   close: number;
   high: number;
   low: number;
-  qty_buy: string;
-  qty_sell: string;
+  qty_buy: number;
+  qty_sell: number;
 };
 
 export type KLineChartSubscribeTrade = (

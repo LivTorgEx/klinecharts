@@ -160,7 +160,7 @@ export function getProjectionSummary(
   }
 
   const snapshotValue =
-    indicatorSnapshot?.indicators[item.source.key]?.[item.source.property];
+    indicatorSnapshot?.indicators?.[item.source.key]?.[item.source.property];
   return [
     {
       label: `${item.source.name}[${item.source.property}]`,

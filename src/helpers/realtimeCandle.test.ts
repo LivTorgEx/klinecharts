@@ -5,9 +5,9 @@ import { applyRealtimeTradeUpdate } from "./realtimeCandle.ts";
 
 test("realtime candle updates, rolls over, and ignores late trades", () => {
   const timeframe = 60;
-  const symbolName = "BTCUSDT";
+  const symbolKey = "OKX#BTC-USDT-SWAP#SWAP";
   const firstTick = {
-    symbol: symbolName,
+    symbol: symbolKey,
     price: 100,
     quantity: 2,
     was_buyer_maker: false,
@@ -18,7 +18,7 @@ test("realtime candle updates, rolls over, and ignores late trades", () => {
     currentCandle: null,
     trade: firstTick,
     timeframe,
-    symbolName,
+    symbolKey,
     lastBar: undefined,
   });
 
@@ -36,7 +36,7 @@ test("realtime candle updates, rolls over, and ignores late trades", () => {
   });
 
   const secondTick = {
-    symbol: symbolName,
+    symbol: symbolKey,
     price: 105,
     quantity: 3,
     was_buyer_maker: true,
@@ -47,7 +47,7 @@ test("realtime candle updates, rolls over, and ignores late trades", () => {
     currentCandle: first.currentCandle,
     trade: secondTick,
     timeframe,
-    symbolName,
+    symbolKey,
     lastBar: first.currentCandle ?? undefined,
   });
 
@@ -65,7 +65,7 @@ test("realtime candle updates, rolls over, and ignores late trades", () => {
   });
 
   const nextMinuteTick = {
-    symbol: symbolName,
+    symbol: symbolKey,
     price: 110,
     quantity: 1,
     was_buyer_maker: false,
@@ -76,7 +76,7 @@ test("realtime candle updates, rolls over, and ignores late trades", () => {
     currentCandle: second.currentCandle,
     trade: nextMinuteTick,
     timeframe,
-    symbolName,
+    symbolKey,
     lastBar: second.currentCandle,
   });
 
@@ -94,7 +94,7 @@ test("realtime candle updates, rolls over, and ignores late trades", () => {
   });
 
   const lateTick = {
-    symbol: symbolName,
+    symbol: symbolKey,
     price: 90,
     quantity: 4,
     was_buyer_maker: false,
@@ -105,7 +105,7 @@ test("realtime candle updates, rolls over, and ignores late trades", () => {
     currentCandle: third.currentCandle,
     trade: lateTick,
     timeframe,
-    symbolName,
+    symbolKey,
     lastBar: third.currentCandle,
   });
 

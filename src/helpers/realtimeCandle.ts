@@ -28,16 +28,16 @@ export function applyRealtimeTradeUpdate({
   currentCandle,
   trade,
   timeframe,
-  symbolName,
+  symbolKey,
   lastBar,
 }: {
   currentCandle: KLineData | null;
   trade: RealtimeTradeEvent;
   timeframe: number;
-  symbolName?: string;
+  symbolKey?: string;
   lastBar?: KLineData;
 }): RealtimeCandleUpdate {
-  if (trade.symbol !== symbolName) {
+  if (trade.symbol !== symbolKey) {
     return {
       currentCandle,
       ignored: true,

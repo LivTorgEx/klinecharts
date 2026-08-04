@@ -106,8 +106,9 @@ export function KLineDataLoader({
       return;
     }
 
-    // Extract trading pair from symbolKey (format: "EXCHANGE#PAIR#TYPE")
-    const symbolName = symbol ? symbol.split("#")[1] : symbol;
+    // Realtime trade events use the complete symbol_key, for example
+    // "OKX#ACT-USDT-SWAP#SWAP". Keep the same identifier for filtering.
+    const tradeSymbolKey = symbolKey;
     let currentCandle: KLineData | null = null;
     let unsubscribeTrade: (() => void) | undefined;
     let unsubscribeProjection: (() => void) | undefined;
@@ -138,7 +139,7 @@ export function KLineDataLoader({
         currentCandle,
         trade,
         timeframe,
-        symbolName,
+        symbolKey: tradeSymbolKey,
         lastBar,
       });
 

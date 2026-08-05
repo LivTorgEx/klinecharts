@@ -27,7 +27,7 @@ export function KLineChartProgressPositions({ botId }: Props) {
   const subscribeTrade = useSubscribeTrade();
   const { timeframe } = useChartSettings();
   const symbolKey = useSymbolKey();
-  const symbol = symbolKey.split("#")[1] ?? "";
+  const normalizedSymbolKey = symbolKey.trim().toUpperCase();
   const { data: positions } = useBotPositions(
     {
       bot_id: botId,
@@ -71,8 +71,14 @@ export function KLineChartProgressPositions({ botId }: Props) {
         return;
       }
 
+      // Wait for a valid mark price before calculating floating PnL. The
+      // previous non-null assertion produced NaN on the initial render.
+      if (price === undefined || !Number.isFinite(price) || price <= 0) {
+        return;
+      }
+
       const assetSize = position.qty * position.entry_price;
-      const change = toMeasurePrice(position.entry_price, price!) / 100;
+      const change = toMeasurePrice(position.entry_price, price) / 100;
 
       const extendData: KLineChartPositionData = {
         qty: position.qty,
@@ -223,13 +229,13 @@ export function KLineChartProgressPositions({ botId }: Props) {
     }
 
     function updateTrade(event: WebsocketTradeEvent) {
-      if (event.symbol === symbol) {
+      if (event.symbol.trim().toUpperCase() === normalizedSymbolKey) {
         setPrice(event.price);
       }
     }
 
     return subscribeTrade(symbolKey, updateTrade);
-  }, [subscribeTrade, symbolKey, symbol]);
+  }, [subscribeTrade, symbolKey, normalizedSymbolKey]);
 
   return null;
 }

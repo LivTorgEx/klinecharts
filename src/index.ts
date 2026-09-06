@@ -25,5 +25,4 @@ export type {
   KLineChartPositionOrder,
   KLineChartPositionStatus,
 } from "./types/client/klinechart";
-export type { OrderNote } from "./types/client/orderNote";
 export type { KLineChartDataAdapter } from "./types/client/dataAdapter";

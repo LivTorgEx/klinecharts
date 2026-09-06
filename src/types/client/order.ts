@@ -1,6 +1,5 @@
 import { PositionDirection } from "./direction";
 import { OrderSide } from "./direction";
-import type { OrderNote } from "./orderNote";
 
 export type PositionOrder = {
   id?: number | string;
@@ -13,7 +12,8 @@ export type PositionOrder = {
   update_at?: number;
   client_id?: number | string;
   original_id?: number | string;
-  notes?: OrderNote | null;
+  note?: string | null;
+  mark?: string | null;
   status?: string;
   qty_filled?: number;
   /** Direction of the parent position (LONG/SHORT) this order belongs to. */

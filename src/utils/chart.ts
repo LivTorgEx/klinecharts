@@ -30,7 +30,9 @@ function normalizeProjectionSettings(
   return { items: [] };
 }
 
-function normalizeChartSettings(settings: Partial<ChartSettings>): ChartSettings {
+function normalizeChartSettings(
+  settings: Partial<ChartSettings>
+): ChartSettings {
   return {
     ...DEFAULT_VALUES,
     ...settings,

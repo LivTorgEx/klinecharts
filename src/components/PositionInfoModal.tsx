@@ -54,7 +54,8 @@ export function PositionInfoModal({
   const amount = Math.abs(order.qty) * price;
   const isBuy = order.qty > 0;
 
-  const note = order.notes;
+  const note = order.note;
+  const hasMetadata = Boolean(note) || Boolean(order.mark);
 
   return (
     <Draggable
@@ -168,8 +169,8 @@ export function PositionInfoModal({
             </TableBody>
           </Table>
 
-          {/* Notes / context */}
-          {note && (
+          {/* Order metadata */}
+          {hasMetadata && (
             <>
               <Divider sx={{ my: 0.75 }} />
               <Typography
@@ -188,9 +189,9 @@ export function PositionInfoModal({
                 direction="row"
                 sx={{ flexWrap: "wrap", gap: 0.5, px: 0.5 }}
               >
-                {note.note !== undefined && note.note !== "" && (
+                {note && (
                   <Chip
-                    label={note.note}
+                    label={note}
                     size="small"
                     variant="outlined"
                     sx={{
@@ -203,19 +204,12 @@ export function PositionInfoModal({
                     }}
                   />
                 )}
-                {note.size !== undefined && (
+                {order.mark && (
                   <Chip
-                    label={String(note.size)}
+                    label={`Mark: ${order.mark}`}
                     size="small"
                     variant="outlined"
-                    sx={{
-                      fontSize: 11,
-                      height: "auto",
-                      "& .MuiChip-label": {
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                      },
-                    }}
+                    sx={{ fontSize: 11, height: "auto" }}
                   />
                 )}
               </Stack>

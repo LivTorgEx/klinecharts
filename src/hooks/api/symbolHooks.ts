@@ -4,25 +4,25 @@ import { useQuery } from "@tanstack/react-query";
 import type { SymbolType } from "../../types/client/symbol";
 import { useKLineChartDataAdapter } from "../../context/dataAdapterContext";
 
-export function useSymbols(can_trade = true, exchange_code?: string) {
+export function useSymbols(can_trade = true, provider_code?: string) {
   const adapter = useKLineChartDataAdapter();
 
   return useQuery({
-    queryKey: ["Symbols", can_trade, exchange_code],
+    queryKey: ["Symbols", can_trade, provider_code],
     queryFn: () =>
       adapter.loadSymbols({
         can_trade: can_trade ? true : undefined,
-        exchange_code,
+        provider_code,
       }),
   });
 }
 
-export function useSymbolsAll(exchange_code?: string) {
+export function useSymbolsAll(provider_code?: string) {
   const adapter = useKLineChartDataAdapter();
 
   return useQuery({
-    queryKey: ["Symbols", "all", exchange_code],
-    queryFn: () => adapter.loadSymbols({ exchange_code }),
+    queryKey: ["Symbols", "all", provider_code],
+    queryFn: () => adapter.loadSymbols({ provider_code }),
   });
 }
 

@@ -8,7 +8,7 @@ import type { ChartSettingsProjectionIndicatorSource } from "./chart";
 
 export type KLineChartLoadSymbolsParams = {
   can_trade?: boolean;
-  exchange_code?: string;
+  provider_code?: string;
 };
 
 export type KLineChartLoadBotPositionsParams = {

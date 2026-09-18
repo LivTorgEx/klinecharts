@@ -113,3 +113,37 @@ test("realtime candle updates, rolls over, and ignores late trades", () => {
   assert.deepEqual(late.currentCandle, third.currentCandle);
   assert.equal(late.flushedCandle, undefined);
 });
+
+test("treats optional buy and sell fields as zero when missing", () => {
+  const result = applyRealtimeTradeUpdate({
+    currentCandle: null,
+    trade: {
+      symbol: "OKX#BTC-USDT-SWAP#SWAP",
+      price: 100,
+      quantity: 2,
+      was_buyer_maker: false,
+      trade_time: 60_000,
+    },
+    timeframe: 60,
+    symbolKey: "OKX#BTC-USDT-SWAP#SWAP",
+    lastBar: {
+      timestamp: 60_000,
+      open: 99,
+      close: 99,
+      high: 100,
+      low: 98,
+      volume: 4,
+    },
+  });
+
+  assert.deepEqual(result.currentCandle, {
+    timestamp: 60_000,
+    open: 99,
+    close: 100,
+    high: 100,
+    low: 98,
+    buy: 2,
+    sell: 0,
+    volume: 6,
+  });
+});

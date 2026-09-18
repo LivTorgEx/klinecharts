@@ -1,8 +1,13 @@
 import type { KLineData } from "klinecharts";
 
+export type RealtimeKLineData = KLineData & {
+  buy?: number;
+  sell?: number;
+};
+
 export type RealtimeCandleUpdate = {
-  currentCandle: KLineData | null;
-  flushedCandle?: KLineData;
+  currentCandle: RealtimeKLineData | null;
+  flushedCandle?: RealtimeKLineData;
   ignored: boolean;
 };
 
@@ -14,7 +19,7 @@ type RealtimeTradeEvent = {
   trade_time: number;
 };
 
-function cloneKLineData(data: KLineData): KLineData {
+function cloneKLineData(data: RealtimeKLineData): RealtimeKLineData {
   return { ...data };
 }
 
@@ -31,11 +36,11 @@ export function applyRealtimeTradeUpdate({
   symbolKey,
   lastBar,
 }: {
-  currentCandle: KLineData | null;
+  currentCandle: RealtimeKLineData | null;
   trade: RealtimeTradeEvent;
   timeframe: number;
   symbolKey?: string;
-  lastBar?: KLineData;
+  lastBar?: RealtimeKLineData;
 }): RealtimeCandleUpdate {
   if (trade.symbol !== symbolKey) {
     return {
@@ -76,7 +81,7 @@ export function applyRealtimeTradeUpdate({
     };
   }
 
-  const nextCandle: KLineData = {
+  const nextCandle: RealtimeKLineData = {
     ...currentCandle,
     close: trade.price,
     high: Math.max(currentCandle.high, trade.price),

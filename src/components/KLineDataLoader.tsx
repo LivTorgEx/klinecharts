@@ -5,7 +5,10 @@ import { useChart } from "../context/chart";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import { WebsocketTradeEvent } from "../types/client/websocket";
 import { useKLineChartDataAdapter } from "../context/dataAdapterContext";
-import { applyRealtimeTradeUpdate } from "../helpers/realtimeCandle";
+import {
+  applyRealtimeTradeUpdate,
+  type RealtimeKLineData,
+} from "../helpers/realtimeCandle";
 import {
   KLineChartBar,
   KLineChartLoadBarsParams,
@@ -109,7 +112,7 @@ export function KLineDataLoader({
     // Realtime trade events use the complete symbol_key, for example
     // "OKX#ACT-USDT-SWAP#SWAP". Keep the same identifier for filtering.
     const tradeSymbolKey = symbolKey;
-    let currentCandle: KLineData | null = null;
+    let currentCandle: RealtimeKLineData | null = null;
     let unsubscribeTrade: (() => void) | undefined;
     let unsubscribeProjection: (() => void) | undefined;
     let animationFrameId: number | undefined;
@@ -130,7 +133,9 @@ export function KLineDataLoader({
 
     const updateTrade = (trade: WebsocketTradeEvent) => {
       const dataList = chart.getDataList();
-      const lastBar = dataList[dataList.length - 1];
+      const lastBar = dataList[dataList.length - 1] as
+        | RealtimeKLineData
+        | undefined;
       const {
         currentCandle: nextCandle,
         flushedCandle,

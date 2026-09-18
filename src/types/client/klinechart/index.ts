@@ -2,11 +2,11 @@ import type { PositionOrder } from "../order";
 import type { PositionDirection } from "../direction";
 
 export type KLineChartPositionStatus =
-  | "Created"
-  | "InProgress"
-  | "Finishing"
-  | "Completed"
-  | "Failed";
+  | "created"
+  | "in_progress"
+  | "finishing"
+  | "completed"
+  | "failed";
 
 export type KLineChartPositionOrder = PositionOrder;
 

@@ -16,8 +16,8 @@ export function KLineChartFinishedPositions({ botId, symbolKey }: Props) {
   const { data: positions } = useBotPositions({
     bot_id: botId,
     symbol_key: symbolKey,
-    status: ["Completed"],
-    order_status: ["Filled"],
+    status: ["completed"],
+    order_status: ["filled"],
   });
   const existingKeys = useRef<Set<string>>(new Set());
 

@@ -1,6 +1,6 @@
 import { getFigureClass, KLineData, registerIndicator } from "klinecharts";
 
-type MovementDirection = "Long" | "Short";
+type MovementDirection = "long" | "short";
 
 interface MovementBlock {
   startIndex: number;
@@ -25,7 +25,7 @@ function buildMovementBlocks(dataList: KLineData[]): MovementBlock[] {
   dataList.forEach((kLineData, idx) => {
     const buy = typeof kLineData["buy"] === "number" ? kLineData["buy"] : 0;
     const sell = typeof kLineData["sell"] === "number" ? kLineData["sell"] : 0;
-    const direction: MovementDirection = buy >= sell ? "Long" : "Short";
+    const direction: MovementDirection = buy >= sell ? "long" : "short";
 
     if (currentDirection === null) {
       currentDirection = direction;
@@ -108,11 +108,11 @@ registerIndicator<MovementOutput>({
         const height = Math.abs(yBottom - yTop);
 
         const color =
-          block.direction === "Long"
+          block.direction === "long"
             ? "rgba(0,200,80,0.25)"
             : "rgba(220,50,50,0.25)";
         const borderColor =
-          block.direction === "Long"
+          block.direction === "long"
             ? "rgba(0,200,80,0.6)"
             : "rgba(220,50,50,0.6)";
 
@@ -133,7 +133,7 @@ registerIndicator<MovementOutput>({
         const label = `${pct.toFixed(1)}%`;
         const cx = xStart + width / 2;
         const labelY =
-          block.direction === "Long" ? yTop - 5 : yTop + height + 14;
+          block.direction === "long" ? yTop - 5 : yTop + height + 14;
         ctx.save();
         ctx.font = "bold 11px sans-serif";
         ctx.textAlign = "center";
@@ -141,7 +141,7 @@ registerIndicator<MovementOutput>({
         ctx.shadowColor = "rgba(0,0,0,0.8)";
         ctx.shadowBlur = 3;
         ctx.fillStyle =
-          block.direction === "Long" ? "rgb(0,230,100)" : "rgb(255,80,80)";
+          block.direction === "long" ? "rgb(0,230,100)" : "rgb(255,80,80)";
         ctx.fillText(label, cx, labelY);
         ctx.restore();
       });

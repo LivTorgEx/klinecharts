@@ -42,7 +42,7 @@ function WorkerPositionsRenderer({
   const { data: workerPositions } = useAccountStrategyNFTPositions(
     workerId,
     {
-      status: ["Created", "InProgress", "Finishing"],
+      status: ["created", "in_progress", "finishing"],
     },
     { page: 0, page_size: 100 }
   );

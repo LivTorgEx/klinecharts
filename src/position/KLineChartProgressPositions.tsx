@@ -32,8 +32,8 @@ export function KLineChartProgressPositions({ botId }: Props) {
     {
       bot_id: botId,
       symbol_key: symbolKey,
-      status: ["Created", "InProgress"],
-      order_status: ["New", "PartiallyFilled", "Filled", "PendingTrigger"],
+      status: ["created", "in_progress"],
+      order_status: ["new", "partially_filled", "filled", "pending_trigger"],
     },
     "critical"
   );
@@ -154,7 +154,7 @@ export function KLineChartProgressPositions({ botId }: Props) {
           },
         ];
         if (
-          ["New", "PartiallyFilled", "PendingTrigger"].includes(
+          ["new", "partially_filled", "pending_trigger"].includes(
             order.status ?? ""
           )
         ) {

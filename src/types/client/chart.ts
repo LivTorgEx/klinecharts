@@ -118,7 +118,7 @@ export type ChartInfoDrawBox = {
   end_time: number;
   price_min: number;
   price_max: number;
-  direction: "SHORT" | "LONG";
+  direction: "short" | "long";
   color?: string;
   title?: string;
 };

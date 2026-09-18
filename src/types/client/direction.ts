@@ -1,24 +1,19 @@
 export const PositionDirection = {
-  LONG: "LONG",
-  SHORT: "SHORT",
-  BOTH: "BOTH",
+  LONG: "long",
+  SHORT: "short",
+  BOTH: "both",
 } as const;
 
 export type PositionDirection =
   (typeof PositionDirection)[keyof typeof PositionDirection];
 
-const POSITION_DIRECTION_LOOKUP: Record<string, PositionDirection> = {
-  LONG: PositionDirection.LONG,
-  SHORT: PositionDirection.SHORT,
-  BOTH: PositionDirection.BOTH,
-};
-
 export function isPositionDirection(
   value: unknown
 ): value is PositionDirection {
   return (
-    typeof value === "string" &&
-    POSITION_DIRECTION_LOOKUP[value.toUpperCase()] !== undefined
+    value === PositionDirection.LONG ||
+    value === PositionDirection.SHORT ||
+    value === PositionDirection.BOTH
   );
 }
 
@@ -29,26 +24,18 @@ export function normalizePositionDirection(
     return undefined;
   }
 
-  return POSITION_DIRECTION_LOOKUP[value.toUpperCase()];
+  return isPositionDirection(value) ? value : undefined;
 }
 
 export const OrderSide = {
-  BUY: "BUY",
-  SELL: "SELL",
+  BUY: "buy",
+  SELL: "sell",
 } as const;
 
 export type OrderSide = (typeof OrderSide)[keyof typeof OrderSide];
 
-const ORDER_SIDE_LOOKUP: Record<string, OrderSide> = {
-  BUY: OrderSide.BUY,
-  SELL: OrderSide.SELL,
-};
-
 export function isOrderSide(value: unknown): value is OrderSide {
-  return (
-    typeof value === "string" &&
-    ORDER_SIDE_LOOKUP[value.toUpperCase()] !== undefined
-  );
+  return value === OrderSide.BUY || value === OrderSide.SELL;
 }
 
 export function normalizeOrderSide(value: unknown): OrderSide | undefined {
@@ -56,5 +43,5 @@ export function normalizeOrderSide(value: unknown): OrderSide | undefined {
     return undefined;
   }
 
-  return ORDER_SIDE_LOOKUP[value.toUpperCase()];
+  return isOrderSide(value) ? value : undefined;
 }

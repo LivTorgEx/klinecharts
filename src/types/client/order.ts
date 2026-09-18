@@ -7,16 +7,16 @@ export type PositionOrder = {
   qty: number;
   side: OrderSide;
   created_at?: number;
-  order_type?: string;
+  order_type?: PositionOrderType;
   stop_price?: number;
   update_at?: number;
   client_id?: number | string;
   original_id?: number | string;
   note?: string | null;
   mark?: string | null;
-  status?: string;
+  status?: PositionOrderStatus;
   qty_filled?: number;
-  /** Direction of the parent position (LONG/SHORT) this order belongs to. */
+  /** Direction of the parent position (long/short) this order belongs to. */
   position_side?: PositionDirection;
   /** Exchange-reported realized PnL for this order (quote ccy). */
   realized_pnl?: number;
@@ -25,15 +25,25 @@ export type PositionOrder = {
 };
 
 export type PositionOrderType =
-  | "MARKET"
-  | "LIMIT"
-  | "STOP_MARKET"
-  | "STOP_LIMIT"
-  | string;
+  | "market"
+  | "limit"
+  | "stop_market"
+  | "stop_limit"
+  | "take_profit"
+  | "take_profit_market"
+  | "trailing_stop_market";
+
+export type PositionOrderStatus =
+  | "new"
+  | "partially_filled"
+  | "filled"
+  | "expired"
+  | "canceled"
+  | "pending_trigger";
 
 export const PositionOrderType = {
-  Market: "MARKET",
-  Limit: "LIMIT",
-  StopMarket: "STOP_MARKET",
-  StopLimit: "STOP_LIMIT",
+  Market: "market",
+  Limit: "limit",
+  StopMarket: "stop_market",
+  StopLimit: "stop_limit",
 } as const;

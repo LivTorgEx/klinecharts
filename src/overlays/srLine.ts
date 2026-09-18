@@ -1,7 +1,7 @@
 import { registerOverlay } from "klinecharts";
 
 export type SRLineParams = {
-  type: "Buy" | "Sell" | "Cross";
+  type: "buy" | "sell" | "cross";
   message?: string;
 };
 
@@ -20,7 +20,7 @@ registerOverlay<SRLineParams>({
       {
         type: "line",
         styles: {
-          style: type === "Buy" || type === "Sell" ? "solid" : "dashed",
+          style: type === "buy" || type === "sell" ? "solid" : "dashed",
         },
         attrs: { coordinates },
       },

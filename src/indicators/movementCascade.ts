@@ -1,6 +1,6 @@
 import { getFigureClass, KLineData, registerIndicator } from "klinecharts";
 
-type MovementDirection = "Long" | "Short";
+type MovementDirection = "long" | "short";
 
 interface RawBlock {
   startIndex: number;
@@ -37,7 +37,7 @@ function buildRawBlocks(dataList: KLineData[]): RawBlock[] {
   dataList.forEach((bar, idx) => {
     const buy = typeof bar["buy"] === "number" ? bar["buy"] : 0;
     const sell = typeof bar["sell"] === "number" ? bar["sell"] : 0;
-    const direction: MovementDirection = buy >= sell ? "Long" : "Short";
+    const direction: MovementDirection = buy >= sell ? "long" : "short";
 
     if (currentDirection === null) {
       currentDirection = direction;
@@ -123,7 +123,7 @@ function cascadeMerge(
           // Absorb counter block + next block into prev
           const breakLevel: BreakLevel = {
             price:
-              cur.direction === "Short"
+              cur.direction === "short"
                 ? cur.low // counter short → its low is the support break level
                 : cur.high, // counter long → its high is the resistance break level
             midIndex: Math.round((cur.startIndex + cur.endIndex) / 2),
@@ -205,7 +205,7 @@ registerIndicator<CascadeOutput>({
         const yBottom = yAxis.convertToPixel(block.low);
         const height = Math.abs(yBottom - yTop);
 
-        const isLong = block.direction === "Long";
+        const isLong = block.direction === "long";
         const color = isLong ? "rgba(0,200,80,0.2)" : "rgba(220,50,50,0.2)";
         const borderColor = isLong
           ? "rgba(0,200,80,0.7)"

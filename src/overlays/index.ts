@@ -9,3 +9,7 @@ import "./srLine";
 import "./movBreakLine";
 import "./quickAddButton";
 import "./orderBookLine";
+import "./tradePosition";
+import "./tradeOrder";
+import "./tradePositionHistory";
+import "./tradeOrderHistory";

@@ -5,6 +5,8 @@ export * from "./KLineChartSymbol";
 export * from "./KLineChartBacktest";
 export * from "./KLineChartPosition";
 export * from "./position/KLineChartProgressPositions";
+export * from "./position/KLineChartTradingPositions";
+export * from "./position/KLineChartTradingOrders";
 export * from "./position/KLineChartFinishedPositions";
 export * from "./position/KLineChartWorkerPositionsContent";
 export * from "./components/KLineChartAlerts";
@@ -19,6 +21,11 @@ export * from "./utils/date";
 export { subscribeMarketDataTrades } from "./helpers/marketDataTrades";
 export * from "./types/client/direction";
 export type { MarketDecision } from "./types/client/marketDecision";
+export type {
+  TradeOrder,
+  TradePosition,
+  TradePositionHistory,
+} from "./types/client/trade";
 export type {
   KLineChartPosition,
   KLineChartPositionOrder,

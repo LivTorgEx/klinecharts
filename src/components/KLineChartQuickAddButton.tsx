@@ -32,14 +32,22 @@ type Props = {
     isBuy: boolean,
     position?: { x: number; y: number }
   ) => void;
+  onHoverPriceChange?: (price: number | null) => void;
 };
 
-export function KLineChartQuickAddButton({ onQuickAdd }: Props) {
+export function KLineChartQuickAddButton({
+  onQuickAdd,
+  onHoverPriceChange,
+}: Props) {
   const chart = useChart();
   const [hoverPrice, setHoverPrice] = useState<number | null>(null);
   const overlayIdRef = useRef<string>("quickAddButton_hover");
   const touchTimeoutRef = useRef<number | null>(null);
   const touchModeRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    onHoverPriceChange?.(hoverPrice);
+  }, [hoverPrice, onHoverPriceChange]);
 
   useEffect(() => {
     if (!chart) return;

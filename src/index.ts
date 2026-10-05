@@ -1,4 +1,5 @@
 export * from "./KLineChart";
+export * from "./components/TradingKLineChartControls";
 export * from "./KLineChartBot";
 export * from "./KLineChartSymbol";
 export * from "./KLineChartBacktest";
@@ -9,17 +10,15 @@ export * from "./position/KLineChartWorkerPositionsContent";
 export * from "./components/KLineChartAlerts";
 export * from "./components/KLineChartAlertActions";
 export * from "./components/KLineChartQuickAddButton";
+export * from "./settings/KLineChartSettingsModal";
 export * from "./components/PositionInfoModalsContainer";
 export * from "./context/chartSettings";
 export * from "./context/dataAdapterContext";
 export * from "./context/symbolKey";
 export * from "./utils/date";
+export { subscribeMarketDataTrades } from "./helpers/marketDataTrades";
 export * from "./types/client/direction";
-export type {
-  KLineChartLoadProjectionIndicatorsParams,
-  KLineChartProjectionIndicatorCatalogItem,
-  KLineChartProjectionIndicatorSnapshot,
-} from "./types/client/dataAdapter";
+export type { MarketDecision } from "./types/client/marketDecision";
 export type {
   KLineChartPosition,
   KLineChartPositionOrder,

@@ -1,21 +1,7 @@
 import { useRef } from "react";
-import {
-  Box,
-  Chip,
-  Divider,
-  IconButton,
-  Paper,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-  Typography,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import Draggable from "react-draggable";
-
-import { PositionOrder } from "../types/client/order";
+import { Button, Text } from "@livtorgex/ui-kit";
+import { X } from "lucide-react";
+import type { PositionOrder } from "../types/client/order";
 import { formatChartDate } from "../utils/date";
 import { formatBigNumber } from "../utils/number";
 
@@ -26,21 +12,6 @@ type Props = {
   onClose: () => void;
 };
 
-function InfoRow({ label, value }: { label: string; value: string | number }) {
-  return (
-    <TableRow sx={{ "& td": { border: 0, py: 0.25, px: 0.5 } }}>
-      <TableCell
-        sx={{ color: "text.secondary", whiteSpace: "nowrap", fontSize: 12 }}
-      >
-        {label}
-      </TableCell>
-      <TableCell sx={{ fontWeight: 500, fontSize: 12, wordBreak: "break-all" }}>
-        {value}
-      </TableCell>
-    </TableRow>
-  );
-}
-
 export function PositionInfoModal({
   order,
   initialX = 80,
@@ -48,175 +19,49 @@ export function PositionInfoModal({
   onClose,
 }: Props) {
   const nodeRef = useRef<HTMLDivElement>(null);
-
   const side = order.qty > 0 ? "Buy" : "Sell";
   const price = order.price || order.stop_price || 0;
   const amount = Math.abs(order.qty) * price;
-  const isBuy = order.qty > 0;
-
-  const note = order.note;
-  const hasMetadata = Boolean(note) || Boolean(order.mark);
+  const rows: Array<[string, string | number]> = [
+    ["Price", price],
+    ...(order.position_side ? [["Position side", order.position_side] as [string, string]] : []),
+    ...(order.stop_price && order.stop_price !== order.price ? [["Stop price", order.stop_price] as [string, number]] : []),
+    ["Quantity", formatBigNumber(Math.abs(order.qty), "")],
+    ...(order.qty_filled !== undefined ? [["Filled quantity", formatBigNumber(order.qty_filled, "")] as [string, string]] : []),
+    ["Amount", `${formatBigNumber(amount, "")} $`],
+    ...(order.realized_pnl != null ? [["Realized PnL", `${formatBigNumber(order.realized_pnl, "")} $`] as [string, string]] : []),
+    ...(order.fee != null ? [["Fee", `${formatBigNumber(order.fee, "")} $`] as [string, string]] : []),
+    ...(order.status ? [["Status", order.status] as [string, string]] : []),
+    ...(order.update_at !== undefined ? [["Time", formatChartDate(order.update_at)] as [string, string]] : []),
+    ...(order.original_id ? [["Order ID", String(order.original_id)] as [string, string]] : []),
+    ...(order.client_id ? [["Client ID", String(order.client_id)] as [string, string]] : []),
+  ];
 
   return (
-    <Draggable
-      nodeRef={nodeRef}
-      handle=".position-info-modal-handle"
-      defaultPosition={{ x: initialX, y: initialY }}
-      cancel=".MuiDialogContent-root, .MuiIconButton-root"
+    <div
+      ref={nodeRef}
+      style={{ left: initialX, top: initialY }}
+      className="fixed z-[9999] min-w-[300px] max-w-[min(600px,calc(100vw-24px))] overflow-hidden rounded-xl border border-gray-700 bg-gray-950 text-white shadow-2xl"
     >
-      <Paper
-        ref={nodeRef}
-        elevation={8}
-        sx={{
-          position: "fixed",
-          left: 0,
-          top: 0,
-          zIndex: 9999,
-          minWidth: 300,
-          maxWidth: 600,
-          overflow: "hidden",
-          userSelect: "none",
-        }}
-      >
-        {/* Drag handle / header */}
-        <Stack
-          direction="row"
-          className="position-info-modal-handle"
-          sx={{
-            alignItems: "center",
-            justifyContent: "space-between",
-            px: 1.5,
-            py: 0.75,
-            bgcolor: isBuy ? "success.dark" : "error.dark",
-            cursor: "grab",
-            "&:active": { cursor: "grabbing" },
-          }}
-        >
-          <Stack direction="row" sx={{ alignItems: "baseline", gap: 1 }}>
-            <Typography
-              variant="subtitle2"
-              sx={{ color: "#fff", fontWeight: 700 }}
-            >
-              {side}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{ color: "rgba(255,255,255,0.85)" }}
-            >
-              {order.order_type}
-            </Typography>
-          </Stack>
-          <IconButton
-            size="small"
-            onClick={onClose}
-            sx={{ color: "#fff", p: 0.25 }}
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </Stack>
-
-        <Box sx={{ px: 1, py: 0.75 }}>
-          {/* Order info table */}
-          <Table size="small" sx={{ tableLayout: "auto" }}>
-            <TableBody>
-              <InfoRow label="Price" value={price} />
-              {order.position_side && (
-                <InfoRow label="Position side" value={order.position_side} />
-              )}
-              {!!order.stop_price && order.stop_price !== order.price && (
-                <InfoRow label="Stop price" value={order.stop_price} />
-              )}
-              <InfoRow
-                label="Qty"
-                value={formatBigNumber(Math.abs(order.qty), "")}
-              />
-              {order.qty_filled !== undefined && (
-                <InfoRow
-                  label="Qty filled"
-                  value={formatBigNumber(order.qty_filled, "")}
-                />
-              )}
-              <InfoRow
-                label="Amount"
-                value={`${formatBigNumber(amount, "")} $`}
-              />
-              {order.realized_pnl !== undefined &&
-                order.realized_pnl !== null && (
-                  <InfoRow
-                    label="Realized PnL"
-                    value={`${formatBigNumber(order.realized_pnl, "")} $`}
-                  />
-                )}
-              {order.fee !== undefined && order.fee !== null && (
-                <InfoRow
-                  label="Fee"
-                  value={`${formatBigNumber(order.fee, "")} $`}
-                />
-              )}
-              {order.status && <InfoRow label="Status" value={order.status} />}
-              {order.update_at !== undefined && (
-                <InfoRow
-                  label="Time"
-                  value={formatChartDate(order.update_at)}
-                />
-              )}
-              {order.original_id && (
-                <InfoRow label="Order ID" value={String(order.original_id)} />
-              )}
-              {order.client_id && (
-                <InfoRow label="Client ID" value={String(order.client_id)} />
-              )}
-            </TableBody>
-          </Table>
-
-          {/* Order metadata */}
-          {hasMetadata && (
-            <>
-              <Divider sx={{ my: 0.75 }} />
-              <Typography
-                variant="caption"
-                sx={{
-                  fontWeight: 600,
-                  color: "text.secondary",
-                  display: "block",
-                  mb: 0.5,
-                  px: 0.5,
-                }}
-              >
-                Notes
-              </Typography>
-              <Stack
-                direction="row"
-                sx={{ flexWrap: "wrap", gap: 0.5, px: 0.5 }}
-              >
-                {note && (
-                  <Chip
-                    label={note}
-                    size="small"
-                    variant="outlined"
-                    sx={{
-                      fontSize: 11,
-                      height: "auto",
-                      "& .MuiChip-label": {
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                      },
-                    }}
-                  />
-                )}
-                {order.mark && (
-                  <Chip
-                    label={`Mark: ${order.mark}`}
-                    size="small"
-                    variant="outlined"
-                    sx={{ fontSize: 11, height: "auto" }}
-                  />
-                )}
-              </Stack>
-            </>
-          )}
-        </Box>
-      </Paper>
-    </Draggable>
+        <div className={`position-info-modal-handle flex cursor-grab items-center justify-between px-3 py-2 active:cursor-grabbing ${order.qty > 0 ? "bg-emerald-800" : "bg-rose-800"}`}>
+          <div className="flex items-baseline gap-2">
+            <Text variant="body-sm" weight="bold">{side}</Text>
+            <Text variant="caption" tone="muted">{order.order_type}</Text>
+          </div>
+          <Button type="button" variant="icon" size="sm" aria-label="Close order details" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <dl className="position-info-modal-content grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 px-3 py-2 text-xs">
+          {rows.map(([label, value]) => (
+            <div key={label} className="contents">
+              <dt className="whitespace-nowrap text-gray-400">{label}</dt>
+              <dd className="break-all font-medium">{value}</dd>
+            </div>
+          ))}
+          {order.note ? <><dt className="text-gray-400">Note</dt><dd className="break-words">{order.note}</dd></> : null}
+          {order.mark ? <><dt className="text-gray-400">Mark</dt><dd>{order.mark}</dd></> : null}
+        </dl>
+    </div>
   );
 }

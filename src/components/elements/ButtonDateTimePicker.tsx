@@ -1,29 +1,33 @@
-import { useState } from "react";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { useState, type ReactNode } from "react";
+import { Button, Input } from "@livtorgex/ui-kit";
 
 type ButtonDateTimePickerProps = {
   onAccept?: (value: Date | null) => void;
-  children?: React.ReactNode;
+  children?: ReactNode;
 };
 
-export const ButtonDateTimePicker = ({
-  onAccept,
-  children,
-}: ButtonDateTimePickerProps) => {
-  const [value, setValue] = useState<Date | null>(null);
+export function ButtonDateTimePicker({ onAccept, children }: ButtonDateTimePickerProps) {
+  const [value, setValue] = useState("");
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <DateTimePicker
+    <div className="flex items-center gap-2">
+      <Input
+        aria-label={typeof children === "string" ? children : "Date and time"}
+        type="datetime-local"
         value={value}
-        onChange={setValue}
-        onAccept={onAccept}
-        label={typeof children === "string" ? children : undefined}
+        onChange={(event) => setValue(event.currentTarget.value)}
+        className="py-1.5"
       />
-    </LocalizationProvider>
+      <Button
+        type="button"
+        size="sm"
+        variant="secondary"
+        onClick={() => onAccept?.(value ? new Date(value) : null)}
+      >
+        {children ?? "Apply"}
+      </Button>
+    </div>
   );
-};
+}
 
 export default ButtonDateTimePicker;

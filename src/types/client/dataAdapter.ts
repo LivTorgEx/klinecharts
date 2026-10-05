@@ -1,10 +1,10 @@
-import { WebsocketProjectionEvent, WebsocketTradeEvent } from "./websocket";
+import { WebsocketTradeEvent } from "./websocket";
+import type { MarketDecision } from "./marketDecision";
 import { SymbolType } from "./symbol";
 import type {
   KLineChartPosition,
   KLineChartPositionStatus,
 } from "./klinechart";
-import type { ChartSettingsProjectionIndicatorSource } from "./chart";
 
 export type KLineChartLoadSymbolsParams = {
   can_trade?: boolean;
@@ -53,9 +53,9 @@ export type KLineChartSubscribeTrade = (
   handler: (event: WebsocketTradeEvent) => void
 ) => () => void;
 
-export type KLineChartSubscribeProjection = (
+export type KLineChartSubscribeMarketDecision = (
   symbolKey: string,
-  handler: (event: WebsocketProjectionEvent) => void
+  handler: (event: MarketDecision) => void
 ) => () => void;
 
 export type KLineChartAlertLine = {
@@ -65,37 +65,9 @@ export type KLineChartAlertLine = {
   color?: string;
 };
 
-export type KLineChartProjectionIndicatorCatalogItem = {
-  name: string;
-  key: string;
-  period?: string;
-  properties?: string[];
-};
-
-export type KLineChartProjectionIndicatorSnapshot = {
-  id: number;
-  time: number;
-  indicators: Record<string, Record<string, string | number>>;
-};
-
-export type KLineChartLoadProjectionIndicatorsParams = {
-  symbolKey: string;
-  timeframe: number;
-  time?: number;
-  indicatorName?: string;
-  limit?: number;
-  offset?: number;
-};
-
 export type KLineChartDataAdapter = {
   loadSymbols: (params: KLineChartLoadSymbolsParams) => Promise<SymbolType[]>;
   loadBars: (params: KLineChartLoadBarsParams) => Promise<KLineChartBar[]>;
-  loadProjectionIndicatorCatalog?: () => Promise<
-    KLineChartProjectionIndicatorCatalogItem[]
-  >;
-  loadProjectionIndicators?: (
-    params: KLineChartLoadProjectionIndicatorsParams
-  ) => Promise<KLineChartProjectionIndicatorSnapshot | null>;
   loadBotPositions?: (
     params: KLineChartLoadBotPositionsParams
   ) => Promise<{ data: KLineChartPosition[] }>;
@@ -109,5 +81,5 @@ export type KLineChartDataAdapter = {
   deleteAlert?: (alertId: string) => Promise<void>;
   onAlertError?: (message: string) => void;
   subscribeTrade?: KLineChartSubscribeTrade;
-  subscribeProjection?: KLineChartSubscribeProjection;
+  subscribeMarketDecision?: KLineChartSubscribeMarketDecision;
 };

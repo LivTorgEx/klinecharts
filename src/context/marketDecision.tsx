@@ -1,0 +1,44 @@
+import { createContext, useContext, useEffect, useState } from "react";
+import type { PropsWithChildren } from "react";
+
+import { useSubscribeMarketDecision } from "./dataAdapterContext";
+import type { MarketDecision } from "../types/client/marketDecision";
+
+const MarketDecisionContext = createContext<MarketDecision | null>(null);
+
+export function KLineChartMarketDecisionProvider({
+  symbolKey,
+  enabled,
+  children,
+}: PropsWithChildren<{ symbolKey?: string; enabled: boolean }>) {
+  const subscribeMarketDecision = useSubscribeMarketDecision();
+  const [snapshot, setSnapshot] = useState<{
+    symbolKey: string;
+    decision: MarketDecision;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!symbolKey || !enabled || !subscribeMarketDecision) return;
+
+    return subscribeMarketDecision(symbolKey, (decision) => {
+      if (decision.symbol_key === symbolKey) {
+        setSnapshot({ symbolKey, decision });
+      }
+    });
+  }, [enabled, subscribeMarketDecision, symbolKey]);
+
+  const decision =
+    enabled && snapshot && snapshot.symbolKey === symbolKey
+      ? snapshot.decision
+      : null;
+
+  return (
+    <MarketDecisionContext.Provider value={decision}>
+      {children}
+    </MarketDecisionContext.Provider>
+  );
+}
+
+export function useMarketDecision() {
+  return useContext(MarketDecisionContext);
+}

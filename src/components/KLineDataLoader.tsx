@@ -109,20 +109,13 @@ export function KLineDataLoader({
       return;
     }
 
-    // Realtime trade events use the complete symbol_key, for example
-    // "OKX#ACT-USDT-SWAP#SWAP". Keep the same identifier for filtering.
-    const tradeSymbolKey = symbolKey;
+    // Provider realtime events use the complete symbol_key, for example
+    // "OKX#ACT-USDT-SWAP#SWAP". Keep it intact for filtering.
+    const subscribedSymbolKey = symbolKey;
     let currentCandle: RealtimeKLineData | null = null;
     let unsubscribeTrade: (() => void) | undefined;
-    let unsubscribeProjection: (() => void) | undefined;
     let animationFrameId: number | undefined;
     let barCallback: ((data: KLineData) => void) | undefined;
-
-    // Subscribe to projection events so api_exchange streams projection data
-    // regardless of whether any projection UI components are mounted.
-    if (enableRealTime && symbolKey && adapter.subscribeProjection) {
-      unsubscribeProjection = adapter.subscribeProjection(symbolKey, () => {});
-    }
 
     const flushUpdate = () => {
       if (currentCandle && barCallback) {
@@ -144,7 +137,7 @@ export function KLineDataLoader({
         currentCandle,
         trade,
         timeframe,
-        symbolKey: tradeSymbolKey,
+        symbolKey: subscribedSymbolKey,
         lastBar,
       });
 
@@ -234,7 +227,6 @@ export function KLineDataLoader({
       }
       unsubscribeTrade?.();
       unsubscribeTrade = undefined;
-      unsubscribeProjection?.();
       currentCandle = null;
       barCallback = undefined;
       // Reset data loader to stop real-time updates
@@ -253,6 +245,7 @@ export function KLineDataLoader({
     timeEndLoader,
     symbol,
     enableRealTime,
+    adapter.subscribeTrade,
   ]);
 
   return null;

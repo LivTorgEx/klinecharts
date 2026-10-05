@@ -10,18 +10,24 @@ export const createTooltipDataSource = ({
   chart,
 }: IndicatorCreateTooltipDataSourceParams<unknown>): IndicatorTooltipData => {
   const defaultStyles = chart.getStyles().indicator;
-  const features = [];
-  if (indicator.visible) {
-    features.push(defaultStyles.tooltip.features[1]);
-    // icons.push(defaultStyles.tooltip.features[2]);
-    features.push(defaultStyles.tooltip.features[3]);
-  } else {
-    features.push(defaultStyles.tooltip.features[0]);
-    // icons.push(defaultStyles.tooltip.features[2]);
-    features.push(defaultStyles.tooltip.features[3]);
-  }
-  // @ts-expect-error issue in TS. All properties could be empty
-  return { features, name: indicator.name };
+  const features = [
+    indicator.visible
+      ? defaultStyles.tooltip.features[1]
+      : defaultStyles.tooltip.features[0],
+    ...(indicator.calcParams.length > 0
+      ? [defaultStyles.tooltip.features[2]]
+      : []),
+    defaultStyles.tooltip.features[3],
+  ];
+  return {
+    features,
+    name: indicator.name,
+    calcParamsText:
+      indicator.calcParams.length > 0
+        ? `(${indicator.calcParams.join(", ")})`
+        : "",
+    legends: [],
+  };
 };
 export const getIndicatorStyles = (
   color: string
@@ -39,10 +45,11 @@ export const getIndicatorStyles = (
         paddingTop: 0,
         paddingRight: 0,
         paddingBottom: 0,
-        type: "icon_font",
+        type: "path",
         content: {
-          code: "\ue903",
-          family: "icomoon",
+          path: "M1 7C2.6 3.9 4.6 2.2 7 2.2C9.4 2.2 11.4 3.9 13 7C11.4 10.1 9.4 11.8 7 11.8C4.6 11.8 2.6 10.1 1 7ZM7 4.4C5.6 4.4 4.4 5.6 4.4 7C4.4 8.4 5.6 9.6 7 9.6C8.4 9.6 9.6 8.4 9.6 7C9.6 5.6 8.4 4.4 7 4.4Z",
+          style: "stroke",
+          lineWidth: 1.4,
         },
         size: 14,
         color: color,
@@ -61,10 +68,11 @@ export const getIndicatorStyles = (
         paddingTop: 0,
         paddingRight: 0,
         paddingBottom: 0,
-        type: "icon_font",
+        type: "path",
         content: {
-          code: "\ue901",
-          family: "icomoon",
+          path: "M1 7C2.6 3.9 4.6 2.2 7 2.2C9.4 2.2 11.4 3.9 13 7C11.4 10.1 9.4 11.8 7 11.8C4.6 11.8 2.6 10.1 1 7ZM2 1L12 13",
+          style: "stroke",
+          lineWidth: 1.4,
         },
         size: 14,
         color: color,
@@ -73,7 +81,7 @@ export const getIndicatorStyles = (
         activeBackgroundColor: "rgba(22, 119, 255, 0.15)",
       },
       {
-        id: "setting",
+        id: "edit",
         position: "middle",
         marginLeft: 4,
         marginTop: 2,
@@ -83,10 +91,11 @@ export const getIndicatorStyles = (
         paddingTop: 0,
         paddingRight: 0,
         paddingBottom: 0,
-        type: "icon_font",
+        type: "path",
         content: {
-          code: "\ue902",
-          family: "icomoon",
+          path: "M2 10.8L2.4 13L4.6 12.6L11.8 5.4L9.6 3.2L2.4 10.4M8.8 4L11 6.2",
+          style: "stroke",
+          lineWidth: 1.4,
         },
         size: 14,
         color: color,
@@ -105,10 +114,11 @@ export const getIndicatorStyles = (
         paddingTop: 0,
         paddingRight: 0,
         paddingBottom: 0,
-        type: "icon_font",
+        type: "path",
         content: {
-          code: "\ue900",
-          family: "icomoon",
+          path: "M3 3L11 11M11 3L3 11",
+          style: "stroke",
+          lineWidth: 1.5,
         },
         size: 14,
         color: color,

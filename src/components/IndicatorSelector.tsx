@@ -1,188 +1,268 @@
 import { useState } from "react";
-import { Chart, IndicatorCreate, Nullable } from "klinecharts";
+import type { Chart, IndicatorCreate } from "klinecharts";
 import {
-  Box,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  IconButton,
-  MenuList,
-  MenuItem,
-} from "@mui/material";
-import { InfoOutlined } from "@mui/icons-material";
-import { useToggle } from "usehooks-ts";
+  Button,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@livtorgex/ui-kit";
 
 import { createTooltipDataSource } from "../constants/style";
-import { ChartSettingsIndicator } from "../types/client/chart";
-import { partialUpdateChartSettings } from "../utils/chart";
-import { SearchField } from "../components/elements/SearchField";
+import type { ChartSettingsIndicator } from "../types/client/chart";
+import { loadChartSettings, partialUpdateChartSettings } from "../utils/chart";
 
 type Props = {
   name: string;
-  chart: Nullable<Chart>;
+  chart: Chart | null;
 };
+
 type IndicatorOption = {
   name: string;
   calcParams?: number[];
   label: string;
+  overlay: boolean;
 };
 
 const INDICATORS: IndicatorOption[] = [
-  { name: "pSAR", label: "Parabolic SAR" },
-  { name: "ATRTralling", calcParams: [1, 10], label: "ATR Tralling" },
-  { name: "SuperTrend", calcParams: [10, 3], label: "SuperTrend" },
-  { name: "LTE_SMA", calcParams: [25], label: "Simple Moving Average (SMA)" },
-  { name: "EMA", calcParams: [25], label: "EMA" },
-  { name: "RMA", calcParams: [14], label: "RMA" },
-  { name: "BOLL", calcParams: [20, 2], label: "Bollinger Bands" },
-  { name: "LSMA", calcParams: [50], label: "Least Squares Moving Average" },
-  { name: "CE", calcParams: [22, 3], label: "Chandelier Exit" },
-  { name: "ZigZag", calcParams: [1.5, 9], label: "ZigZag" },
-  { name: "ZigZagLine", calcParams: [1.5, 9], label: "ZigZagLine" },
+  { name: "pSAR", label: "Parabolic SAR", overlay: true },
+  {
+    name: "ATRTralling",
+    calcParams: [1, 10],
+    label: "ATR Tralling",
+    overlay: true,
+  },
+  {
+    name: "SuperTrend",
+    calcParams: [10, 3],
+    label: "SuperTrend",
+    overlay: true,
+  },
+  {
+    name: "LTE_SMA",
+    calcParams: [25],
+    label: "Simple Moving Average (SMA)",
+    overlay: true,
+  },
+  { name: "EMA", calcParams: [25], label: "EMA", overlay: true },
+  { name: "RMA", calcParams: [14], label: "RMA", overlay: true },
+  {
+    name: "BOLL",
+    calcParams: [20, 2],
+    label: "Bollinger Bands",
+    overlay: true,
+  },
+  {
+    name: "LSMA",
+    calcParams: [50],
+    label: "Least Squares Moving Average",
+    overlay: true,
+  },
+  { name: "CE", calcParams: [22, 3], label: "Chandelier Exit", overlay: true },
+  { name: "ZigZag", calcParams: [1.5, 9], label: "ZigZag", overlay: true },
+  {
+    name: "ZigZagLine",
+    calcParams: [1.5, 9],
+    label: "ZigZagLine",
+    overlay: true,
+  },
   {
     name: "MRC",
     calcParams: [200, 1, 1.77, 2.415, 3.04],
     label: "Mean Reversion Channel (MRC)",
+    overlay: true,
   },
   {
     name: "DirectionalPivotSignal",
     calcParams: [30, 5, 5],
     label: "Directional Pivot Signal",
+    overlay: true,
   },
-  { name: "EMACross", label: "EMA Cross", calcParams: [9, 26] },
-  { name: "Imbalance", label: "Imbalance" },
-  { name: "movement", label: "Movement" },
-  { name: "movementCascade", label: "Movement (Cascade)" },
-];
-const SUB_INDICATORS: IndicatorOption[] = [
-  { name: "VOL", label: "Volume" },
-  { name: "VOL_GD", label: "Volume (Gain/Drop)", calcParams: [50] },
-  { name: "VOL_BUY_SELL", label: "Volume (Buy/Sell)", calcParams: [50] },
-  { name: "SMI", label: "SMI" },
-  { name: "ATR", label: "ATR" },
-  { name: "LTE_RSI", label: "RSI", calcParams: [14] },
-  { name: "NATR", calcParams: [14], label: "nATR" },
-  { name: "MFI", calcParams: [14], label: "Money Flow Index (MFI)" },
-  { name: "CCI", calcParams: [20], label: "Commodity Channel Index (CCI)" },
-  { name: "Stochastic", calcParams: [14, 1, 3], label: "Stochastic" },
+  { name: "EMACross", calcParams: [9, 26], label: "EMA Cross", overlay: true },
+  { name: "Imbalance", label: "Imbalance", overlay: true },
+  { name: "movement", label: "Movement", overlay: true },
+  { name: "movementCascade", label: "Movement (Cascade)", overlay: true },
+  { name: "VOL", label: "Volume", overlay: false },
+  {
+    name: "VOL_GD",
+    calcParams: [50],
+    label: "Volume (Gain/Drop)",
+    overlay: false,
+  },
+  {
+    name: "VOL_BUY_SELL",
+    calcParams: [50],
+    label: "Volume (Buy/Sell)",
+    overlay: false,
+  },
+  { name: "SMI", label: "SMI", overlay: false },
+  { name: "ATR", label: "ATR", overlay: false },
+  { name: "LTE_RSI", calcParams: [14], label: "RSI", overlay: false },
+  { name: "NATR", calcParams: [14], label: "nATR", overlay: false },
+  {
+    name: "MFI",
+    calcParams: [14],
+    label: "Money Flow Index (MFI)",
+    overlay: false,
+  },
+  {
+    name: "CCI",
+    calcParams: [20],
+    label: "Commodity Channel Index (CCI)",
+    overlay: false,
+  },
+  {
+    name: "Stochastic",
+    calcParams: [14, 1, 3],
+    label: "Stochastic",
+    overlay: false,
+  },
   {
     name: "MACD",
     calcParams: [12, 26, 9],
     label: "Moving Average Convergence Divergence (MACD)",
+    overlay: false,
   },
 ];
 
-export function IndicatorSelector({ chart, name }: Props) {
-  const [isOpen, toggleIsOpen] = useToggle(false);
-  const [search, setSearch] = useState("");
+function notifySettingsUpdated(name: string) {
+  window.dispatchEvent(
+    new CustomEvent("klinechart:settings-updated", { detail: { name } })
+  );
+}
 
-  const handleClose = () => {
-    setSearch("");
-    toggleIsOpen();
-  };
-  const handleCreateIndicator = (
-    params: Omit<ChartSettingsIndicator, "id">
-  ) => {
-    if (!chart) {
-      return;
+function createIndicatorId(
+  indicator: IndicatorCreate,
+  existing: ChartSettingsIndicator[]
+) {
+  const base = `${indicator.name}${indicator.calcParams?.length ? `_${indicator.calcParams.join("_")}` : ""}`;
+  let id = base;
+  let instance = 2;
+  while (existing.some((item) => item.id === id)) {
+    id = `${base}_${instance}`;
+    instance += 1;
+  }
+  return id;
+}
+
+export function IndicatorSelector({ name, chart }: Props) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const options = INDICATORS.filter((item) =>
+    item.label.toLowerCase().includes(query.toLowerCase())
+  );
+  const overlayOptions = options.filter((item) => item.overlay);
+  const subpaneOptions = options.filter((item) => !item.overlay);
+
+  function addIndicator(option: IndicatorOption) {
+    if (!chart) return;
+    const indicator: IndicatorCreate = {
+      name: option.name,
+      ...(option.calcParams ? { calcParams: [...option.calcParams] } : {}),
+    };
+    const current = loadChartSettings(name).indicators;
+    const id = createIndicatorId(indicator, current);
+    const params: Omit<ChartSettingsIndicator, "id"> = {
+      indicator,
+      isStack: true,
+      ...(option.overlay ? { paneOptions: { id: "candle_pane" } } : {}),
+    };
+    const createdId = chart.createIndicator(
+      { ...indicator, id, createTooltipDataSource },
+      params.isStack,
+      params.paneOptions
+    );
+    if (!createdId) return;
+
+    const resolvedCalcParams = chart
+      .getIndicators({ id })[0]
+      ?.calcParams.filter(
+        (value): value is number => typeof value === "number"
+      );
+    if (resolvedCalcParams?.length) {
+      params.indicator = { ...indicator, calcParams: resolvedCalcParams };
     }
 
-    const indicatorId =
-      params.indicator.name +
-      (params.indicator.calcParams
-        ? params.indicator.calcParams.join("_")
-        : "");
-
-    partialUpdateChartSettings(name, ({ indicators }) => {
-      if (indicators.find(({ id }) => id === indicatorId)) {
-        return false;
-      }
-      chart.createIndicator(
-        {
-          ...params.indicator,
-          id: indicatorId,
-          createTooltipDataSource,
-        },
-        params.isStack,
-        params.paneOptions
-      );
-
-      return {
-        indicators: [...indicators, { ...params, id: indicatorId }],
-      };
-    });
-  };
-  const handleAddIndicator = (indicator: IndicatorCreate) => {
-    const params: Omit<ChartSettingsIndicator, "id"> = {
-      indicator,
-      isStack: true,
-      paneOptions: { id: "candle_pane" },
-    };
-    handleCreateIndicator(params);
-    handleClose();
-  };
-  const handleAddSubIndicator = (indicator: IndicatorCreate) => {
-    const params: Omit<ChartSettingsIndicator, "id"> = {
-      indicator,
-      isStack: true,
-    };
-    handleCreateIndicator(params);
-    handleClose();
-  };
+    partialUpdateChartSettings(name, (previous) => ({
+      indicators: [...previous.indicators, { ...params, id }],
+    }));
+    notifySettingsUpdated(name);
+    setOpen(false);
+    setQuery("");
+  }
 
   return (
-    <>
-      <IconButton size="small" onClick={toggleIsOpen}>
-        <InfoOutlined />
-      </IconButton>
-      <Dialog open={isOpen} onClose={toggleIsOpen} maxWidth="md" fullWidth>
-        <DialogTitle>Indicators</DialogTitle>
-        <DialogContent>
-          <Box
-            sx={{
-              py: 2,
-            }}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          size="sm"
+          variant="icon-ghost"
+          type="button"
+          className="rounded-none text-gray-300"
+          disabled={!chart}
+          aria-label="Add indicator"
+          title="Add indicator"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            viewBox="0 0 20 20"
+            className="h-[18px] w-[18px]"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.7"
           >
-            <SearchField
-              fullWidth
-              defaultValue={search}
-              onChange={setSearch}
-              delay={16}
-            />
-          </Box>
-          <MenuList>
-            {INDICATORS.filter(({ label }) =>
-              label.toLowerCase().includes(search.toLowerCase())
-            ).map(({ label, ...params }) => (
-              <MenuItem
-                key={params.name}
-                onClick={() => {
-                  handleAddIndicator(params);
-                }}
-              >
-                {label}
-              </MenuItem>
-            ))}
-          </MenuList>
-
-          <Divider />
-          <MenuList>
-            {SUB_INDICATORS.filter(({ label }) =>
-              label.toLowerCase().includes(search.toLowerCase())
-            ).map(({ label, ...params }) => (
-              <MenuItem
-                key={params.name}
-                onClick={() => {
-                  handleAddSubIndicator(params);
-                }}
-              >
-                {label}
-              </MenuItem>
-            ))}
-          </MenuList>
-        </DialogContent>
-      </Dialog>
-    </>
+            <path d="M9.4 3.5H8.2c-1.3 0-2 .9-2.2 2.3L5 15.8M3.8 7.4h5" />
+            <path d="m10.3 8.7 5.1 5.1m0-5.1-5.1 5.1" />
+          </svg>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-[min(92vw,380px)] rounded-none border-gray-700 bg-[#0b0c0e] p-2"
+      >
+        <Command>
+          <CommandInput
+            value={query}
+            onValueChange={setQuery}
+            placeholder="Search indicators"
+          />
+          <CommandList>
+            <CommandEmpty>No matching indicators.</CommandEmpty>
+            {overlayOptions.length > 0 && (
+              <CommandGroup heading="Overlay indicators">
+                {overlayOptions.map((item) => (
+                  <CommandItem
+                    key={item.name}
+                    onSelect={() => addIndicator(item)}
+                  >
+                    {item.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+            {subpaneOptions.length > 0 && (
+              <CommandGroup heading="Subpane indicators">
+                {subpaneOptions.map((item) => (
+                  <CommandItem
+                    key={item.name}
+                    onSelect={() => addIndicator(item)}
+                  >
+                    {item.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

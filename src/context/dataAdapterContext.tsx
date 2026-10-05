@@ -2,7 +2,7 @@ import { PropsWithChildren, createContext, useContext } from "react";
 
 import {
   KLineChartDataAdapter,
-  KLineChartSubscribeProjection,
+  KLineChartSubscribeMarketDecision,
   KLineChartSubscribeTrade,
 } from "../types/client/dataAdapter";
 
@@ -39,8 +39,8 @@ export function useSubscribeTrade(): KLineChartSubscribeTrade | undefined {
   return useKLineChartDataAdapter().subscribeTrade;
 }
 
-export function useSubscribeProjection():
-  | KLineChartSubscribeProjection
+export function useSubscribeMarketDecision():
+  | KLineChartSubscribeMarketDecision
   | undefined {
-  return useKLineChartDataAdapter().subscribeProjection;
+  return useKLineChartDataAdapter().subscribeMarketDecision;
 }

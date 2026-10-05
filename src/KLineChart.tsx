@@ -1,44 +1,33 @@
 import {
-  PropsWithChildren,
-  useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
-  type MouseEvent,
+  type PropsWithChildren,
   type ReactNode,
 } from "react";
-import { Box, Stack, useTheme } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  init,
-  dispose,
-  Chart,
-  Crosshair,
-  Nullable,
-  NeighborData,
-  KLineData,
-} from "klinecharts";
+import { init, dispose, Chart, Crosshair, Nullable } from "klinecharts";
 
 import { loadChartSettings, partialUpdateChartSettings } from "./utils/chart";
 import { createTooltipDataSource, getIndicatorStyles } from "./constants/style";
 import { ChartContext } from "./context/chart";
 import { ChartSettingsContext } from "./context/chartSettings";
-import { useSubscribeProjection } from "./context/dataAdapterContext";
 import { SymbolKeyContext } from "./context/symbolKey";
-import { KLineChartSidePanel } from "./components/KLineChartSidePanel";
 import { KLineCrossSync, SyncedCursor } from "./components/KLineCrossSync";
 import { KLineChartHeaderControls } from "./components/KLineChartHeaderControls";
+import { KLineChartMarketDecisionIndicator } from "./components/KLineChartMarketDecisionIndicator";
 import { KLineChartViewport } from "./components/KLineChartViewport";
-import { useTradeIndicator } from "./hooks/api/tradeIndicator";
-import type { WebsocketProjectionEvent } from "./types/client/websocket";
+import { KLineChartSidePanel } from "./components/KLineChartSidePanel";
+import { KLineChartMarketDecisionProvider } from "./context/marketDecision";
+import {
+  MARKET_DECISION_STATUS_INDICATOR_ID,
+  MARKET_DECISION_STATUS_INDICATOR_NAME,
+} from "./indicators/marketDecisionStatus";
 
 import "./indicators";
 import "./overlays";
-import "./style.css";
 
 type Token = {
-  id: number;
   symbol_key: string;
   price_precision?: number;
 };
@@ -74,22 +63,12 @@ export function KLineChart({
   onTimestampSelect,
   syncedTimestamp,
 }: PropsWithChildren<Props>) {
-  const {
-    palette: { mode: themeMode },
-  } = useTheme();
+  const themeMode = "dark" as const;
   const chartEl = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
   const [cursorTime, setCursorTime] = useState<number | undefined>(undefined);
   const [cursorPrice, setCursorPrice] = useState<number | undefined>(undefined);
-  const [selectedIndicatorTime, setSelectedIndicatorTime] = useState<
-    number | undefined
-  >(undefined);
-  const [projectionTooltipAnchorEl, setProjectionTooltipAnchorEl] =
-    useState<HTMLButtonElement | null>(null);
-  const subscribeProjection = useSubscribeProjection();
-  const [projectionEvent, setProjectionEvent] = useState<
-    WebsocketProjectionEvent | undefined
-  >(undefined);
+  const [editIndicatorId, setEditIndicatorId] = useState<string | null>(null);
   const [chartStore, setChartStore] = useState<Nullable<Chart>>(null);
   const chartRef = useRef<Nullable<Chart>>(null);
   const onTimestampSelectRef =
@@ -101,37 +80,14 @@ export function KLineChart({
     loadChartSettings(chartSettingName)
   );
   const { timeframe } = settings;
-  const projectionTooltipItems = useMemo(
-    () =>
-      settings.projection.items.filter((item) => item.placement === "tooltip"),
-    [settings.projection.items]
-  );
-  const tokenId = token?.id;
   const tokenSymbolKey = token?.symbol_key;
   const tokenPricePrecision = token?.price_precision ?? 8;
-  const { data: indicatorSnapshot } = useTradeIndicator({
-    timeframe,
-    time: selectedIndicatorTime,
-    symbolKey: tokenSymbolKey,
-  });
-
   useEffect(() => {
     onTimestampSelectRef.current = onTimestampSelect;
   }, [onTimestampSelect]);
 
   useEffect(() => {
-    if (!tokenSymbolKey || !subscribeProjection) {
-      return;
-    }
-
-    const unsubscribe = subscribeProjection(tokenSymbolKey, setProjectionEvent);
-    return () => {
-      unsubscribe();
-    };
-  }, [subscribeProjection, tokenSymbolKey]);
-
-  useEffect(() => {
-    if (!tokenId || !tokenSymbolKey || !chartEl.current) {
+    if (!tokenSymbolKey || !chartEl.current) {
       return;
     }
 
@@ -185,15 +141,6 @@ export function KLineChart({
       }
     };
 
-    const setIndicatorTimeFromNeighborData = (
-      info: NeighborData<KLineData>
-    ) => {
-      const timestamp = info.current?.timestamp;
-      if (timestamp !== undefined) {
-        setSelectedIndicatorTime(timestamp);
-      }
-    };
-
     const syncTimestamp = (
       timestamp: number | undefined,
       price: number | undefined
@@ -235,11 +182,6 @@ export function KLineChart({
       };
     };
 
-    chart.subscribeAction("onCandleBarClick", (data) => {
-      const { data: info } = data as { data: NeighborData<KLineData> };
-      setIndicatorTimeFromNeighborData(info);
-    });
-
     chart.subscribeAction("onCrosshairChange", (data) => {
       const crosshairPayload = data as Crosshair;
       const resolvedCursor = getCursorFromCrosshair(crosshairPayload);
@@ -260,24 +202,36 @@ export function KLineChart({
         if (indicators.length > 0) {
           const ind = indicators[0];
           switch (feature.id) {
-            case "visible": {
-              chart.overrideIndicator({
-                id: indicator.id,
-                name: ind.name,
-                visible: true,
-              });
-              break;
-            }
+            case "visible":
             case "invisible": {
+              const visible = feature.id === "visible";
               chart.overrideIndicator({
                 id: indicator.id,
                 name: ind.name,
-                visible: false,
+                visible,
               });
+              partialUpdateChartSettings(chartSettingName, (previous) => ({
+                indicators: previous.indicators.map((item) =>
+                  item.id === indicator.id
+                    ? {
+                        ...item,
+                        indicator: { ...item.indicator, visible },
+                      }
+                    : item
+                ),
+              }));
+              window.dispatchEvent(
+                new CustomEvent("klinechart:settings-updated", {
+                  detail: { name: chartSettingName },
+                })
+              );
               break;
             }
             case "close": {
               chart.removeIndicator({ id: indicator.id });
+              setEditIndicatorId((current) =>
+                current === indicator.id ? null : current
+              );
               partialUpdateChartSettings(
                 chartSettingName,
                 ({ indicators }) => ({
@@ -286,6 +240,15 @@ export function KLineChart({
                   ),
                 })
               );
+              window.dispatchEvent(
+                new CustomEvent("klinechart:settings-updated", {
+                  detail: { name: chartSettingName },
+                })
+              );
+              break;
+            }
+            case "edit": {
+              setEditIndicatorId(indicator.id);
               break;
             }
           }
@@ -304,6 +267,15 @@ export function KLineChart({
         params.paneOptions
       );
     });
+
+    chart.createIndicator(
+      {
+        id: MARKET_DECISION_STATUS_INDICATOR_ID,
+        name: MARKET_DECISION_STATUS_INDICATOR_NAME,
+      },
+      true,
+      { id: "candle_pane" }
+    );
 
     const handleResize = () => {
       chart.resize();
@@ -337,7 +309,7 @@ export function KLineChart({
       resizeObserver.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryClient, tokenId, tokenSymbolKey, tokenPricePrecision]);
+  }, [queryClient, tokenSymbolKey, tokenPricePrecision]);
 
   useEffect(() => {
     if (syncedTimestamp === null || syncedTimestamp === undefined) {
@@ -359,11 +331,10 @@ export function KLineChart({
   }, [chartSettingName, syncedTimestamp]);
 
   useEffect(() => {
-    setSelectedIndicatorTime(undefined);
     setCursorTime(undefined);
     setCursorPrice(undefined);
-    setProjectionTooltipAnchorEl(null);
-  }, [tokenSymbolKey]);
+    setEditIndicatorId(null);
+  }, [chartSettingName, tokenSymbolKey]);
 
   useEffect(() => {
     chartRef.current?.setPeriod(convertTimeframeToPeriod(timeframe));
@@ -373,26 +344,23 @@ export function KLineChart({
     chartRef.current?.setStyles(themeMode);
   }, [themeMode]);
 
-  const handleRefreshSettings = () => {
-    setSettings(loadChartSettings(chartSettingName));
-  };
-  const handleUpdateTimeframe = (timeframe: number) => {
-    partialUpdateChartSettings(chartSettingName, { timeframe });
-    handleRefreshSettings();
-  };
-
-  const handleProjectionTooltipToggle = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      setProjectionTooltipAnchorEl((current) =>
-        current ? null : event.currentTarget
+  useEffect(() => {
+    const handleSettingsUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<{ name?: string }>).detail;
+      if (detail?.name === chartSettingName) {
+        setSettings(loadChartSettings(chartSettingName));
+      }
+    };
+    window.addEventListener(
+      "klinechart:settings-updated",
+      handleSettingsUpdated
+    );
+    return () =>
+      window.removeEventListener(
+        "klinechart:settings-updated",
+        handleSettingsUpdated
       );
-    },
-    []
-  );
-
-  const handleClearSelectedIndicatorTime = useCallback(() => {
-    setSelectedIndicatorTime(undefined);
-  }, []);
+  }, [chartSettingName]);
 
   // Calculate available height for chart
   useEffect(() => {
@@ -420,66 +388,49 @@ export function KLineChart({
 
   return (
     <>
-      <ChartSettingsContext.Provider value={settings}>
-        <SymbolKeyContext.Provider value={token?.symbol_key ?? ""}>
-          <ChartContext.Provider value={chartStore}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Box ref={controlsRef}>
-                <KLineChartHeaderControls
-                  chart={chartStore}
-                  chartSettingName={chartSettingName}
-                  timeframe={timeframe}
-                  tokenSymbolKey={token?.symbol_key}
-                  enableRealTime={enableRealTime}
-                  timeEndLoader={timeEndLoader}
-                  headerActions={headerActions}
-                  projectionTooltipItems={projectionTooltipItems}
-                  projectionEvent={projectionEvent}
-                  indicatorSnapshot={indicatorSnapshot}
-                  selectedIndicatorTime={selectedIndicatorTime}
-                  onClearSelectedIndicatorTime={
-                    handleClearSelectedIndicatorTime
-                  }
-                  projectionTooltipAnchorEl={projectionTooltipAnchorEl}
-                  onUpdateTimeframe={handleUpdateTimeframe}
-                  onProjectionTooltipToggle={handleProjectionTooltipToggle}
-                  onRefreshSettings={handleRefreshSettings}
-                >
-                  {children}
-                </KLineChartHeaderControls>
-              </Box>
-              <Stack
-                direction="row"
-                sx={{
-                  width: "100%",
-                  flex: 1,
-                }}
-              >
-                <KLineChartSidePanel />
-                <KLineChartViewport
-                  chartRef={chartEl}
-                  chartHeight={chartHeight}
-                  tokenPresent={Boolean(token)}
-                  items={settings.projection.items}
-                  projection={projectionEvent}
-                  indicatorSnapshot={indicatorSnapshot}
-                />
-                <KLineCrossSync
-                  chart={chartStore}
-                  selectedTime={cursorTime}
-                  selectedPrice={cursorPrice}
-                  themeMode={themeMode}
-                />
-              </Stack>
-            </Box>
-          </ChartContext.Provider>
-        </SymbolKeyContext.Provider>
-      </ChartSettingsContext.Provider>
+      <KLineChartMarketDecisionProvider
+        symbolKey={tokenSymbolKey}
+        enabled={enableRealTime}
+      >
+        <ChartSettingsContext.Provider value={settings}>
+          <SymbolKeyContext.Provider value={token?.symbol_key ?? ""}>
+            <ChartContext.Provider value={chartStore}>
+              <div className="flex min-w-0 flex-col">
+                <KLineChartMarketDecisionIndicator chart={chartStore} />
+                <div ref={controlsRef}>
+                  <KLineChartHeaderControls
+                    chart={chartStore}
+                    chartSettingName={chartSettingName}
+                    timeframe={timeframe}
+                    tokenSymbolKey={token?.symbol_key}
+                    enableRealTime={enableRealTime}
+                    timeEndLoader={timeEndLoader}
+                    headerActions={headerActions}
+                    editIndicatorId={editIndicatorId}
+                    onEditIndicatorComplete={() => setEditIndicatorId(null)}
+                  >
+                    {children}
+                  </KLineChartHeaderControls>
+                </div>
+                <div className="flex w-full flex-1">
+                  <KLineChartSidePanel />
+                  <KLineChartViewport
+                    chartRef={chartEl}
+                    chartHeight={chartHeight}
+                    tokenPresent={Boolean(token)}
+                  />
+                  <KLineCrossSync
+                    chart={chartStore}
+                    selectedTime={cursorTime}
+                    selectedPrice={cursorPrice}
+                    themeMode={themeMode}
+                  />
+                </div>
+              </div>
+            </ChartContext.Provider>
+          </SymbolKeyContext.Provider>
+        </ChartSettingsContext.Provider>
+      </KLineChartMarketDecisionProvider>
     </>
   );
 }

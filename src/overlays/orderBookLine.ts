@@ -1,8 +1,12 @@
 import { registerOverlay } from "klinecharts";
 import { formatBigNumber } from "../utils/number";
-import { SuggestionInfoOrderBookLevel } from "../types/client/suggestion";
+import type { MarketDecisionOrderBookLevel } from "../types/client/marketDecision";
 
-registerOverlay<SuggestionInfoOrderBookLevel>({
+type OrderBookLineData = MarketDecisionOrderBookLevel & {
+  side: "ask" | "bid";
+};
+
+registerOverlay<OrderBookLineData>({
   name: "orderBookLine",
   totalStep: 2,
   lock: true,
@@ -15,11 +19,13 @@ registerOverlay<SuggestionInfoOrderBookLevel>({
     const amount = formatBigNumber(level.price * level.quantity);
     const totalAmount = formatBigNumber(level.total_amount);
     const filled = level.filled && formatBigNumber(level.price * level.filled);
+    const color = level.side === "ask" ? "#ef5350" : "#26a69a";
 
     return [
       {
         type: "line",
         attrs: {
+          color,
           coordinates: [
             coordinates[0],
             { x: bounding.width, y: coordinates[0].y },
@@ -33,6 +39,7 @@ registerOverlay<SuggestionInfoOrderBookLevel>({
           x: bounding.width,
           y: coordinates[0].y,
           text: `${amount} [${totalAmount}] ${filled ? `(${filled})` : ""}`,
+          color,
           align: "end",
           baseline: "bottom",
         },

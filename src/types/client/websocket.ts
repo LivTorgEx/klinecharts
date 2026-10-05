@@ -12,7 +12,6 @@ export type ClientWebsocketMessage = WSMessage;
 
 export const WebsocketEventName = {
   Trade: "Trade",
-  Projection: "Projection",
 } as const;
 
 export type WebsocketEventName =
@@ -26,63 +25,15 @@ export type WebsocketTradeEvent = {
   trade_time: number;
 };
 
-type WebsocketProjectionOrderBook = {
-  buy_amount?: number;
-  sell_amount?: number;
-  buy_price?: number;
-  sell_price?: number;
-  long_levels: Array<{
-    price: number;
-    quantity: number;
-    total_amount: number;
-    time_start: number;
-    filled?: number;
-  }>;
-  short_levels: Array<{
-    price: number;
-    quantity: number;
-    total_amount: number;
-    time_start: number;
-    filled?: number;
-  }>;
-};
-
-export type WebsocketProjectionEvent = {
-  symbol: string;
-  status: string;
-  price?: number;
-  indicator: {
-    ntps: number;
-    ntps_fast_time?: number;
-    asset_01: number;
-    asset_diff_01: number;
-    trandm: number;
-    price_1h: number;
-    price_4h: number;
-    price_8h: number;
-    price_24h: number;
-  };
-  order_book?: WebsocketProjectionOrderBook;
-  oi?: {
-    usd: number;
-    change: number;
-    change_qty: number;
-    avg: number;
-  };
-  candle?: {
-    qtym_asset: number;
-  };
-};
-
 export type ClientWebSocketConnection = {
   send: (msg: ClientWebsocketMessage) => void;
   isConnected: boolean;
-  subscribe: <T extends WebsocketTradeEvent | WebsocketProjectionEvent>(
+  subscribe: <T extends WebsocketTradeEvent>(
     event: WebsocketEventName,
     handler: (data: T) => void
   ) => void;
   sendSubscribe: (data: { event: string; symbol: string }) => void;
-  unsubscribe: <T extends WebsocketTradeEvent | WebsocketProjectionEvent>(
+  unsubscribe: <T extends WebsocketTradeEvent>(
     event: WebsocketEventName,
     handler: (data: T) => void
   ) => void;

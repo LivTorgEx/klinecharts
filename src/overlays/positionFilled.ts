@@ -1,5 +1,4 @@
 import { registerOverlay } from "klinecharts";
-import { green, red } from "@mui/material/colors";
 
 import { formatBigNumber } from "../utils/number";
 import { isTruthy } from "../utils/filter";
@@ -36,7 +35,7 @@ registerOverlay<ExtendData>({
       {
         type: "circle",
         styles: {
-          color: data.pnl > 0 ? green[500] : red[500],
+          color: data.pnl > 0 ? "#22c55e" : "#ef4444",
         },
         attrs: [
           {
@@ -49,7 +48,7 @@ registerOverlay<ExtendData>({
       coordinates.length === 2 && {
         type: "line",
         styles: {
-          color: data.pnl > 0 ? green[500] : red[500],
+          color: data.pnl > 0 ? "#22c55e" : "#ef4444",
           size: 2,
           style: "dashed",
           dashedValue: [2, 2],
@@ -61,7 +60,7 @@ registerOverlay<ExtendData>({
         ignoreEvent: true,
         zLevel: 30,
         styles: {
-          backgroundColor: data.pnl > 0 ? green[500] : red[500],
+          backgroundColor: data.pnl > 0 ? "#22c55e" : "#ef4444",
         },
         attrs: [
           {

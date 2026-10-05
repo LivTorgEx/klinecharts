@@ -23,3 +23,4 @@ import "./volumeBuySell";
 import "./DirectionalPivotSignal";
 import "./movement";
 import "./movementCascade";
+import "./marketDecisionStatus";

@@ -1,31 +1,30 @@
-import { IconButton, Stack } from "@mui/material";
-import StraightenIcon from "@mui/icons-material/Straighten";
-
-import { FibonacciLineIcon } from "../icons/FibonacciLineIcon";
+import { Button } from "@livtorgex/ui-kit";
+import { Ruler, ScanLine, Spline } from "lucide-react";
 import { useChart } from "../context/chart";
-import { HorizontalRayLine } from "../icons/HorizontalRayLine";
 
 export function KLineChartSidePanel() {
   const chart = useChart();
+  const tools = [
+    { name: "fibonacciLine", label: "Fibonacci line", icon: Spline },
+    { name: "horizontalRayLine", label: "Horizontal ray", icon: ScanLine },
+    { name: "measure", label: "Measure", icon: Ruler },
+  ];
 
   return (
-    <Stack>
-      {[
-        { name: "fibonacciLine", icon: FibonacciLineIcon },
-        { name: "horizontalRayLine", icon: HorizontalRayLine },
-        { name: "measure", icon: StraightenIcon },
-      ].map(({ name, icon: Icon }) => (
-        <IconButton
+    <div className="flex shrink-0 flex-col border-r border-gray-800 py-1">
+      {tools.map(({ name, label, icon: Icon }) => (
+        <Button
           key={name}
-          sx={{ borderRadius: 0, padding: 0.25, margin: 0.5 }}
+          type="button"
+          variant="icon-ghost"
+          size="sm"
+          aria-label={label}
+          className="rounded-none"
+          onClick={() => chart?.createOverlay({ name })}
         >
-          <Icon
-            onClick={() => {
-              chart?.createOverlay({ name });
-            }}
-          />
-        </IconButton>
+          <Icon className="h-4 w-4" />
+        </Button>
       ))}
-    </Stack>
+    </div>
   );
 }

@@ -1,5 +1,4 @@
 import { registerOverlay } from "klinecharts";
-import { green, red } from "@mui/material/colors";
 
 import { formatBigNumber } from "../utils/number";
 import { PositionOrder } from "../types/client/order";
@@ -57,7 +56,7 @@ registerOverlay<ExtendData>({
         type: "polygon",
         styles: {
           style: "stroke_fill",
-          color: order.qty > 0 ? green[800] : red[500],
+          color: order.qty > 0 ? "#166534" : "#ef4444",
         },
         zLevel: 10,
         attrs: {
@@ -80,7 +79,7 @@ registerOverlay<ExtendData>({
         ignoreEvent: true,
         zLevel: 30,
         styles: {
-          backgroundColor: order.qty > 0 ? green[600] : red[500],
+          backgroundColor: order.qty > 0 ? "#16a34a" : "#ef4444",
         },
         attrs: [
           {

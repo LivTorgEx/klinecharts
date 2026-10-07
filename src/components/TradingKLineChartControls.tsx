@@ -1,4 +1,4 @@
-import { SegmentedControl } from "@livtorgex/ui-kit";
+import { GroupButton } from "@livtorgex/ui-kit";
 
 import { useChartSettings } from "../context/chartSettings";
 import { TIMEFRAMES } from "../constants/app";
@@ -17,7 +17,7 @@ export function TradingKLineChartControls({ name }: Props) {
   }
 
   return (
-    <SegmentedControl
+    <GroupButton
       ariaLabel="Chart timeframe"
       value={String(settings.timeframe)}
       onChange={(value: string) => updateTimeframe(Number(value))}
@@ -26,8 +26,8 @@ export function TradingKLineChartControls({ name }: Props) {
         label,
       }))}
       size="sm"
-      variant="tabs"
-      className="border-b border-gray-800 [&_button]:rounded-none [&_button]:px-2 [&_button]:py-1"
+      appearance="tabs"
+      controlClassName="border-b border-gray-800 [&_button]:rounded-none [&_button]:px-2 [&_button]:py-1"
     />
   );
 }

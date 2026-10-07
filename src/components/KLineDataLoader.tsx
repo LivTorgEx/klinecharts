@@ -18,6 +18,7 @@ const KLINE_SIZE = 500;
 
 type Props = {
   symbolKey: string;
+  marketDataSymbolKey?: string;
   timeframe: number;
   timeEndLoader?: number;
   symbol?: string;
@@ -94,6 +95,7 @@ function loadDataByParams(
 
 export function KLineDataLoader({
   symbolKey,
+  marketDataSymbolKey,
   timeframe,
   timeEndLoader,
   symbol,
@@ -102,6 +104,7 @@ export function KLineDataLoader({
   const chart = useChart();
   const queryClient = useQueryClient();
   const adapter = useKLineChartDataAdapter();
+  const dataSymbolKey = marketDataSymbolKey ?? symbolKey;
 
   // Setup data loader following klinecharts official API
   useEffect(() => {
@@ -111,7 +114,7 @@ export function KLineDataLoader({
 
     // Provider realtime events use the complete symbol_key, for example
     // "OKX#ACT-USDT-SWAP#SWAP". Keep it intact for filtering.
-    const subscribedSymbolKey = symbolKey;
+    const subscribedSymbolKey = dataSymbolKey;
     let currentCandle: RealtimeKLineData | null = null;
     let unsubscribeTrade: (() => void) | undefined;
     let animationFrameId: number | undefined;
@@ -173,7 +176,7 @@ export function KLineDataLoader({
           return;
         }
 
-        if (!symbolKey) {
+        if (!dataSymbolKey) {
           console.error(
             `[KLineDataLoader] symbolKey is empty, skipping getBars`
           );
@@ -193,24 +196,24 @@ export function KLineDataLoader({
         loadDataByParams(
           queryClient,
           adapter.loadBars,
-          symbolKey,
+          dataSymbolKey,
           queryParams,
           callback
         );
       },
       subscribeBar:
-        enableRealTime && symbolKey && adapter.subscribeTrade
+        enableRealTime && dataSymbolKey && adapter.subscribeTrade
           ? (params: { callback: (data: KLineData) => void }) => {
               const { callback } = params;
               barCallback = callback;
               unsubscribeTrade = adapter.subscribeTrade?.(
-                symbolKey,
+                dataSymbolKey,
                 updateTrade
               );
             }
           : undefined,
       unsubscribeBar:
-        enableRealTime && symbolKey && adapter.subscribeTrade
+        enableRealTime && dataSymbolKey && adapter.subscribeTrade
           ? () => {
               unsubscribeTrade?.();
               unsubscribeTrade = undefined;
@@ -242,6 +245,8 @@ export function KLineDataLoader({
     adapter,
     timeframe,
     symbolKey,
+    dataSymbolKey,
+    marketDataSymbolKey,
     timeEndLoader,
     symbol,
     enableRealTime,

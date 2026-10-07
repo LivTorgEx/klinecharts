@@ -13,6 +13,7 @@ type Props = {
   chartSettingName: string;
   timeframe: number;
   tokenSymbolKey?: string;
+  tokenMarketDataSymbolKey?: string;
   enableRealTime: boolean;
   timeEndLoader?: number;
   headerActions?: ReactNode;
@@ -26,6 +27,7 @@ export function KLineChartHeaderControls({
   chartSettingName,
   timeframe,
   tokenSymbolKey,
+  tokenMarketDataSymbolKey,
   enableRealTime,
   timeEndLoader,
   headerActions,
@@ -46,13 +48,14 @@ export function KLineChartHeaderControls({
       />
       <KLineChartSettingsModal name={chartSettingName} />
       <KLineChartOrderBook
-        symbolKey={tokenSymbolKey}
+        symbolKey={tokenMarketDataSymbolKey ?? tokenSymbolKey}
         enabled={enableRealTime}
       />
       {tokenSymbolKey ? (
         <KLineDataLoader
           timeframe={timeframe}
           symbolKey={tokenSymbolKey}
+          marketDataSymbolKey={tokenMarketDataSymbolKey}
           timeEndLoader={timeEndLoader}
           symbol={tokenSymbolKey}
           enableRealTime={enableRealTime}

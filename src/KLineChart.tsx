@@ -29,6 +29,7 @@ import "./overlays";
 
 type Token = {
   symbol_key: string;
+  market_data_symbol_key?: string;
   price_precision?: number;
 };
 type Props = {
@@ -81,6 +82,8 @@ export function KLineChart({
   );
   const { timeframe } = settings;
   const tokenSymbolKey = token?.symbol_key;
+  const tokenMarketDataSymbolKey =
+    token?.market_data_symbol_key ?? tokenSymbolKey;
   const tokenPricePrecision = token?.price_precision ?? 8;
   useEffect(() => {
     onTimestampSelectRef.current = onTimestampSelect;
@@ -390,6 +393,7 @@ export function KLineChart({
     <>
       <KLineChartMarketDecisionProvider
         symbolKey={tokenSymbolKey}
+        marketDataSymbolKey={tokenMarketDataSymbolKey}
         enabled={enableRealTime}
       >
         <ChartSettingsContext.Provider value={settings}>
@@ -403,6 +407,7 @@ export function KLineChart({
                     chartSettingName={chartSettingName}
                     timeframe={timeframe}
                     tokenSymbolKey={token?.symbol_key}
+                    tokenMarketDataSymbolKey={tokenMarketDataSymbolKey}
                     enableRealTime={enableRealTime}
                     timeEndLoader={timeEndLoader}
                     headerActions={headerActions}

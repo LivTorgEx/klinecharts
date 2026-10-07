@@ -8,27 +8,39 @@ const MarketDecisionContext = createContext<MarketDecision | null>(null);
 
 export function KLineChartMarketDecisionProvider({
   symbolKey,
+  marketDataSymbolKey,
   enabled,
   children,
-}: PropsWithChildren<{ symbolKey?: string; enabled: boolean }>) {
+}: PropsWithChildren<{
+  symbolKey?: string;
+  marketDataSymbolKey?: string;
+  enabled: boolean;
+}>) {
   const subscribeMarketDecision = useSubscribeMarketDecision();
+  const sourceKey = marketDataSymbolKey ?? symbolKey;
   const [snapshot, setSnapshot] = useState<{
     symbolKey: string;
+    sourceKey: string;
     decision: MarketDecision;
   } | null>(null);
 
   useEffect(() => {
-    if (!symbolKey || !enabled || !subscribeMarketDecision) return;
+    if (!symbolKey || !sourceKey || !enabled || !subscribeMarketDecision) {
+      return;
+    }
 
-    return subscribeMarketDecision(symbolKey, (decision) => {
-      if (decision.symbol_key === symbolKey) {
-        setSnapshot({ symbolKey, decision });
+    return subscribeMarketDecision(sourceKey, (decision) => {
+      if (decision.symbol_key === sourceKey) {
+        setSnapshot({ symbolKey, sourceKey, decision });
       }
     });
-  }, [enabled, subscribeMarketDecision, symbolKey]);
+  }, [enabled, sourceKey, subscribeMarketDecision, symbolKey]);
 
   const decision =
-    enabled && snapshot && snapshot.symbolKey === symbolKey
+    enabled &&
+    snapshot &&
+    snapshot.symbolKey === symbolKey &&
+    snapshot.sourceKey === sourceKey
       ? snapshot.decision
       : null;
 

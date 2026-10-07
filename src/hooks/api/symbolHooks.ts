@@ -41,7 +41,7 @@ function useSymbolsKeyMap(symbols: SymbolType[]) {
   return useMemo(
     () =>
       symbols.reduce<Record<string, SymbolType>>((accumulator, symbol) => {
-        accumulator[symbol.symbol_key.toUpperCase()] = symbol;
+        accumulator[symbol.symbol_key] = symbol;
         return accumulator;
       }, {}),
     [symbols]
@@ -66,5 +66,5 @@ export function useSymbolKeyFromAll(symbolKey?: string) {
   const { data: symbols = [] } = useSymbolsAll();
   const symbolsKeyMap = useSymbolsKeyMap(symbols);
 
-  return symbolKey ? symbolsKeyMap[symbolKey.toUpperCase()] : undefined;
+  return symbolKey ? symbolsKeyMap[symbolKey] : undefined;
 }

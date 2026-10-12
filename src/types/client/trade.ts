@@ -29,6 +29,7 @@ export type TradePositionHistory = {
 
 export type TradeOrder = {
   external_order_id: string;
+  chart_overlay_key?: string;
   client_order_id: string | null;
   symbol_key: string;
   side: OrderSide;

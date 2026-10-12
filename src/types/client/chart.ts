@@ -6,6 +6,7 @@ export type ChartSettings = {
   indicators: ChartSettingsIndicator[];
   klinechart: ChartSettingsKLine;
   orderBook: ChartSettingsOrderBook;
+  orderHistory: ChartSettingsOrderHistory;
   position: ChartSettingsPosition;
 };
 
@@ -25,5 +26,9 @@ export type ChartSettingsPosition = {
 };
 
 export type ChartSettingsOrderBook = {
+  show: boolean;
+};
+
+export type ChartSettingsOrderHistory = {
   show: boolean;
 };

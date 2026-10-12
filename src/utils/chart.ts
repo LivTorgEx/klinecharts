@@ -8,6 +8,9 @@ const DEFAULT_VALUES: ChartSettings = {
   orderBook: {
     show: true,
   },
+  orderHistory: {
+    show: true,
+  },
   position: {
     showFinished: false,
   },
@@ -46,6 +49,10 @@ function normalizeChartSettings(
       settings.orderBook && typeof settings.orderBook.show === "boolean"
         ? { show: settings.orderBook.show }
         : DEFAULT_VALUES.orderBook,
+    orderHistory:
+      settings.orderHistory && typeof settings.orderHistory.show === "boolean"
+        ? { show: settings.orderHistory.show }
+        : DEFAULT_VALUES.orderHistory,
     position:
       settings.position && typeof settings.position.showFinished === "boolean"
         ? { showFinished: settings.position.showFinished }

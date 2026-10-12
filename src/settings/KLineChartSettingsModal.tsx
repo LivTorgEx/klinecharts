@@ -15,6 +15,7 @@ export function KLineChartSettingsModal({ name }: Props) {
 
   function updateSettings(update: {
     orderBook?: { show: boolean };
+    orderHistory?: { show: boolean };
     position?: { showFinished: boolean };
   }) {
     partialUpdateChartSettings(name, update);
@@ -50,6 +51,16 @@ export function KLineChartSettingsModal({ name }: Props) {
             onChange={(event) =>
               updateSettings({
                 orderBook: { show: event.currentTarget.checked },
+              })
+            }
+          />
+          <ToggleField
+            label="Historical orders"
+            aria-label="Historical orders"
+            checked={settings.orderHistory.show}
+            onChange={(event) =>
+              updateSettings({
+                orderHistory: { show: event.currentTarget.checked },
               })
             }
           />

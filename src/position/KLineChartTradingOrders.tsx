@@ -8,16 +8,22 @@ import { OrderSide, PositionDirection } from "../types/client/direction";
 import type { PositionOrderStatus } from "../types/client/order";
 import type { TradeOrder, TradePosition } from "../types/client/trade";
 
-type TradeOrderOverlayData = TradeOrder & {
+type TradeOrderWithOverlayConfig = TradeOrder & {
+  sticky?: boolean;
+  trigger_order_id?: string | null;
+  trigger_algo_order_id?: string | null;
+};
+type TradeOrderOverlayData = TradeOrderWithOverlayConfig & {
   display_price: number;
   close_pnl: number | null;
+  sticky: boolean;
 };
 type TradeOrderHistoryOverlayData = TradeOrder & {
   start_price: number;
   end_price: number;
 };
 type Props = {
-  orders: TradeOrder[];
+  orders: TradeOrderWithOverlayConfig[];
   history: TradeOrder[];
   positions: TradePosition[];
 };
@@ -38,7 +44,7 @@ function estimateClosePnl(
 
   const candidates = positions.flatMap((position) => {
     if (
-      position.symbol_key.trim().toUpperCase() !== symbolKey ||
+      position.symbol_key !== symbolKey ||
       position.entry_price <= 0 ||
       position.quantity === 0
     ) {
@@ -96,8 +102,8 @@ function estimateClosePnl(
 
 export function KLineChartTradingOrders({ orders, history, positions }: Props) {
   const chart = useChart();
-  const { position: positionSettings } = useChartSettings();
-  const symbolKey = useSymbolKey().trim().toUpperCase();
+  const { orderHistory: orderHistorySettings } = useChartSettings();
+  const symbolKey = useSymbolKey();
   const activeOverlayIds = useRef<Set<string>>(new Set());
   const historyOverlayIds = useRef<Set<string>>(new Set());
 
@@ -108,7 +114,7 @@ export function KLineChartTradingOrders({ orders, history, positions }: Props) {
     orders.forEach((order) => {
       const price = order.price ?? order.stop_price;
       if (
-        order.symbol_key.trim().toUpperCase() !== symbolKey ||
+        order.symbol_key !== symbolKey ||
         !ACTIVE_ORDER_STATUSES.includes(order.status) ||
         price == null ||
         price <= 0
@@ -116,7 +122,7 @@ export function KLineChartTradingOrders({ orders, history, positions }: Props) {
         return;
       }
 
-      const id = `trade_order_${order.external_order_id}`;
+      const id = `trade_order_${order.chart_overlay_key ?? order.external_order_id}`;
       const points: OverlayCreate["points"] = [
         {
           timestamp: order.updated_at || order.created_at,
@@ -127,6 +133,7 @@ export function KLineChartTradingOrders({ orders, history, positions }: Props) {
         ...order,
         display_price: price,
         close_pnl: estimateClosePnl(order, positions, price, symbolKey),
+        sticky: order.sticky ?? false,
       };
 
       if (chart.getOverlays({ id }).length) {
@@ -155,11 +162,11 @@ export function KLineChartTradingOrders({ orders, history, positions }: Props) {
     if (!chart) return;
 
     const removeSet = new Set(historyOverlayIds.current);
-    (positionSettings.showFinished ? history : []).forEach((order) => {
+    (orderHistorySettings.show ? history : []).forEach((order) => {
       const startPrice = order.price ?? order.stop_price ?? order.average_price;
       const endPrice = order.average_price ?? startPrice;
       if (
-        order.symbol_key.trim().toUpperCase() !== symbolKey ||
+        order.symbol_key !== symbolKey ||
         ACTIVE_ORDER_STATUSES.includes(order.status) ||
         startPrice == null ||
         endPrice == null ||
@@ -200,7 +207,7 @@ export function KLineChartTradingOrders({ orders, history, positions }: Props) {
       chart.removeOverlay({ id });
       historyOverlayIds.current.delete(id);
     });
-  }, [chart, history, positionSettings.showFinished, symbolKey]);
+  }, [chart, history, orderHistorySettings.show, symbolKey]);
 
   useEffect(
     () => () => {

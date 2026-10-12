@@ -21,13 +21,16 @@ registerOverlay<TradeOrderHistoryOverlayData>({
     if (coordinates.length < 2) return [];
 
     const order = overlay.extendData;
-    const isFilled = order.status === "filled" || order.filled_quantity > 0;
-    const color = isFilled
+    const hasFill = order.filled_quantity > 0;
+    const color = hasFill
       ? order.side === "buy"
         ? "#22c55e"
         : "#ef4444"
       : "#6b7280";
-    const text = `${order.status.replaceAll("_", " ")} | ${formatBigNumber(order.filled_quantity || order.quantity, "")} | ${formatBigNumber(order.end_price, "")}`;
+    const filledQuantity = formatBigNumber(order.filled_quantity, "");
+    const quantity = formatBigNumber(order.quantity, "");
+    const status = order.status.replaceAll("_", " ");
+    const text = `${order.side.toUpperCase()} ${status} ${filledQuantity}/${quantity} @ ${formatBigNumber(order.end_price, "")}`;
 
     return [
       {

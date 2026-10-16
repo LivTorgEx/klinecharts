@@ -14,7 +14,7 @@ export type ChartSettingsIndicator = {
   id: string;
   indicator: IndicatorCreate;
   isStack: boolean;
-  paneOptions?: PaneOptions;
+  paneOptions?: Pick<PaneOptions, "id">;
 };
 
 export type ChartSettingsKLine = {

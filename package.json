@@ -9,7 +9,8 @@
     "assets"
   ],
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./data-adapter": "./src/dataAdapter.ts"
   },
   "private": false,
   "dependencies": {

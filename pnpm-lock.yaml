@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       klinecharts:
-        specifier: 10.0.0-beta1
-        version: 10.0.0-beta1
+        specifier: 10.1.0
+        version: 10.1.0
     devDependencies:
       '@tanstack/react-query':
         specifier: 5.99.0
@@ -762,8 +762,8 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  klinecharts@10.0.0-beta1:
-    resolution: {integrity: sha512-5ZxFGjJeZqt9+q45lZDhApC3kdgrk51i27uSpIELgXJLNgfSc0anlb8XkU+52LVrBYnTv9dFr8/Q7lG81vIV1w==}
+  klinecharts@10.1.0:
+    resolution: {integrity: sha512-sExME3Tv1Ey1zHzTjEc203xd5/B8e6WI6sEB2wg6SQjYwuQRB/sGDIZ6IKEfKEDhaBUXVgVXXO1OX5Giasrbew==}
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -1850,7 +1850,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  klinecharts@10.0.0-beta1: {}
+  klinecharts@10.1.0: {}
 
   levn@0.4.1:
     dependencies:

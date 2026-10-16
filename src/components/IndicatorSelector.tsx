@@ -173,9 +173,15 @@ export function IndicatorSelector({ name, chart }: Props) {
       ...(option.overlay ? { paneOptions: { id: "candle_pane" } } : {}),
     };
     const createdId = chart.createIndicator(
-      { ...indicator, id, createTooltipDataSource },
-      params.isStack,
-      params.paneOptions
+      {
+        ...indicator,
+        id,
+        ...(params.paneOptions?.id
+          ? { paneId: params.paneOptions.id }
+          : {}),
+        createTooltipDataSource,
+      },
+      params.isStack
     );
     if (!createdId) return;
 

@@ -264,10 +264,12 @@ export function KLineChart({
         {
           ...params.indicator,
           id: params.id,
+          ...(params.paneOptions?.id
+            ? { paneId: params.paneOptions.id }
+            : {}),
           createTooltipDataSource,
         },
-        params.isStack,
-        params.paneOptions
+        params.isStack
       );
     });
 
@@ -275,13 +277,20 @@ export function KLineChart({
       {
         id: MARKET_DECISION_STATUS_INDICATOR_ID,
         name: MARKET_DECISION_STATUS_INDICATOR_NAME,
+        paneId: "candle_pane",
       },
-      true,
-      { id: "candle_pane" }
+      true
     );
 
     const handleResize = () => {
       chart.resize();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        // Browsers can pause canvas rendering while this tab is hidden.
+        chart.resize();
+      }
     };
 
     const handleMouseLeave = () => {
@@ -292,6 +301,7 @@ export function KLineChart({
 
     // Listen to window resize
     window.addEventListener("resize", handleResize);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     container.addEventListener("mouseleave", handleMouseLeave);
 
     // Listen to container resize (for parent component resizes)
@@ -308,6 +318,10 @@ export function KLineChart({
       chartRef.current = null;
       setChartStore(null);
       window.removeEventListener("resize", handleResize);
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange,
+      );
       container.removeEventListener("mouseleave", handleMouseLeave);
       resizeObserver.disconnect();
     };

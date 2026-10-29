@@ -8,6 +8,7 @@ type TradeOrderOverlayData = TradeOrder & {
   display_price: number;
   close_pnl: number | null;
   sticky: boolean;
+  isActive?: boolean;
   showInfo?: boolean;
   canCancel?: boolean;
   trigger_order_id?: string | null;
@@ -76,6 +77,7 @@ registerOverlay<TradeOrderOverlayData>({
     const order = overlay.extendData;
     const orderType = ORDER_TYPE_LABELS[order.order_type];
     const color = order.side === "sell" ? "#991b1b" : "#15803d";
+    const isActive = order.isActive !== false;
     const x = coordinates[0].x;
     const priceY = coordinates[0].y;
     const priceIsAboveView = priceY < 0;
@@ -91,6 +93,7 @@ registerOverlay<TradeOrderOverlayData>({
       order.close_pnl == null
         ? ""
         : `Est. PnL ${order.close_pnl > 0 ? "+" : ""}${order.close_pnl === 0 ? "0" : formatBigNumber(order.close_pnl, "")}`;
+    const infoX = isActive ? bounding.width / 2 : x;
     const markerPoints =
       order.side === "buy"
         ? [
@@ -105,19 +108,31 @@ registerOverlay<TradeOrderOverlayData>({
           ];
 
     return [
-      {
-        type: "polygon",
-        zLevel: 41,
-        styles: { color },
-        attrs: { coordinates: markerPoints },
-      },
+      isActive
+        ? {
+            type: "line",
+            zLevel: 41,
+            styles: { color },
+            attrs: {
+              coordinates: [
+                { x: 0, y: markerY },
+                { x: bounding.width, y: markerY },
+              ],
+            },
+          }
+        : {
+            type: "polygon",
+            zLevel: 41,
+            styles: { color },
+            attrs: { coordinates: markerPoints },
+          },
       order.showInfo && {
         type: "text",
         zLevel: 42,
         ignoreEvent: true,
         styles: { backgroundColor: color },
         attrs: {
-          x,
+          x: infoX,
           y: order.side === "buy" ? markerY + 30 : markerY - 30,
           text: [
             `${order.side.toUpperCase()} ${orderType} ${status}`,
@@ -131,26 +146,28 @@ registerOverlay<TradeOrderOverlayData>({
           align: "center",
         },
       },
-      order.showInfo && order.canCancel && {
-        type: "text",
-        zLevel: 52,
-        styles: {
-          color: "#ffffff",
-          size: 14,
-          weight: "bold",
-          backgroundColor: color,
+      isActive &&
+        order.showInfo &&
+        order.canCancel && {
+          type: "text",
+          zLevel: 52,
+          styles: {
+            color: "#ffffff",
+            size: 14,
+            weight: "bold",
+            backgroundColor: color,
+          },
+          attrs: {
+            x: infoX + 18,
+            y: markerY,
+            width: 18,
+            height: 22,
+            text: "✖",
+            align: "center",
+            baseline: "middle",
+            role: "delete-button",
+          },
         },
-        attrs: {
-          x: x + 18,
-          y: markerY,
-          width: 18,
-          height: 22,
-          text: "✖",
-          align: "center",
-          baseline: "middle",
-          role: "delete-button",
-        },
-      },
     ].filter(isTruthy);
   },
 });

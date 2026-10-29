@@ -19,8 +19,8 @@ export type TradePositionHistory = {
   quantity: number;
   entry_price: number;
   exit_price: number;
-  open_at: string;
-  closed_at: string;
+  open_at: number | string;
+  closed_at: number | string;
   exit_type: string | null;
   fee: number;
   realized_profit: number;

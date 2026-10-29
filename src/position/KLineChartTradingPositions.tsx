@@ -14,16 +14,22 @@ import type { TradePositionOverlayData } from "../overlays/tradePosition";
 type TradePositionHistoryOverlayData = Pick<
   TradePositionHistory,
   "position_side" | "quantity" | "realized_profit"
->;
+> & {
+  showInfo?: boolean;
+};
 type Props = {
   positions: TradePosition[];
   history: TradePositionHistory[];
 };
 
+function toTimestamp(value: number | string) {
+  return typeof value === "number" ? value : Date.parse(value);
+}
+
 export function KLineChartTradingPositions({ positions, history }: Props) {
   const chart = useChart();
   const { position: positionSettings } = useChartSettings();
-  const symbolKey = useSymbolKey().trim().toUpperCase();
+  const symbolKey = useSymbolKey();
   const positionOverlayIds = useRef<Set<string>>(new Set());
   const historyOverlayIds = useRef<Set<string>>(new Set());
 
@@ -37,7 +43,7 @@ export function KLineChartTradingPositions({ positions, history }: Props) {
 
     positions.forEach((position) => {
       if (
-        position.symbol_key.trim().toUpperCase() !== symbolKey ||
+        position.symbol_key !== symbolKey ||
         position.quantity === 0 ||
         position.entry_price <= 0
       ) {
@@ -94,10 +100,10 @@ export function KLineChartTradingPositions({ positions, history }: Props) {
 
     const removeSet = new Set(historyOverlayIds.current);
     (positionSettings.showFinished ? history : []).forEach((position) => {
-      if (position.symbol_key.trim().toUpperCase() !== symbolKey) return;
+      if (position.symbol_key !== symbolKey) return;
 
-      const startTimestamp = Date.parse(position.open_at);
-      const endTimestamp = Date.parse(position.closed_at);
+      const startTimestamp = toTimestamp(position.open_at);
+      const endTimestamp = toTimestamp(position.closed_at);
       if (
         !Number.isFinite(startTimestamp) ||
         !Number.isFinite(endTimestamp) ||
@@ -107,7 +113,7 @@ export function KLineChartTradingPositions({ positions, history }: Props) {
         return;
       }
 
-      const id = `trade_position_history_${position.position_id}`;
+      const id = `trade_position_history_${position.position_id}_${startTimestamp}_${endTimestamp}`;
       const points: OverlayCreate["points"] = [
         { timestamp: startTimestamp, value: position.entry_price },
         { timestamp: endTimestamp, value: position.exit_price },
@@ -116,6 +122,7 @@ export function KLineChartTradingPositions({ positions, history }: Props) {
         position_side: position.position_side,
         quantity: Math.abs(position.quantity),
         realized_profit: position.realized_profit,
+        showInfo: false,
       };
 
       if (chart.getOverlays({ id }).length) {

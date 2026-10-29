@@ -17,6 +17,7 @@ type TradeOrderOverlayData = TradeOrderWithOverlayConfig & {
   display_price: number;
   close_pnl: number | null;
   sticky: boolean;
+  isActive: boolean;
   showInfo?: boolean;
   canCancel?: boolean;
 };
@@ -133,6 +134,7 @@ export function KLineChartTradingOrders({ orders, history, positions }: Props) {
         display_price: price,
         close_pnl: estimateClosePnl(order, positions, price, symbolKey),
         sticky: order.sticky ?? false,
+        isActive: true,
         showInfo: false,
         canCancel: true,
       };
@@ -188,6 +190,7 @@ export function KLineChartTradingOrders({ orders, history, positions }: Props) {
         display_price: price,
         close_pnl: null,
         sticky: false,
+        isActive: false,
         showInfo: false,
         canCancel: false,
       };

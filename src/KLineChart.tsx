@@ -15,14 +15,9 @@ import { ChartSettingsContext } from "./context/chartSettings";
 import { SymbolKeyContext } from "./context/symbolKey";
 import { KLineCrossSync, SyncedCursor } from "./components/KLineCrossSync";
 import { KLineChartHeaderControls } from "./components/KLineChartHeaderControls";
-import { KLineChartMarketDecisionIndicator } from "./components/KLineChartMarketDecisionIndicator";
 import { KLineChartViewport } from "./components/KLineChartViewport";
 import { KLineChartSidePanel } from "./components/KLineChartSidePanel";
 import { KLineChartMarketDecisionProvider } from "./context/marketDecision";
-import {
-  MARKET_DECISION_STATUS_INDICATOR_ID,
-  MARKET_DECISION_STATUS_INDICATOR_NAME,
-} from "./indicators/marketDecisionStatus";
 
 import "./indicators";
 import "./overlays";
@@ -37,6 +32,7 @@ type Props = {
   chartSettingName: string;
   height?: number;
   enableRealTime?: boolean;
+  chartInfo?: ReactNode;
   timeEndLoader?: number;
   headerActions?: ReactNode;
   onTimestampSelect?: (cursor: SyncedCursor | null) => void;
@@ -60,6 +56,7 @@ export function KLineChart({
   timeEndLoader,
   height = 300,
   enableRealTime = true,
+  chartInfo,
   headerActions,
   onTimestampSelect,
   syncedTimestamp,
@@ -273,15 +270,6 @@ export function KLineChart({
       );
     });
 
-    chart.createIndicator(
-      {
-        id: MARKET_DECISION_STATUS_INDICATOR_ID,
-        name: MARKET_DECISION_STATUS_INDICATOR_NAME,
-        paneId: "candle_pane",
-      },
-      true
-    );
-
     const handleResize = () => {
       chart.resize();
     };
@@ -318,10 +306,7 @@ export function KLineChart({
       chartRef.current = null;
       setChartStore(null);
       window.removeEventListener("resize", handleResize);
-      document.removeEventListener(
-        "visibilitychange",
-        handleVisibilityChange,
-      );
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       container.removeEventListener("mouseleave", handleMouseLeave);
       resizeObserver.disconnect();
     };
@@ -414,7 +399,6 @@ export function KLineChart({
           <SymbolKeyContext.Provider value={token?.symbol_key ?? ""}>
             <ChartContext.Provider value={chartStore}>
               <div className="flex min-w-0 flex-col">
-                <KLineChartMarketDecisionIndicator chart={chartStore} />
                 <div ref={controlsRef}>
                   <KLineChartHeaderControls
                     chart={chartStore}
@@ -437,6 +421,7 @@ export function KLineChart({
                     chartRef={chartEl}
                     chartHeight={chartHeight}
                     tokenPresent={Boolean(token)}
+                    chartInfo={chartInfo}
                   />
                   <KLineCrossSync
                     chart={chartStore}

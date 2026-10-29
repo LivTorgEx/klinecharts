@@ -12,4 +12,3 @@ import "./orderBookLine";
 import "./tradePosition";
 import "./tradeOrder";
 import "./tradePositionHistory";
-import "./tradeOrderHistory";

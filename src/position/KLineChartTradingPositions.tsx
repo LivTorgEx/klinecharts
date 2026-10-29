@@ -4,6 +4,7 @@ import type { Overlay, OverlayCreate } from "klinecharts";
 import { useChart } from "../context/chart";
 import { useChartSettings } from "../context/chartSettings";
 import { useSymbolKey } from "../context/symbolKey";
+import { PositionDirection } from "../types/client/direction";
 import type {
   TradePosition,
   TradePositionHistory,
@@ -51,9 +52,16 @@ export function KLineChartTradingPositions({ positions, history }: Props) {
         },
       ];
       const extendData: TradePositionOverlayData = {
-        position_side: position.position_side,
+        position_side:
+          position.position_side === PositionDirection.BOTH
+            ? position.quantity >= 0
+              ? PositionDirection.LONG
+              : PositionDirection.SHORT
+            : position.position_side,
         quantity: Math.abs(position.quantity),
+        entry_price: position.entry_price,
         unrealized_pnl: position.unrealized_pnl,
+        showInfo: false,
       };
       const overlay = chart.getOverlays({ id })[0] as
         | Overlay<TradePositionOverlayData>

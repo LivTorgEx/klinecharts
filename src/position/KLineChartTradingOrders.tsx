@@ -17,10 +17,8 @@ type TradeOrderOverlayData = TradeOrderWithOverlayConfig & {
   display_price: number;
   close_pnl: number | null;
   sticky: boolean;
-};
-type TradeOrderHistoryOverlayData = TradeOrder & {
-  start_price: number;
-  end_price: number;
+  showInfo?: boolean;
+  canCancel?: boolean;
 };
 type Props = {
   orders: TradeOrderWithOverlayConfig[];
@@ -116,6 +114,7 @@ export function KLineChartTradingOrders({ orders, history, positions }: Props) {
       if (
         order.symbol_key !== symbolKey ||
         !ACTIVE_ORDER_STATUSES.includes(order.status) ||
+        order.quantity <= 0 ||
         price == null ||
         price <= 0
       ) {
@@ -134,6 +133,8 @@ export function KLineChartTradingOrders({ orders, history, positions }: Props) {
         display_price: price,
         close_pnl: estimateClosePnl(order, positions, price, symbolKey),
         sticky: order.sticky ?? false,
+        showInfo: false,
+        canCancel: true,
       };
 
       if (chart.getOverlays({ id }).length) {
@@ -163,35 +164,39 @@ export function KLineChartTradingOrders({ orders, history, positions }: Props) {
 
     const removeSet = new Set(historyOverlayIds.current);
     (orderHistorySettings.show ? history : []).forEach((order) => {
-      const startPrice = order.price ?? order.stop_price ?? order.average_price;
-      const endPrice = order.average_price ?? startPrice;
+      const price = order.average_price ?? order.price ?? order.stop_price;
       if (
         order.symbol_key !== symbolKey ||
         ACTIVE_ORDER_STATUSES.includes(order.status) ||
-        startPrice == null ||
-        endPrice == null ||
-        startPrice <= 0 ||
-        endPrice <= 0
+        order.status === "canceled" ||
+        order.quantity <= 0 ||
+        price == null ||
+        price <= 0
       ) {
         return;
       }
 
       const id = `trade_order_history_${order.external_order_id}`;
       const points: OverlayCreate["points"] = [
-        { timestamp: order.created_at, value: startPrice },
-        { timestamp: order.updated_at || order.created_at, value: endPrice },
+        {
+          timestamp: order.updated_at || order.created_at,
+          value: price,
+        },
       ];
-      const extendData: TradeOrderHistoryOverlayData = {
+      const extendData: TradeOrderOverlayData = {
         ...order,
-        start_price: startPrice,
-        end_price: endPrice,
+        display_price: price,
+        close_pnl: null,
+        sticky: false,
+        showInfo: false,
+        canCancel: false,
       };
 
       if (chart.getOverlays({ id }).length) {
         chart.overrideOverlay({ id, points, extendData });
       } else {
         chart.createOverlay({
-          name: "tradeOrderHistory",
+          name: "tradeOrder",
           id,
           points,
           lock: true,

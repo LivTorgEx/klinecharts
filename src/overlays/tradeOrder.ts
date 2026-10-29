@@ -2,11 +2,14 @@ import { registerOverlay } from "klinecharts";
 import type { PositionOrderType } from "../types/client/order";
 import type { TradeOrder } from "../types/client/trade";
 import { formatBigNumber } from "../utils/number";
+import { isTruthy } from "../utils/filter";
 
 type TradeOrderOverlayData = TradeOrder & {
   display_price: number;
   close_pnl: number | null;
   sticky: boolean;
+  showInfo?: boolean;
+  canCancel?: boolean;
   trigger_order_id?: string | null;
   trigger_algo_order_id?: string | null;
 };
@@ -38,8 +41,17 @@ registerOverlay<TradeOrderOverlayData>({
   lock: false,
   zLevel: 40,
   needDefaultPointFigure: false,
-  needDefaultXAxisFigure: true,
-  needDefaultYAxisFigure: true,
+  needDefaultXAxisFigure: false,
+  needDefaultYAxisFigure: false,
+
+  onMouseEnter: ({ overlay }) => {
+    overlay.extendData.showInfo = true;
+    return true;
+  },
+  onMouseLeave: ({ overlay }) => {
+    overlay.extendData.showInfo = false;
+    return true;
+  },
 
   onClick: ({ overlay, figure }) => {
     if (getFigureRole(figure) === "delete-button") {
@@ -59,107 +71,69 @@ registerOverlay<TradeOrderOverlayData>({
   },
 
   createPointFigures: ({ coordinates, bounding, overlay }) => {
+    if (!coordinates.length) return [];
+
     const order = overlay.extendData;
     const orderType = ORDER_TYPE_LABELS[order.order_type];
-    const quantity = formatBigNumber(order.quantity, "");
     const color = order.side === "sell" ? "#991b1b" : "#15803d";
+    const x = coordinates[0].x;
+    const priceY = coordinates[0].y;
+    const priceIsAboveView = priceY < 0;
+    const priceIsBelowView = priceY > bounding.height;
+    const markerY =
+      order.sticky && (priceIsAboveView || priceIsBelowView)
+        ? Math.max(12, Math.min(bounding.height - 12, priceY))
+        : priceY;
+    const filledQuantity = formatBigNumber(order.filled_quantity, "");
+    const quantity = formatBigNumber(order.quantity, "");
+    const status = order.status.replaceAll("_", " ");
     const pnl =
       order.close_pnl == null
         ? ""
         : `Est. PnL ${order.close_pnl > 0 ? "+" : ""}${order.close_pnl === 0 ? "0" : formatBigNumber(order.close_pnl, "")}`;
-    const isSticky = order.sticky;
-    const priceIsAboveView = coordinates[0].y < 0;
-    const priceIsBelowView = coordinates[0].y > bounding.height;
-    const priceIsOutsideView = priceIsAboveView || priceIsBelowView;
-    const edgeY =
-      isSticky && priceIsOutsideView
-        ? Math.max(12, Math.min(bounding.height - 12, coordinates[0].y))
-        : coordinates[0].y;
-    const protectionLabel = priceIsAboveView
-      ? `${orderType} ↑ ${formatBigNumber(order.display_price, "")} (above view)`
-      : priceIsBelowView
-        ? `${orderType} ↓ ${formatBigNumber(order.display_price, "")} (below view)`
-        : `${orderType} ${formatBigNumber(order.display_price, "")}`;
-
-    const figures =
-      priceIsOutsideView && isSticky
+    const markerPoints =
+      order.side === "buy"
         ? [
-            {
-              type: "polygon",
-              zLevel: 41,
-              ignoreEvent: true,
-              styles: { color },
-              attrs: {
-                coordinates: priceIsAboveView
-                  ? [
-                      { x: bounding.width - 10, y: edgeY },
-                      { x: bounding.width - 18, y: edgeY + 10 },
-                      { x: bounding.width - 2, y: edgeY + 10 },
-                    ]
-                  : [
-                      { x: bounding.width - 10, y: edgeY },
-                      { x: bounding.width - 18, y: edgeY - 10 },
-                      { x: bounding.width - 2, y: edgeY - 10 },
-                    ],
-              },
-            },
-            {
-              type: "text",
-              zLevel: 40,
-              ignoreEvent: true,
-              styles: { backgroundColor: color },
-              attrs: {
-                x: bounding.width * 0.2,
-                y: edgeY,
-                text: [quantity, protectionLabel].filter(Boolean).join(" | "),
-                baseline: "center",
-              },
-            },
+            { x, y: markerY - 9 },
+            { x: x - 8, y: markerY + 5 },
+            { x: x + 8, y: markerY + 5 },
           ]
         : [
-            {
-              type: "line",
-              zLevel: 40,
-              ignoreEvent: true,
-              styles: { color },
-              attrs: {
-                coordinates: [
-                  { x: bounding.width * 0.2, y: edgeY },
-                  { x: bounding.width, y: edgeY },
-                ],
-              },
-            },
-            {
-              type: "text",
-              zLevel: 40,
-              ignoreEvent: true,
-              styles: { backgroundColor: color },
-              attrs: {
-                x: bounding.width * 0.2,
-                y: edgeY,
-                text: [
-                  quantity,
-                  orderType,
-                  formatBigNumber(order.display_price, ""),
-                  pnl,
-                ]
-                  .filter(Boolean)
-                  .join(" | "),
-                baseline: "center",
-              },
-            },
+            { x, y: markerY + 9 },
+            { x: x - 8, y: markerY - 5 },
+            { x: x + 8, y: markerY - 5 },
           ];
 
     return [
-      ...figures,
       {
+        type: "polygon",
+        zLevel: 41,
+        styles: { color },
+        attrs: { coordinates: markerPoints },
+      },
+      order.showInfo && {
+        type: "text",
+        zLevel: 42,
+        ignoreEvent: true,
+        styles: { backgroundColor: color },
+        attrs: {
+          x,
+          y: order.side === "buy" ? markerY + 30 : markerY - 30,
+          text: [
+            `${order.side.toUpperCase()} ${orderType} ${status}`,
+            `${filledQuantity}/${quantity} filled`,
+            `@ ${formatBigNumber(order.display_price, "")}`,
+            pnl,
+          ]
+            .filter(Boolean)
+            .join(" | "),
+          baseline: "center",
+          align: "center",
+        },
+      },
+      order.showInfo && order.canCancel && {
         type: "text",
         zLevel: 52,
-        ignoreEvent: [
-          "onPressedMoveStart",
-          "onPressedMoving",
-          "onPressedMoveEnd",
-        ],
         styles: {
           color: "#ffffff",
           size: 14,
@@ -167,8 +141,8 @@ registerOverlay<TradeOrderOverlayData>({
           backgroundColor: color,
         },
         attrs: {
-          x: bounding.width * 0.2 - 12,
-          y: coordinates[0].y,
+          x: x + 18,
+          y: markerY,
           width: 18,
           height: 22,
           text: "✖",
@@ -177,6 +151,6 @@ registerOverlay<TradeOrderOverlayData>({
           role: "delete-button",
         },
       },
-    ];
+    ].filter(isTruthy);
   },
 });

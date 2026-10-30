@@ -23,8 +23,15 @@ registerOverlay<TradePositionOverlayData>({
 
     const position = overlay.extendData;
     const isShort = position.position_side === "short";
-    const color = isShort ? "#ef4444" : "#22c55e";
     const pnl = position.unrealized_pnl;
+    const color =
+      pnl == null
+        ? isShort
+          ? "#7f1d1d"
+          : "#14532d"
+        : pnl >= 0
+          ? "#14532d"
+          : "#7f1d1d";
     const parts = [
       position.position_side.toUpperCase(),
       formatBigNumber(position.quantity, ""),
@@ -35,10 +42,10 @@ registerOverlay<TradePositionOverlayData>({
       {
         type: "line",
         zLevel: 50,
-        styles: { color },
+        styles: { color, style: "dashed", dashedValue: [3, 3] },
         attrs: {
           coordinates: [
-            { x: bounding.width * 0.2, y: coordinates[0].y },
+            { x: 0, y: coordinates[0].y },
             { x: bounding.width, y: coordinates[0].y },
           ],
         },

@@ -76,7 +76,7 @@ registerOverlay<TradeOrderOverlayData>({
 
     const order = overlay.extendData;
     const orderType = ORDER_TYPE_LABELS[order.order_type];
-    const color = order.side === "sell" ? "#991b1b" : "#15803d";
+    const color = order.side === "sell" ? "#7f1d1d" : "#14532d";
     const isActive = order.isActive !== false;
     const x = coordinates[0].x;
     const priceY = coordinates[0].y;
@@ -115,7 +115,7 @@ registerOverlay<TradeOrderOverlayData>({
             styles: { color },
             attrs: {
               coordinates: [
-                { x: 0, y: markerY },
+                { x: bounding.width * 0.2, y: markerY },
                 { x: bounding.width, y: markerY },
               ],
             },
@@ -126,7 +126,26 @@ registerOverlay<TradeOrderOverlayData>({
             styles: { color },
             attrs: { coordinates: markerPoints },
           },
-      order.showInfo && {
+      isActive && {
+        type: "text",
+        zLevel: 42,
+        ignoreEvent: true,
+        styles: { backgroundColor: color },
+        attrs: {
+          x: bounding.width * 0.2,
+          y: markerY,
+          text: [
+            quantity,
+            orderType,
+            formatBigNumber(order.display_price, ""),
+            pnl,
+          ]
+            .filter(Boolean)
+            .join(" | "),
+          baseline: "center",
+        },
+      },
+      !isActive && order.showInfo && {
         type: "text",
         zLevel: 42,
         ignoreEvent: true,
@@ -147,7 +166,6 @@ registerOverlay<TradeOrderOverlayData>({
         },
       },
       isActive &&
-        order.showInfo &&
         order.canCancel && {
           type: "text",
           zLevel: 52,
@@ -158,7 +176,7 @@ registerOverlay<TradeOrderOverlayData>({
             backgroundColor: color,
           },
           attrs: {
-            x: infoX + 18,
+            x: bounding.width * 0.2 - 12,
             y: markerY,
             width: 18,
             height: 22,

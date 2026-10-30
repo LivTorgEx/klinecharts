@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Overlay, OverlayCreate } from "klinecharts";
 
 import { useChart } from "../context/chart";
@@ -9,7 +9,10 @@ import type {
   TradePosition,
   TradePositionHistory,
 } from "../types/client/trade";
-import type { TradePositionOverlayData } from "../overlays/tradePosition";
+import {
+  getProtectionPreviewOverlayId,
+  type TradePositionOverlayData,
+} from "../overlays/tradePosition";
 
 type TradePositionHistoryOverlayData = Pick<
   TradePositionHistory,
@@ -17,21 +20,61 @@ type TradePositionHistoryOverlayData = Pick<
 > & {
   showInfo?: boolean;
 };
-type Props = {
-  positions: TradePosition[];
-  history: TradePositionHistory[];
+type TradingPosition = TradePosition & {
+  reference_price?: number;
+  has_active_stop_loss?: boolean;
+  has_active_take_profit?: boolean;
 };
+type PendingAmendments = Record<string, number>;
+type ProtectionPreviewOverlayData = {
+  order_type: "stop_market" | "take_profit_market";
+  amend_progress: number;
+  awaiting_response?: boolean;
+};
+type Props = {
+  positions: TradingPosition[];
+  history: TradePositionHistory[];
+  canCreateProtection?: boolean;
+  supportedPositionSides?: string[];
+  pendingAmendments?: PendingAmendments;
+};
+
+const EMPTY_PENDING_AMENDMENTS: PendingAmendments = {};
 
 function toTimestamp(value: number | string) {
   return typeof value === "number" ? value : Date.parse(value);
 }
 
-export function KLineChartTradingPositions({ positions, history }: Props) {
+export function KLineChartTradingPositions({
+  positions,
+  history,
+  canCreateProtection = false,
+  supportedPositionSides,
+  pendingAmendments = EMPTY_PENDING_AMENDMENTS,
+}: Props) {
   const chart = useChart();
   const { position: positionSettings } = useChartSettings();
   const symbolKey = useSymbolKey();
   const positionOverlayIds = useRef<Set<string>>(new Set());
   const historyOverlayIds = useRef<Set<string>>(new Set());
+  const [pendingProgress, setPendingProgress] = useState(0);
+  const hasPendingProtection = Object.keys(pendingAmendments).some((key) =>
+    key.startsWith("position-protection:")
+  );
+
+  useEffect(() => {
+    if (
+      !hasPendingProtection ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setPendingProgress((progress) => (progress + 0.04) % 1);
+    }, 48);
+    return () => window.clearInterval(timer);
+  }, [hasPendingProtection]);
 
   useEffect(() => {
     if (!chart) return;
@@ -57,6 +100,40 @@ export function KLineChartTradingPositions({ positions, history }: Props) {
           value: position.entry_price,
         },
       ];
+      const overlay = chart.getOverlays({ id })[0] as
+        | Overlay<TradePositionOverlayData>
+        | undefined;
+      if (overlay?.extendData.dragging_protection) {
+        positionOverlayIds.current.add(id);
+        removeSet.delete(id);
+        return;
+      }
+      const previewId = getProtectionPreviewOverlayId(position.position_id);
+      const protectionPreview = chart.getOverlays({ id: previewId })[0] as
+        | Overlay<ProtectionPreviewOverlayData>
+        | undefined;
+      const previewOrderType = protectionPreview?.extendData.order_type;
+      const previewPendingPrice =
+        previewOrderType === "stop_market"
+          ? pendingAmendments[
+              `position-protection:${position.position_id}:stop_market`
+            ]
+          : previewOrderType === "take_profit_market"
+            ? pendingAmendments[
+                `position-protection:${position.position_id}:take_profit_market`
+              ]
+            : undefined;
+      const hasMatchingActiveProtection =
+        (previewOrderType === "stop_market" && position.has_active_stop_loss) ||
+        (previewOrderType === "take_profit_market" &&
+          position.has_active_take_profit);
+      const keepProtectionPreview =
+        protectionPreview?.extendData.awaiting_response === true &&
+        previewPendingPrice != null &&
+        !hasMatchingActiveProtection;
+      const supportsPositionSide =
+        !supportedPositionSides?.length ||
+        supportedPositionSides.includes(position.position_side);
       const extendData: TradePositionOverlayData = {
         position_side:
           position.position_side === PositionDirection.BOTH
@@ -66,11 +143,46 @@ export function KLineChartTradingPositions({ positions, history }: Props) {
             : position.position_side,
         quantity: Math.abs(position.quantity),
         entry_price: position.entry_price,
+        reference_price: position.reference_price ?? position.entry_price,
+        entry_timestamp: position.captured_at || fallbackTimestamp,
         unrealized_pnl: position.unrealized_pnl,
+        position_id: position.position_id,
+        symbol_key: position.symbol_key,
+        pending_stop_loss_price: position.has_active_stop_loss
+          ? undefined
+          : keepProtectionPreview && previewOrderType === "stop_market"
+            ? undefined
+            : pendingAmendments[
+                `position-protection:${position.position_id}:stop_market`
+              ],
+        pending_take_profit_price: position.has_active_take_profit
+          ? undefined
+          : keepProtectionPreview && previewOrderType === "take_profit_market"
+            ? undefined
+            : pendingAmendments[
+                `position-protection:${position.position_id}:take_profit_market`
+              ],
+        pending_progress: pendingProgress,
+        can_set_stop_loss:
+          canCreateProtection &&
+          supportsPositionSide &&
+          !position.has_active_stop_loss &&
+          pendingAmendments[
+            `position-protection:${position.position_id}:stop_market`
+          ] == null,
+        can_set_take_profit:
+          canCreateProtection &&
+          supportsPositionSide &&
+          !position.has_active_take_profit &&
+          pendingAmendments[
+            `position-protection:${position.position_id}:take_profit_market`
+          ] == null,
+        show_protection_actions:
+          overlay?.extendData.show_protection_actions ?? false,
+        dragging_protection: overlay?.extendData.dragging_protection ?? false,
+        has_dragged_protection:
+          overlay?.extendData.has_dragged_protection ?? false,
       };
-      const overlay = chart.getOverlays({ id })[0] as
-        | Overlay<TradePositionOverlayData>
-        | undefined;
 
       if (overlay) {
         chart.overrideOverlay({ id, points, extendData });
@@ -79,9 +191,22 @@ export function KLineChartTradingPositions({ positions, history }: Props) {
           name: "tradePosition",
           id,
           points,
-          lock: true,
+          lock: false,
           extendData,
         });
+      }
+      if (protectionPreview?.extendData.awaiting_response) {
+        if (keepProtectionPreview) {
+          chart.overrideOverlay({
+            id: previewId,
+            extendData: {
+              ...protectionPreview.extendData,
+              amend_progress: pendingProgress,
+            },
+          });
+        } else {
+          chart.removeOverlay({ id: previewId });
+        }
       }
 
       positionOverlayIds.current.add(id);
@@ -90,9 +215,20 @@ export function KLineChartTradingPositions({ positions, history }: Props) {
 
     removeSet.forEach((id) => {
       chart.removeOverlay({ id });
+      chart.removeOverlay({
+        id: getProtectionPreviewOverlayId(id.slice("trade_position_".length)),
+      });
       positionOverlayIds.current.delete(id);
     });
-  }, [chart, positions, symbolKey]);
+  }, [
+    canCreateProtection,
+    chart,
+    pendingAmendments,
+    pendingProgress,
+    positions,
+    supportedPositionSides,
+    symbolKey,
+  ]);
 
   useEffect(() => {
     if (!chart) return;
@@ -149,7 +285,12 @@ export function KLineChartTradingPositions({ positions, history }: Props) {
   useEffect(
     () => () => {
       if (!chart) return;
-      positionOverlayIds.current.forEach((id) => chart.removeOverlay({ id }));
+      positionOverlayIds.current.forEach((id) => {
+        chart.removeOverlay({ id });
+        chart.removeOverlay({
+          id: getProtectionPreviewOverlayId(id.slice("trade_position_".length)),
+        });
+      });
       historyOverlayIds.current.forEach((id) => chart.removeOverlay({ id }));
       positionOverlayIds.current.clear();
       historyOverlayIds.current.clear();

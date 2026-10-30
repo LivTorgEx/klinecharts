@@ -13,9 +13,13 @@ type TradeOrderOverlayData = TradeOrder & {
   canCancel?: boolean;
   amendable?: boolean;
   amending?: boolean;
+  dragging?: boolean;
   amend_progress?: number;
+  position_id?: string | null;
+  trigger_price_source?: string | null;
   trigger_order_id?: string | null;
   trigger_algo_order_id?: string | null;
+  preview?: boolean;
 };
 
 const ORDER_TYPE_LABELS: Record<PositionOrderType, string> = {
@@ -62,27 +66,78 @@ registerOverlay<TradeOrderOverlayData>({
     return true;
   },
 
-  onPressedMoveEnd: ({ overlay }) => {
+  onPressedMoveStart: ({ overlay }) => {
+    if (overlay.extendData.amendable && !overlay.extendData.amending) {
+      overlay.extendData.dragging = true;
+    }
+    return true;
+  },
+
+  onPressedMoveEnd: ({ overlay, chart }) => {
     const order = overlay.extendData;
     const newPrice = overlay.points[0]?.value;
-    if (
-      order.amendable &&
-      !order.amending &&
-      typeof newPrice === "number" &&
-      Number.isFinite(newPrice) &&
-      newPrice > 0 &&
-      newPrice !== order.display_price
-    ) {
-      window.dispatchEvent(
-        new CustomEvent("trading-order-amend", {
-          detail: {
-            orderId: order.external_order_id,
-            symbolKey: order.symbol_key,
-            oldPrice: order.display_price,
-            newPrice,
+    let pendingPrice: number | undefined;
+    order.dragging = false;
+    if (order.amendable && !order.amending) {
+      if (
+        typeof newPrice === "number" &&
+        Number.isFinite(newPrice) &&
+        newPrice > 0 &&
+        newPrice !== order.display_price
+      ) {
+        const isStopLoss = order.order_type === "stop_market";
+        const isTakeProfit = order.order_type === "take_profit_market";
+        if ((isStopLoss || isTakeProfit) && order.position_id) {
+          window.dispatchEvent(
+            new CustomEvent("trading-position-protection-amend", {
+              detail: {
+                orderId: order.external_order_id,
+                positionId: order.position_id,
+                symbolKey: order.symbol_key,
+                orderType: order.order_type,
+                triggerAlgoOrderId: order.trigger_algo_order_id,
+                priceSource: order.trigger_price_source,
+                newPrice,
+                onPending: (price: number) => {
+                  pendingPrice = price;
+                },
+              },
+            })
+          );
+        } else {
+          window.dispatchEvent(
+            new CustomEvent("trading-order-amend", {
+              detail: {
+                orderId: order.external_order_id,
+                symbolKey: order.symbol_key,
+                oldPrice: order.display_price,
+                newPrice,
+                onPending: (price: number) => {
+                  pendingPrice = price;
+                },
+              },
+            })
+          );
+        }
+      }
+      const displayPrice = pendingPrice ?? order.display_price;
+      chart.overrideOverlay({
+        id: overlay.id,
+        points: [
+          {
+            timestamp: order.updated_at || order.created_at,
+            value: displayPrice,
           },
-        })
-      );
+        ],
+        extendData: {
+          ...order,
+          display_price: displayPrice,
+          amendable: pendingPrice == null ? order.amendable : false,
+          amending: pendingPrice != null,
+          amend_progress: pendingPrice == null ? order.amend_progress : 0,
+          dragging: false,
+        },
+      });
     }
     return true;
   },
@@ -171,10 +226,10 @@ registerOverlay<TradeOrderOverlayData>({
       isActive
         ? {
             type: "line",
-            zLevel: 41,
+            zLevel: order.preview ? 53 : 41,
             ignoreEvent:
               order.amendable && !order.amending ? false : ORDER_MOVE_EVENTS,
-            styles: { color: order.amending ? "#64748b" : color },
+            styles: { color: order.amending ? "#64748b" : color, size: 2 },
             attrs: {
               coordinates: [
                 { x: lineStartX, y: markerY },
@@ -191,7 +246,7 @@ registerOverlay<TradeOrderOverlayData>({
       ...sweepFigures,
       isActive && {
         type: "text",
-        zLevel: 42,
+        zLevel: order.preview ? 54 : 42,
         ignoreEvent: !order.amendable,
         styles: { backgroundColor: color },
         attrs: {

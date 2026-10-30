@@ -15,6 +15,7 @@ import { ChartSettingsContext } from "./context/chartSettings";
 import { SymbolKeyContext } from "./context/symbolKey";
 import { KLineCrossSync, SyncedCursor } from "./components/KLineCrossSync";
 import { KLineChartHeaderControls } from "./components/KLineChartHeaderControls";
+import { PositionInfoModalsContainer } from "./components/PositionInfoModalsContainer";
 import { KLineChartViewport } from "./components/KLineChartViewport";
 import { KLineChartSidePanel } from "./components/KLineChartSidePanel";
 import { KLineChartMarketDecisionProvider } from "./context/marketDecision";
@@ -398,6 +399,7 @@ export function KLineChart({
         <ChartSettingsContext.Provider value={settings}>
           <SymbolKeyContext.Provider value={token?.symbol_key ?? ""}>
             <ChartContext.Provider value={chartStore}>
+              <PositionInfoModalsContainer />
               <div className="flex min-w-0 flex-col">
                 <div ref={controlsRef}>
                   <KLineChartHeaderControls

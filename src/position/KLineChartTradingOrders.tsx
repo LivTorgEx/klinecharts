@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { OverlayCreate } from "klinecharts";
+import type { Overlay, OverlayCreate } from "klinecharts";
 
 import { useChart } from "../context/chart";
 import { useChartSettings } from "../context/chartSettings";
@@ -10,6 +10,8 @@ import type { TradeOrder, TradePosition } from "../types/client/trade";
 
 type TradeOrderWithOverlayConfig = TradeOrder & {
   sticky?: boolean;
+  position_id?: string | null;
+  trigger_price_source?: string | null;
   trigger_order_id?: string | null;
   trigger_algo_order_id?: string | null;
 };
@@ -19,6 +21,7 @@ type TradeOrderOverlayData = TradeOrderWithOverlayConfig & {
   sticky: boolean;
   amendable: boolean;
   amending: boolean;
+  dragging?: boolean;
   amend_progress: number;
   isActive: boolean;
   showInfo?: boolean;
@@ -29,6 +32,8 @@ type Props = {
   history: TradeOrder[];
   positions: TradePosition[];
   canAmendOrders?: boolean;
+  canAmendPositionProtection?: boolean;
+  canAmendTriggerOrders?: boolean;
   pendingAmendments?: Record<string, number>;
 };
 
@@ -118,6 +123,8 @@ export function KLineChartTradingOrders({
   history,
   positions,
   canAmendOrders = false,
+  canAmendPositionProtection = false,
+  canAmendTriggerOrders = false,
   pendingAmendments = EMPTY_PENDING_AMENDMENTS,
 }: Props) {
   const chart = useChart();
@@ -147,12 +154,31 @@ export function KLineChartTradingOrders({
 
     const removeSet = new Set(activeOverlayIds.current);
     orders.forEach((order) => {
-      const hasPendingAmendment = Object.prototype.hasOwnProperty.call(
-        pendingAmendments,
-        order.external_order_id
-      );
+      const positionPendingKey = order.position_id
+        ? `position-protection:${order.position_id}:${order.order_type}`
+        : undefined;
+      const pendingKey = order.chart_overlay_key ?? order.external_order_id;
+      const hasPendingAmendment =
+        Object.prototype.hasOwnProperty.call(pendingAmendments, pendingKey) ||
+        (positionPendingKey != null &&
+          Object.prototype.hasOwnProperty.call(
+            pendingAmendments,
+            positionPendingKey
+          ));
+      const isProtectionOrder =
+        order.order_type === "stop_market" ||
+        order.order_type === "take_profit_market";
+      const canAmendProtection =
+        isProtectionOrder &&
+        order.position_id != null &&
+        (order.trigger_algo_order_id
+          ? canAmendTriggerOrders
+          : canAmendPositionProtection);
       const price =
-        pendingAmendments[order.external_order_id] ??
+        pendingAmendments[pendingKey] ??
+        (positionPendingKey
+          ? pendingAmendments[positionPendingKey]
+          : undefined) ??
         order.price ??
         order.stop_price;
       if (
@@ -166,6 +192,14 @@ export function KLineChartTradingOrders({
       }
 
       const id = `trade_order_${order.chart_overlay_key ?? order.external_order_id}`;
+      const overlay = chart.getOverlays({ id })[0] as
+        | Overlay<TradeOrderOverlayData>
+        | undefined;
+      if (overlay?.extendData.dragging) {
+        activeOverlayIds.current.add(id);
+        removeSet.delete(id);
+        return;
+      }
       const points: OverlayCreate["points"] = [
         {
           timestamp: order.updated_at || order.created_at,
@@ -180,17 +214,19 @@ export function KLineChartTradingOrders({
         amending: hasPendingAmendment,
         amend_progress: amendProgress,
         amendable:
-          canAmendOrders &&
           !hasPendingAmendment &&
-          order.order_type === "limit" &&
-          !order.trigger_order_id &&
-          !order.trigger_algo_order_id,
+          ((canAmendOrders &&
+            order.order_type === "limit" &&
+            !order.trigger_order_id &&
+            !order.trigger_algo_order_id) ||
+            canAmendProtection),
         isActive: true,
+        dragging: false,
         showInfo: false,
         canCancel: !hasPendingAmendment,
       };
 
-      if (chart.getOverlays({ id }).length) {
+      if (overlay) {
         chart.overrideOverlay({ id, points, extendData });
       } else {
         chart.createOverlay({
@@ -213,6 +249,8 @@ export function KLineChartTradingOrders({
   }, [
     amendProgress,
     canAmendOrders,
+    canAmendPositionProtection,
+    canAmendTriggerOrders,
     chart,
     orders,
     pendingAmendments,

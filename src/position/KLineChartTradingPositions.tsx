@@ -177,6 +177,10 @@ export function KLineChartTradingPositions({
           pendingAmendments[
             `position-protection:${position.position_id}:take_profit_market`
           ] == null,
+        can_show_protection_action:
+          (canCreateProtection && supportsPositionSide) ||
+          position.has_active_stop_loss ||
+          position.has_active_take_profit,
         show_protection_actions:
           overlay?.extendData.show_protection_actions ?? false,
         dragging_protection: overlay?.extendData.dragging_protection ?? false,

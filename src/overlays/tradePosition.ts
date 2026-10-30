@@ -34,6 +34,7 @@ export type TradePositionOverlayData = {
   symbol_key: string;
   can_set_stop_loss: boolean;
   can_set_take_profit: boolean;
+  can_show_protection_action?: boolean;
   pending_stop_loss_price?: number;
   pending_take_profit_price?: number;
   pending_progress?: number;
@@ -346,7 +347,8 @@ registerOverlay<TradePositionOverlayData>({
     });
     const protectionActions = position.show_protection_actions
       ? [
-          (position.can_set_stop_loss || position.can_set_take_profit) && {
+          (position.can_show_protection_action ??
+            (position.can_set_stop_loss || position.can_set_take_profit)) && {
             type: "text",
             zLevel: 52,
             ignoreEvent: false,

@@ -67,7 +67,6 @@ export function KLineChartTradingPositions({ positions, history }: Props) {
         quantity: Math.abs(position.quantity),
         entry_price: position.entry_price,
         unrealized_pnl: position.unrealized_pnl,
-        showInfo: false,
       };
       const overlay = chart.getOverlays({ id })[0] as
         | Overlay<TradePositionOverlayData>

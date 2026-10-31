@@ -19,9 +19,9 @@ export type PositionOrder = {
   /** Direction of the parent position (long/short) this order belongs to. */
   position_side?: PositionDirection;
   /** Exchange-reported realized PnL for this order (quote ccy). */
-  realized_pnl?: number;
+  realized_pnl?: number | null;
   /** Cumulative trading fee charged for this order (quote ccy). */
-  fee?: number;
+  fee?: number | null;
 };
 
 export type PositionOrderType =

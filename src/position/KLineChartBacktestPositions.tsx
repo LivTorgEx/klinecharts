@@ -93,18 +93,19 @@ export function KLineChartBacktestPositions({ positions }: Props) {
           },
         ];
         const id = `order_${order.id}`;
+        const extendData = { ...order, timestamp, timeframe };
         if (chart.getOverlays({ id }).length) {
           chart.overrideOverlay({
             id,
             points,
-            extendData: { ...order, timestamp, timeframe },
+            extendData,
           });
         } else {
           chart.createOverlay({
             name: "orderFilled",
             id,
             points,
-            extendData: { ...order, timestamp, timeframe },
+            extendData,
           });
         }
         existingKeys.current.add(id);

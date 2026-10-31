@@ -18,6 +18,10 @@ type DragState = {
   offsetY: number;
 };
 
+function formatMoney(value: number) {
+  return `${formatBigNumber(value, "") || "0"} $`;
+}
+
 export function PositionInfoModal({
   order,
   initialX = 80,
@@ -37,12 +41,14 @@ export function PositionInfoModal({
         .join(" ")
     : "Order";
   const rows: Array<[string, string | number]> = [
-    ["Price", price],
+    ["Type", orderType],
+    ["Price", order.price > 0 ? order.price : "—"],
+    [
+      "Stop price",
+      order.stop_price != null && order.stop_price > 0 ? order.stop_price : "—",
+    ],
     ...(order.position_side
       ? [["Position side", order.position_side] as [string, string]]
-      : []),
-    ...(order.stop_price && order.stop_price !== order.price
-      ? [["Stop price", order.stop_price] as [string, number]]
       : []),
     ["Qty", formatBigNumber(Math.abs(order.qty), "")],
     ...(order.qty_filled !== undefined
@@ -53,17 +59,12 @@ export function PositionInfoModal({
           ],
         ]
       : []),
-    ["Amount", `${formatBigNumber(amount, "")} $`],
+    ["Amount", formatMoney(amount)],
     ...(order.realized_pnl != null
-      ? [
-          ["Realized PnL", `${formatBigNumber(order.realized_pnl, "")} $`] as [
-            string,
-            string,
-          ],
-        ]
+      ? [["Realized PnL", formatMoney(order.realized_pnl)] as [string, string]]
       : []),
     ...(order.fee != null
-      ? [["Fee", `${formatBigNumber(order.fee, "")} $`] as [string, string]]
+      ? [["Fee", formatMoney(order.fee)] as [string, string]]
       : []),
     ...(order.status ? [["Status", order.status] as [string, string]] : []),
     ...(order.update_at !== undefined
@@ -116,10 +117,10 @@ export function PositionInfoModal({
     <div
       ref={nodeRef}
       style={{ left: position.x, top: position.y }}
-      className="fixed z-[9999] min-w-[300px] max-w-[min(600px,calc(100vw-24px))] overflow-hidden rounded-xl border border-gray-700 bg-gray-950 text-white shadow-2xl"
+      className="fixed z-[9999] w-[min(420px,calc(100vw-24px))] max-h-[min(80vh,560px)] overflow-hidden rounded-xl border border-gray-700 bg-gray-950 text-white shadow-2xl"
     >
       <div
-        className={`position-info-modal-handle flex touch-none select-none cursor-grab items-center justify-between px-3 py-2 active:cursor-grabbing ${order.qty > 0 ? "bg-emerald-800" : "bg-rose-800"}`}
+        className={`position-info-modal-handle flex touch-none select-none cursor-grab items-center justify-between px-2 py-1 active:cursor-grabbing ${order.qty > 0 ? "bg-emerald-800" : "bg-rose-800"}`}
         onPointerDown={startDragging}
         onPointerMove={moveModal}
         onPointerUp={stopDragging}
@@ -129,37 +130,36 @@ export function PositionInfoModal({
           <Text variant="body-sm" weight="bold">
             {side}
           </Text>
-          <Text variant="caption" tone="muted">
-            {orderType}
-          </Text>
         </div>
         <Button
           type="button"
           variant="icon"
-          size="sm"
+          size="xs"
           aria-label="Close order details"
           onClick={onClose}
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
         </Button>
       </div>
-      <dl className="position-info-modal-content grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 px-3 py-2 text-xs">
+      <dl className="position-info-modal-content grid max-h-[min(60vh,480px)] grid-cols-[max-content_minmax(0,1fr)] gap-x-3 gap-y-1 overflow-y-auto px-2 py-1.5 text-xs">
         {rows.map(([label, value]) => (
           <div key={label} className="contents">
             <dt className="whitespace-nowrap text-gray-400">{label}</dt>
-            <dd className="break-all font-medium">{value}</dd>
+            <dd className="min-w-0 break-all font-medium">{value}</dd>
           </div>
         ))}
         {order.note ? (
           <>
             <dt className="text-gray-400">Notes</dt>
-            <dd className="break-words">{order.note}</dd>
+            <dd className="min-w-0 whitespace-pre-wrap break-all">
+              {order.note}
+            </dd>
           </>
         ) : null}
         {order.mark ? (
           <>
             <dt className="text-gray-400">Mark</dt>
-            <dd>{order.mark}</dd>
+            <dd className="min-w-0 break-all">{order.mark}</dd>
           </>
         ) : null}
       </dl>
